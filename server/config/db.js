@@ -6,7 +6,7 @@ const sequelize = new Sequelize({
     host: 'localhost',
     username: 'root',
     password: '',
-    database: 'mystore',
+    database: 'hippo',
     port: 3306,
     logging: false
 });

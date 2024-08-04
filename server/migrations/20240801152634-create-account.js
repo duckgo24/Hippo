@@ -18,6 +18,30 @@ module.exports = {
       role: {
         type: Sequelize.STRING
       },
+      nickname: {
+        type: Sequelize.STRING
+      },
+      avatar: {
+        type: Sequelize.STRING
+      },
+      status: {
+        type: Sequelize.STRING
+      },
+      num_posts: {
+        type: Sequelize.INTEGER
+      },
+      num_followers: {
+        type: Sequelize.INTEGER
+      },
+      num_following: {
+        type: Sequelize.INTEGER
+      },
+      bio:{
+        type: Sequelize.STRING
+      },
+      list_friend:{
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

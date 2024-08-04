@@ -16,55 +16,108 @@ class AccountController {
     async getMe(req, res, next) {
         try {
             const token = req.headers.authorization.split(' ')[1];
-            if(token) {
-                jwtService.verify(token, (err, user) => {
-                    if(err) {
+            if (token) {
+                jwtService.verify(token, async (err, user) => {
+                    if (err) {
                         return res.status(401).json({ error: 'Token is not valid' });
                     }
                     
-                    return res.status(200).json(user);
-                    
+                    if(user) {
+                        const account = await db.Account.findOne({
+                            where: {
+                                id: user.id,
+                                nickname: user.nickname,
+                                role: user.role
+                            }
+                        });
+
+                        if(account) {
+                            res.status(200).json({
+                                account, access_token: token
+                            });
+                        } else {
+                            return res.status(404).json({ error: 'Account not found' });
+                        }
+                    }
                 });
-    
+
             }
         } catch (error) {
             console.log(error);
         }
     };
 
-    async register(req, res, next) {
+    async refreshToken(req, res, next) {
         try {
-            const { username, password, role } = req.body;
-            const account = await db.Account.create({
-                username,
-                password,
-                role
-            })
-            return res.status(201).json(account);
+            const refresh_token = req.cookies.refresh_token;
+            if (!refresh_token) {
+                return res.status(401).json({ error: 'No refresh token provided' });
+            }
+            
+            console.log(refresh_token);
+            
         } catch (error) {
-            return res.status(501).json({ error: 'Error' });
+            return res.status(501).json({ error });
+        }
+    };
+    
+
+    async register(req, res, next) {
+        const formData = req.body;
+
+        try {
+            if (formData) {
+
+                const checkExitAccount = await db.Account.findOne({
+                    where: {
+                        username: formData.username
+                    }
+                });
+
+                if (checkExitAccount) {
+                    return res.status(409).json({ error: 'Username is already taken' });
+                }
+
+                const account = await db.Account.create(formData);
+                return res.status(201).json(account);
+            }
+        } catch (error) {
+            return res.status(501).json({ error });
         }
     };
 
     async login(req, res, next) {
         try {
-            const { username, password} = req.body;
+
+            const { username, password } = req.body;
 
             const account = await db.Account.findOne({
                 where: {
                     username,
-                    password,
+                    password
                 }
             });
 
+            if (!account) {
+                return res.status(401).json({ error: 'Invalid username or password' });
+            }
+
             if (account) {
                 const { password, ...others } = account.dataValues;
-                const access_token = jwtService.sign({  id: account.id , username, role: account.role});
+                const access_token = jwtService.sign({ id: account.id, nickname: account.nickname, role: account.role }, '10s');
+                const refesh_token = jwtService.sign({ id: account.id, nickname: account.nickname, role: account.role }, '365d');
+
+                res.cookie('refesh_token', refesh_token, {
+                    httpOnly: true,
+                    expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 14),
+                    path: '/'
+                });
+
                 return res.status(200).json({ access_token, account: others });
             }
         }
         catch (error) {
-            return res.status(501).json({ error: 'Error' });
+            return res.status(501).json({ error });
         }
     };
 
@@ -87,7 +140,7 @@ class AccountController {
             } else {
                 return res.status(404).json({ error: 'Account not found' });
             }
-            
+
 
         } catch (error) {
             return res.status(501).json({ error: 'Error' });

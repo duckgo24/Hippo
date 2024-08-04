@@ -1,0 +1,40 @@
+
+
+.button {
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+        opacity: 0.6;
+    }
+}
+
+
+
+.primary {
+    background-color: rgba(0, 0, 255, 0.7);
+    color: antiquewhite;
+}
+
+.small {
+    width: 50%;
+}
+
+.medium {
+    width: 75%;
+}
+
+.large {
+    width: 100%;
+}
+
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}

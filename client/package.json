@@ -37,10 +37,15 @@
     ]
   },
   "devDependencies": {
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
     "@mui/material": "^5.16.6",
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "@reduxjs/toolkit": "^2.2.7",
+    "axios": "^1.7.3",
+    "classnames": "^2.5.1",
     "react-redux": "^9.1.2",
+    "sass": "^1.77.8",
     "styled-components": "^6.1.12"
   }
 }
