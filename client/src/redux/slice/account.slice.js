@@ -1,8 +1,70 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import axiosJWT from "../../utils/axiosJwtInstance";
 
 
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const fetchAuthMe = createAsyncThunk('account/me', async (_, { rejectWithValue, dispatch }) => {
+    try {
+        await delay(1000);
+        const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/account/me`);
+        dispatch(resetStatusIdle());
+        return res.data;
+    } catch (error) {
+        dispatch(resetStatusIdle());
+        return rejectWithValue(error.response.data);
+    }
+});
+
+const fetchRegister = createAsyncThunk('account/register', async (data, { rejectWithValue, dispatch }) => {
+    try {
+        await delay(1000);
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/account/register`, data);
+        dispatch(resetStatusIdle());
+        return res.data;
+    } catch (error) {
+        dispatch(resetStatusIdle());
+        return rejectWithValue(error.response.data);
+    }
+});
+
+const fetchLogin = createAsyncThunk('account/login', async (data, { rejectWithValue, dispatch }) => {
+    try {
+        await delay(1000);
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/account/login`, data, {
+            withCredentials: true,
+        });
+        dispatch(resetStatusIdle());
+        return res.data;
+    } catch (error) {
+        dispatch(resetStatusIdle());
+        return rejectWithValue(error.response.data);
+    }
+});
+
+
+const fetchForgetPassword = createAsyncThunk('account/forget-password', async (email, { rejectWithValue, dispatch }) => {
+    try {
+        await delay(1000);
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/account/forget-password`, {
+            username: email
+        })
+        dispatch(resetStatusIdle());
+        return res.data;
+    } catch (error) {
+        dispatch(resetStatusIdle());
+        return rejectWithValue(error.response.data);
+    }
+});
+
+const resetStatusIdle = createAsyncThunk('account/resetStatusIdle', async (_, { dispatch }) => {
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+});
+
+
+// Slice
 const accountSlice = createSlice({
     name: 'account',
     initialState: {
@@ -12,7 +74,7 @@ const accountSlice = createSlice({
                 username: '',
                 password: '',
                 role: '',
-                nickname: ``,
+                nickname: '',
                 avatar: '',
                 status: '',
                 num_posts: 0,
@@ -22,15 +84,15 @@ const accountSlice = createSlice({
                 list_friend: '',
             },
             token: '',
-        }
+        },
     },
     reducers: {
-
+        setIdle(state) {
+            state.status = 'idle';
+        },
     },
-
     extraReducers: (builder) => {
         builder
-
             // Xác thực người dùng
             .addCase(fetchAuthMe.pending, (state) => {
                 state.status = 'loading';
@@ -44,7 +106,7 @@ const accountSlice = createSlice({
                 state.status = 'failed';
             })
 
-            //Login
+            // Đăng nhập
             .addCase(fetchLogin.pending, (state) => {
                 state.status = 'loading';
             })
@@ -57,7 +119,7 @@ const accountSlice = createSlice({
                 state.status = 'failed';
             })
 
-            //Đăng ký
+            // Đăng ký
             .addCase(fetchRegister.pending, (state) => {
                 state.status = 'loading';
             })
@@ -68,51 +130,29 @@ const accountSlice = createSlice({
             })
             .addCase(fetchRegister.rejected, (state) => {
                 state.status = 'failed';
-            });
-    }
+            })
+
+            //Quên mật khẩu
+            .addCase(fetchForgetPassword.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(fetchForgetPassword.fulfilled, (state) => {
+                state.status = 'succeeded';
+            })
+            .addCase(fetchForgetPassword.rejected, (state) => {
+                state.status = 'failed';
+            })
+
+            //Reset status
+            .addCase(resetStatusIdle.fulfilled, (state) => {
+                state.status = 'idle';
+            })
+    },
 });
 
 
-export const { getPassword } = accountSlice.actions;
-
+export const { setIdle } = accountSlice.actions;
 export default accountSlice.reducer;
-
-
-const delay = (ms) => new Promise((resolve, reject) => {
-    setTimeout(resolve, ms);
-})
-
-const fetchAuthMe = createAsyncThunk('/account/me', async (token) => {
-    await delay(1000);
-
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/account/me`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return res.data;
-});
-
-const fetchRegister = createAsyncThunk('/account/register', async (data) => {
-    await delay(1000);
-
-    const res = await axios.post(`${process.env.REACT_APP_API_URL}/account/register`, data);
-    return res.data;
-});
-
-const fetchLogin = createAsyncThunk('/account/login', async (data) => {
-    await delay(1000);
-
-    const res = await axios.post(`${process.env.REACT_APP_API_URL}/account/login`, data, {
-        withCredentials: true,
-    });
-    return res.data;
-});
-
-
-const fetchForgetPassword = () => {
-
-}
 
 
 export { fetchAuthMe, fetchRegister, fetchLogin, fetchForgetPassword };

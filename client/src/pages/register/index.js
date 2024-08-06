@@ -29,14 +29,10 @@ function Register() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         const { username, password, password_confirm} = formData;
         if(password !== password_confirm) {
-            setMessage({
-                type: 'error',
-                title: 'Lỗi',
-                message: 'Mật khẩu nhập lại không khớp'
-            })
+            alert('Mật khẩu không khớp');
             return;
         }
         
@@ -67,7 +63,7 @@ function Register() {
             })
         }
 
-        if(status ==='succeeded') {
+        if(status === 'succeeded') {
             setMessage({
                 type:'success',
                 title: 'Đăng ký thành công',
@@ -75,12 +71,8 @@ function Register() {
             })
         }
 
-        let timerId = setTimeout(() => {
+        if(status === 'idle') {
             setMessage(null);
-        }, 3000);
-
-        return () => {
-            clearTimeout(timerId);
         }
 
     }, [dispatch, status, message])

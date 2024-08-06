@@ -9,26 +9,24 @@ function Home() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            dispatch(fetchAuthMe(token));
+        const accessToken = localStorage.getItem('access_token');
+        if(accessToken) {
+            dispatch(fetchAuthMe());
         } else {
             navigate('/login');
         }
-    }, [navigate, dispatch]);
+    }, [dispatch, navigate]);
 
     return (
         <div>
-            {status === 'loading' ? (
-                <h1>Loading...</h1>
-            ) : (
-                data && <div>
-                    <h1>Xin chào {data.account.nickname}</h1>
-                    <button>Logout</button>
-                </div>
-            )}
+            {status === 'loading' && <div>Loading...</div>}
+            {data.account && <h1>Welcome, {data?.account?.nickname}</h1>}
+            {status === 'failed' && <div>Failed to fetch authMe</div>}
         </div>
-    );
+    )
+
+
+
 }
 
 export default Home;

@@ -1,0 +1,25 @@
+.alert {
+    position: fixed;
+    top: 8%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    min-width: 400px;
+    max-width: 440px;
+    text-align: start;
+    animation:  UptoDown 3s ease-in-out;
+    border-radius: 15px !important;
+}
+
+@keyframes UptoDown {
+    0% {
+        top: 0;
+        opacity: 0.3;
+    } 70% {
+        top: 8%;
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.3;
+    }
+}

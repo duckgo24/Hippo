@@ -49,16 +49,12 @@ function Login() {
             navigate('/');
         }
 
-        let timerId = setTimeout(() => {
+        if(status === 'idle') {
             setMessage(null);
-        }, 3000);
-
-
-
-        return () => {
-            clearTimeout(timerId);
         }
-    }, [dispatch, status, message, data, navigate]);
+
+
+    }, [dispatch, status, message, data]);
 
     return (
         <Box
@@ -114,9 +110,11 @@ function Login() {
                     }
                 </div>
 
-                <Link style={{
-                    marginTop: '10px',
-                }} to='/forget-password'>
+                <Link
+                    to='/forget-password'
+                    style={{
+                        marginTop: '10px',
+                    }}  >
                     Quên mật khẩu?
                 </Link>
 
