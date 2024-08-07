@@ -27,3 +27,6 @@ EMAIL_PASSWORD=
 npm start
 ```
 - - -
+
+## Notes
+[How to get password to send email](https://stackoverflow.com/questions/60701936/error-invalid-login-application-specific-password-required)

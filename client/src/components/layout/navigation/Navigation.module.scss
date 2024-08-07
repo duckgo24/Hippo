@@ -1,5 +1,42 @@
-
 .item {
-    padding: 16px 20px;
-    font-size: 18px;
+    padding: 12px 24px !important;
+    border-radius: 15px !important;
+    margin-top: 4px;
+
+    a {
+        text-decoration: none;
+        color: #000;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.active {
+    span {
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    svg:not(:root) {
+        fill: #000 !important;
+    }
+
+}
+
+
+
+.toggle-popper {
+    text-transform: none;
+    font-size: 16px;
+    width: 100%;
+    padding: 12px 28px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: rgba($color: #000000, $alpha: 0.54);
+
+    &:hover {
+        background-color: transparent;  
+    }
+
 }

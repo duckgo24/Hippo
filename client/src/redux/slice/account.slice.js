@@ -8,7 +8,6 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const fetchAuthMe = createAsyncThunk('account/me', async (_, { rejectWithValue, dispatch }) => {
     try {
-        await delay(1000);
         const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/account/me`);
         dispatch(resetStatusIdle());
         return res.data;
@@ -20,7 +19,6 @@ const fetchAuthMe = createAsyncThunk('account/me', async (_, { rejectWithValue, 
 
 const fetchRegister = createAsyncThunk('account/register', async (data, { rejectWithValue, dispatch }) => {
     try {
-        await delay(1000);
         const res = await axios.post(`${process.env.REACT_APP_API_URL}/account/register`, data);
         dispatch(resetStatusIdle());
         return res.data;
@@ -32,7 +30,6 @@ const fetchRegister = createAsyncThunk('account/register', async (data, { reject
 
 const fetchLogin = createAsyncThunk('account/login', async (data, { rejectWithValue, dispatch }) => {
     try {
-        await delay(1000);
         const res = await axios.post(`${process.env.REACT_APP_API_URL}/account/login`, data, {
             withCredentials: true,
         });
@@ -47,7 +44,6 @@ const fetchLogin = createAsyncThunk('account/login', async (data, { rejectWithVa
 
 const fetchForgetPassword = createAsyncThunk('account/forget-password', async (email, { rejectWithValue, dispatch }) => {
     try {
-        await delay(1000);
         const res = await axios.post(`${process.env.REACT_APP_API_URL}/account/forget-password`, {
             username: email
         })

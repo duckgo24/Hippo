@@ -12,7 +12,7 @@ function DefaultLayout({ children }) {
             height: '100vh',
         }}>
             <Navigation />
-            <Box flex={1} >
+            <Box flex={1}>
                 {children}
             </Box>
         </Box>
