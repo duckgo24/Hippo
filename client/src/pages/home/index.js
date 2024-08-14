@@ -1,32 +1,170 @@
-import React, { useEffect } from "react";
+import { Box, Menu, MenuItem, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { fetchAuthMe } from "../../redux/slice/account.slice";
+import { CheckIcon, DropDownIcon, PlusIcon2, TickIcon } from "../../components/SgvIcon";
+import Paragraph from "../../components/paragraph";
+import Alert from "../../components/Alert";
+import { fetchGetAllPosts } from "../../redux/slice/post.slice";
+import CreatePost from "../../components/ui/CreatePost";
+import Post from "../../components/Post";
+import avatarWhite from "../../images/white-avatar.png";
+import { useNavigate } from "react-router-dom";
+import { fetchGetAllPostsLiked } from "../../redux/slice/like.slice";
 
-function Home() {
-    const { status, data } = useSelector((state) => state.account);
+function HomeIcon() {
+    const { my_account } = useSelector(state => state.account);
+    const { status_post, posts } = useSelector(state => state.post);
+    const { likePosts } = useSelector(state => state.like);
+    const [showCreatePost, setShowCreatePost] = useState(false);
+    const [idxMenuDropDown, setIdxMenuDropDown] = useState(0);
+    const [displayPosts, setDisplayPosts] = useState('all');
+    const [optionPost, setOptionPost] = useState('Dành cho bạn')
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const accessToken = localStorage.getItem('access_token');
-        if(accessToken) {
-            dispatch(fetchAuthMe());
-        } else {
-            navigate('/login');
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+
+    const handleOpenDropDown = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClickDropDownItem = async (text, idx) => {
+        setAnchorEl(null);
+        setIdxMenuDropDown(idx);
+
+        if (text === 'Dành của bạn') {
+            setOptionPost('Dành của bạn');
+            setDisplayPosts('all');
+            return;
         }
-    }, [dispatch, navigate]);
+
+        if (text === 'Đang theo dõi') {
+            setOptionPost('Đang theo dõi');
+            return;
+        }
+
+        if (text === 'Đã thích') {
+            if (likePosts.length === 0) {
+                dispatch(fetchGetAllPostsLiked({ acc_id: my_account.id }));
+            }
+            setOptionPost('Đã thích');
+            setDisplayPosts('liked');
+            return;
+        }
+    };
+
+
+    const handleClickIcon = () => {
+        setShowCreatePost(!showCreatePost);
+    }
+
+    useEffect(() => {
+        dispatch(fetchAuthMe());
+        dispatch(fetchGetAllPosts());
+    }, [dispatch]);
+
 
     return (
-        <div>
-            {status === 'loading' && <div>Loading...</div>}
-            {data.account && <h1>Welcome, {data?.account?.nickname}</h1>}
-            {status === 'failed' && <div>Failed to fetch authMe</div>}
-        </div>
-    )
+        <>
+            <Box
+                display="flex"
+                flexDirection="column"
+                width="60%"
+                margin="auto"
+                padding="40px 0"
+            >
+                <Box
+                    position='relative'
+                    marginLeft='10px'
+                >
+                    <Typography variant='h6'>{my_account.nickname} {my_account.tick ? <TickIcon /> : ''}</Typography>
+                    <img src={my_account.avatar ? my_account.avatar : avatarWhite} alt='avatar' height={70} />
+                    <button
+                        onClick={handleClickIcon}
+                        style={{
+                            height: '35px',
+                            width: '35px',
+                            backgroundColor: '#0095f6',
+                            borderRadius: "50%",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            position: "absolute",
+                            top: "80px",
+                            left: "40px",
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <PlusIcon2 size={20} style={{ color: '#fff' }} />
+                    </button>
+                </Box>
+                <Box
+                    display="flex"
+                    gap="10px"
+                    alignItems="center"
+                    padding="20px 0"
+                >
+                    <Paragraph text={optionPost} bold='500' style={{ marginBottom: '5px' }} />
+                    <button
+                        id="basic-button"
+                        aria-controls={open ? 'basic-menu' : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={open ? 'true' : undefined}
+                        onClick={handleOpenDropDown}
+                    >
+                        <DropDownIcon size={20} />
+                    </button>
+                    <Menu
+                        id="basic-menu"
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={() => setAnchorEl(null)}
+                        MenuListProps={{ 'aria-labelledby': 'basic-button' }}
+                        sx={{ boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px' }}
+                    >
+                        <MenuItem
+                            sx={{ width: '250px', display: 'flex', justifyContent: 'space-between' }}
+                            onClick={() => handleClickDropDownItem('Dành của bạn', 0)}
+                        >
+                            <span>Dành của bạn</span>
+                            {idxMenuDropDown === 0 && <CheckIcon />}
+                        </MenuItem>
+                        <MenuItem
+                            sx={{ width: '250px', display: 'flex', justifyContent: 'space-between' }}
+                            onClick={() => handleClickDropDownItem('Đang theo dõi', 1)}
+                        >
+                            <span>Đang theo dõi</span>
+                            {idxMenuDropDown === 1 && <CheckIcon />}
+                        </MenuItem>
+                        <MenuItem
+                            sx={{ width: '250px', display: 'flex', justifyContent: 'space-between' }}
+                            onClick={() => handleClickDropDownItem('Đã thích', 2)}
+                        >
+                            <span>Đã thích</span>
+                            {idxMenuDropDown === 2 && <CheckIcon />}
+                        </MenuItem>
+                    </Menu>
+                </Box>
 
-
-
+                <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    flexDirection="column"
+                >
+                    {(displayPosts === 'all' ? posts : likePosts)?.map(post => (
+                        <Post key={post.id} post={post} />
+                    ))}
+                </Box>
+                <CreatePost show={showCreatePost} />
+                {status_post === 'succeeded' && (
+                    <Alert type='success' title='Thông báo' message='Đăng bài thành công' />
+                )}
+            </Box>
+        </>
+    );
 }
 
-export default Home;
+export default HomeIcon;

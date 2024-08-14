@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
 function fetchRefreshToken(token) {
     return new Promise(async (resolve, reject) => {
         try {
-            const res = await axios.get(`${process.env.REACT_APP_API_URL}/account/refresh`, {
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/auth/refresh`, {
                 headers: {
                     refresh_cookie: token,
                 },
@@ -24,13 +24,14 @@ function createAxiosJwtInstance() {
     const axiosJWT = axios.create();
     axiosJWT.interceptors.request.use(
         async (config) => {
-            const accessToken = localStorage.getItem('access_token');
+            const accessToken = Cookies.get('access_token');
             const decodedToken = jwtDecode(accessToken);
             if (decodedToken.exp < new Date().getTime() / 1000) {
                 const refresh_token = Cookies.get('refresh_token')
+                
                 const res = await fetchRefreshToken(refresh_token);
                 if (res) {
-                    localStorage.setItem('access_token', res.access_token);
+                    Cookies.set('access_token', res.access_token);
                     config.headers.Authorization = `Bearer ${res.access_token}`;
                 }
             } else {

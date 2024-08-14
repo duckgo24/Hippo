@@ -23,7 +23,7 @@ const cx = classNames.bind(styles);
 function Login() {
     const [formData, setFormData] = useState({});
     const [message, setMessage] = useState();
-    const { status, data } = useSelector(state => state.account);
+    const { status_account, my_account } = useSelector(state => state.account);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -36,7 +36,7 @@ function Login() {
     }
 
     useEffect(() => {
-        if (status === 'failed') {
+        if (status_account === 'failed') {
             setMessage({
                 type: 'error',
                 title: 'Lỗi',
@@ -44,17 +44,16 @@ function Login() {
             })
         }
 
-        if (status === 'succeeded') {
-            localStorage.setItem("access_token", data.token);
+        if (status_account === 'succeeded') {
             navigate('/');
         }
 
-        if(status === 'idle') {
+        if (status_account === 'idle') {
             setMessage(null);
         }
 
 
-    }, [dispatch, status, message, data]);
+    }, [dispatch, status_account, message, my_account]);
 
     return (
         <Box
@@ -96,10 +95,19 @@ function Login() {
                     position: 'relative',
                     width: '100%',
                 }}>
-                    <Button primary large onClick={handleLogin} disabled={status === 'loading'}>
+                    <Button
+                        style={{
+                            padding: '10px 20px',
+                            fontSize: '16px',
+                        }}
+                        primary
+                        large
+                        onClick={handleLogin}
+                        disabled={status_account === 'loading'}
+                    >
                         Đăng nhập
                     </Button>
-                    {status === 'loading'
+                    {status_account === 'loading'
                         &&
                         <Loader style={{
                             position: 'absolute',
@@ -122,6 +130,7 @@ function Login() {
 
 
                 <Button to='/register' small style={{
+                    width: '140px',
                     backgroundColor: 'rgba(0, 128, 0, 0.7)',
                     color: '#fff',
                 }}>

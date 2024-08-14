@@ -1,11 +1,8 @@
 
 
 .button {
-    padding: 10px 20px;
-    font-size: 18px;
-    font-weight: 700;
+    padding: 6px 20px;
     border-radius: 5px;
-    margin-top: 10px;
     cursor: pointer;
     text-decoration: none;
 
@@ -22,7 +19,8 @@
 }
 
 .small {
-    width: 50%;
+    width: 100px;
+    height: 30px;
 }
 
 .medium {

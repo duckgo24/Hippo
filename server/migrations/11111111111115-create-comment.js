@@ -2,20 +2,44 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Rooms', {
+    await queryInterface.createTable('Comments', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      message: {
+      content: {
         type: Sequelize.STRING
+      },
+      tag: {
+        type: Sequelize.STRING
+      },
+      num_likes: {
+        type: Sequelize.INTEGER
+      },
+      post_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'posts',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      video_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'videos',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       acc_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Accounts',
+          model: 'accounts',
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -32,6 +56,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Rooms');
+    await queryInterface.dropTable('Comments');
   }
 };

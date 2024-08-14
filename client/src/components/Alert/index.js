@@ -7,7 +7,6 @@ const cx = classNames.bind(styles)
 
 function Alert({ type, title, message }) {
     return (
-
         <MyAlert className={cx('alert')} severity={type}>
             <AlertTitle>{title}</AlertTitle>
             {message}

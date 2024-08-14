@@ -22,13 +22,21 @@ const verifyToken = async (req, res, next) => {
 };
 
 const authenMeByToken = async (req, res, next) => {
+    let acc_id;
+
+    if (req.body && req.body.acc_id) {
+        acc_id = req.body.acc_id;
+    } else if (req.query && req.query.acc_id) {
+        acc_id = req.query.acc_id;
+    }
+    console.log(acc_id);
+    
+
+
     try {
-        console.log(req.params);
-        
-        verifyToken (req, res, () => {
-            console.log(req.user);
-            
-            if (req.user?.id == req.params?.id || req.user.role === 'Admin') {
+        verifyToken(req, res, () => {
+
+            if (req.user?.id == acc_id) {
                 next();
             } else {
                 return res.status(401).json({ error: 'You not permision' });
@@ -41,5 +49,5 @@ const authenMeByToken = async (req, res, next) => {
 
 
 module.exports = {
-    authenMeByToken 
+    authenMeByToken
 }

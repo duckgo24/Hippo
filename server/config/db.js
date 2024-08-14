@@ -1,19 +1,22 @@
-const {Sequelize} = require('sequelize');
+const { Sequelize } = require('sequelize');
 
+const dbName = 'hippo';
 
 const sequelize = new Sequelize({
     dialect: 'mysql',
     host: 'localhost',
     username: 'root',
     password: '',
-    database: 'hippo',
     port: 3306,
     logging: false
 });
 
-
 const connectDB = async () => {
     try {
+        await sequelize.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
+        console.log(`Database "${dbName}" created or already exists.`);
+        await sequelize.query(`USE \`${dbName}\`;`);
+
         await sequelize.authenticate();
         console.log('Connection has been established successfully.');
     } catch (error) {

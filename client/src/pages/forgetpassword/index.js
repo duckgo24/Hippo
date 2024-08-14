@@ -80,8 +80,10 @@ function ForgetPassword() {
                     primary
                     large
                     style={{
+                        marginTop: '10px',
                         fontWeight: '400',
-                        fontSize: '14px'
+                        fontSize: '14px',
+                        padding: '10px 20px',
                     }}
                     disabled={status === 'loading'}
                     onClick={handleForgetPassword}

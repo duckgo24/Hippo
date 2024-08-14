@@ -22,7 +22,7 @@ function Register() {
 
     const [formData, setFormData] = useState({});
     const [message, setMessage] = useState();
-    const { status } = useSelector(state => state.account);
+    const { status_account } = useSelector(state => state.account);
     const dispatch = useDispatch();
 
     const handleOnChange = (e) => {
@@ -30,32 +30,29 @@ function Register() {
     };
 
     const handleRegister = async () => {
-        const { username, password, password_confirm} = formData;
-        if(password !== password_confirm) {
+        const { username, password, password_confirm } = formData;
+        if (password !== password_confirm) {
             alert('Mật khẩu không khớp');
             return;
         }
-        
+
         dispatch(fetchRegister({
             username,
             password,
             role: 'user',
             nickname: `user_${Math.floor(Math.random() * 10000).toString()}`,
+            full_name: 'Người dùng Hippo',
             avatar: avatarWhite,
-            status: 'offline',
-            num_posts: 0,
-            num_followers: 0,
-            num_following: 0,
             bio: '',
-            listriend: '[]',
-        }));       
+            tick: false,
+        }));
 
         setFormData({});
     }
 
     useEffect(() => {
 
-        if(status === 'failed') {
+        if (status_account === 'failed') {
             setMessage({
                 type: 'error',
                 title: 'Đăng ký thất bại',
@@ -63,19 +60,19 @@ function Register() {
             })
         }
 
-        if(status === 'succeeded') {
+        if (status_account === 'succeeded') {
             setMessage({
-                type:'success',
+                type: 'success',
                 title: 'Đăng ký thành công',
                 message: 'Bạn đã đăng ký thành công, vui lòng đăng nhập'
             })
         }
 
-        if(status === 'idle') {
+        if (status_account === 'idle') {
             setMessage(null);
         }
 
-    }, [dispatch, status, message])
+    }, [dispatch, status_account, message])
 
 
     return (
@@ -119,10 +116,19 @@ function Register() {
                     position: 'relative',
                     width: '100%',
                 }}>
-                    <Button primary large onClick={handleRegister} disabled={status === 'loading'}>
+                    <Button
+                        style={{
+                            padding: '10px 20px',
+                            fontSize: '16px',
+                        }}
+                        primary
+                        large
+                        onClick={handleRegister}
+                        disabled={status_account === 'loading'}
+                    >
                         Đăng ký
                     </Button>
-                    {status === 'loading'
+                    {status_account === 'loading'
                         &&
                         <Loader style={{
                             position: 'absolute',

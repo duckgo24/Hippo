@@ -12,6 +12,8 @@
     }
 }
 
+
+
 .active {
     span {
         font-weight: bold;
@@ -19,9 +21,18 @@
     }
 
     svg:not(:root) {
-        fill: #000 !important;
+        color: #000;
     }
 
+    .navbar {
+        width: 40px !important;
+    }
+
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
 }
 
 
