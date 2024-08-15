@@ -11,7 +11,7 @@ import logo from '../../images/logo.png';
 
 import styles from './Login.module.scss';
 
-import Paragraph from '../../components/paragraph';
+import Paragraph from '../../components/Paragraph';
 import Button from '../../components/Button';
 import Loader from '../../components/Loader';
 import { fetchLogin } from '../../redux/slice/account.slice';
@@ -69,8 +69,12 @@ function Login() {
                 width='50%'
             >
                 <img src={logo} alt="Logo" />
-                <Paragraph text="Chào mừng đến với Hippo" size="24px" bold='500' color='black' />
-                <Paragraph text="Vui lòng đăng nhập để sử dụng" size="16px" color='gray' />
+                <Paragraph size="24px" bold='500' color='black' >
+                    Chào mừng đến với Hippo
+                </Paragraph>
+                <Paragraph size="16px" color='gray' >
+                    Vui lòng đăng nhập để sử dụng
+                </Paragraph>
             </Box>
             <Box
                 display='flex'

@@ -1,11 +1,14 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Popper, Typography } from "@mui/material";
 import CardUser from "../CardUser";
-import { HealIcon, MessageIcon } from "../SgvIcon";
+import { CloseIcon, HealIcon, MessageIcon } from "../SgvIcon";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUpdatePost } from "../../redux/slice/post.slice";
 import { fetchDislikesPost, fetchLikePost } from "../../redux/slice/like.slice";
 import HandleTime from "../../utils/handleTime";
+import Commemt from "../Comment";
+import Paragraph from "../Paragraph";
+import CommentList from "../CommentList";
 
 const styles = {
     buttonStyle: {
@@ -19,11 +22,20 @@ const styles = {
 
 function Post({ post }) {
     const { my_account } = useSelector(state => state.account);
-    const dispatch = useDispatch();
-
     const [activeHealIcon, setActiveHealIcon] = useState(
         post?.likes?.some(like => like.acc_id === my_account.id)
     );
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [openComment, setOpenComment] = useState(false);
+
+    const dispatch = useDispatch();
+
+
+    const handleToggleComments = (event) => {
+        setAnchorEl(anchorEl ? null : event.currentTarget);
+        setOpenComment(!openComment);
+    };
+
 
     const handleClickLike = () => {
         setActiveHealIcon(!activeHealIcon);
@@ -56,13 +68,20 @@ function Post({ post }) {
         }
     };
 
-    const handleClickComment = () => {
-        // Handle comment click logic here
-    };
-
     useEffect(() => {
-        console.log(post.likes);
-    }, [post.likes]);
+
+        const handleScroll = () => {
+            setAnchorEl(null);
+            setOpenComment(false);
+        };
+        
+        window.addEventListener('scroll', handleScroll)
+
+        return () => {
+            window.removeEventListener('scroll', () => handleScroll);
+        }
+    }, [])
+
 
     return (
         <Box
@@ -117,10 +136,52 @@ function Post({ post }) {
                     />
                     {post.num_likes}
                 </button>
-                <button style={styles.buttonStyle} onClick={handleClickComment}>
+                <button aria-describedby="open-comment" style={styles.buttonStyle} onClick={handleToggleComments}>
                     <MessageIcon size={23} />
                     {post.num_comments}
                 </button>
+                <Popper
+                    id="open-comment"
+                    open={openComment}
+                    anchorEl={anchorEl}
+                    placement="right-start"
+                >
+
+                    <Box sx={{
+                        border: 1,
+                        p: 1,
+                        bgcolor: 'background.paper',
+                        borderRadius: 4,
+                        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+                        width: 400,
+                        maxWidth: '90%',
+                        marginLeft: 'auto',
+                    }}>
+                        <Box
+                            position="relative"
+                            height={40}
+                            display="flex"
+                            alignItems="center"
+                            gap="10px"
+                            padding=" 0 10px"
+
+                        >
+                            <button onClick={handleToggleComments}> 
+                                <CloseIcon size={16} /> 
+                                </button>
+                            <Paragraph color="#000" bold="600" style={{
+                                fontSize: '18px',
+                                lineHeight: '20px',
+                                textAlign: 'center',
+                                flex: 1
+                            }} >
+                                Bình luận
+                            </Paragraph>
+                        </Box>
+                        {openComment && <CommentList />}
+                    </Box>
+
+                </Popper>
             </Box>
         </Box>
     );

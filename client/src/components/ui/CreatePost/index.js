@@ -7,7 +7,7 @@ import EmojiPicker from 'emoji-picker-react';
 
 import { useDispatch, useSelector } from "react-redux";
 import GetLinkImage from "../../../utils/GetLinkImage";
-import Paragraph from "../../paragraph";
+import Paragraph from "../../Paragraph";
 import CardUser from "../../CardUser";
 import { EmojiIcon, MediaIcon } from "../../SgvIcon";
 import { fetchCreatePost } from "../../../redux/slice/post.slice";
@@ -114,14 +114,18 @@ function CreatePost({ show }) {
                         display="flex"
                         justifyContent='space-between'
                     >
-                        <Paragraph text="Tạo bài viết mới" bold="500" size="16px" style={{
+                        <Paragraph bold="500" size="16px" style={{
                             textDecoration: 'underline'
-                        }} />
+                        }} >
+                            Tạo bài viết mới
+                        </Paragraph>
                         <Box
                             display='flex'
                             gap='10px'>
                             <button onClick={handleOnSubmit}>
-                                <Paragraph className={cx('btn-share')} text="Chia sẻ" bold="500" size="14px" />
+                                <Paragraph className={cx('btn-share')} bold="500" size="14px" >
+                                    Chia sẻ
+                                </Paragraph>
                             </button>
                             <button
                                 style={{

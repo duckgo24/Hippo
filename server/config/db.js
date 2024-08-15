@@ -5,6 +5,7 @@ const dbName = 'hippo';
 const sequelize = new Sequelize({
     dialect: 'mysql',
     host: 'localhost',
+    database: dbName,
     username: 'root',
     password: '',
     port: 3306,

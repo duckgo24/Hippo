@@ -1,6 +1,6 @@
 import classNames from 'classnames'
 
-function Paragraph({ text, size, bold, color = 'rgba(0,0,0,0.7)', style, className }) {
+function Paragraph({ children, size, bold, color = 'rgba(0,0,0,0.7)', style, className }) {
 
     const classes = classNames('paragraph', className)
 
@@ -9,10 +9,11 @@ function Paragraph({ text, size, bold, color = 'rgba(0,0,0,0.7)', style, classNa
         fontWeight: bold,
         color: color,
         padding: '4px 0',
+        width: 'auto',
        ...style,
     }
     return (
-        <p className={classes}  style={styles}>{text}</p> 
+        <p className={classes}  style={styles}>{children}</p> 
     );
 }
 

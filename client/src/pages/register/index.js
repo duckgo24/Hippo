@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Box from '@mui/material/Box';
 import logo from '../../images/logo.png';
 import styles from './Register.module.scss';
-import Paragraph from '../../components/paragraph';
+import Paragraph from '../../components/Paragraph';
 import Button from '../../components/Button';
 import { fetchRegister } from '../../redux/slice/account.slice';
 import Loader from '../../components/Loader';
@@ -89,8 +89,12 @@ function Register() {
                 width='50%'
             >
                 <img src={logo} alt="Logo" />
-                <Paragraph text="Chào mừng đến với Hippo" size="24px" bold='500' color='black' />
-                <Paragraph text="Tạo tài khoản để sử dụng ứng dụng" size="16px" color='gray' />
+                <Paragraph size="24px" bold='500' color='black' >
+                    Chào mừng đến với Hippo
+                </Paragraph>
+                <Paragraph size="16px" color='gray' >
+                    Tạo tài khoản để sử dụng ứng dụng
+                </Paragraph>
             </Box>
             <Box
                 display='flex'
@@ -148,8 +152,11 @@ function Register() {
                     gap='10px'
                     marginTop='14px'
                 >
-                    <Paragraph text="Bạn đã có tài khoản ?" />
-                    <Link to='/login'>Đăng nhập ngay</Link>
+                    <Paragraph>
+                        Bạn đã có tài khoản
+                        <Link to='/login'>Đăng nhập ngay</Link>
+                    </Paragraph>
+
                 </Box>
             </Box>
             {message && <Alert type={message.type} title={message.title} message={message.message} />}

@@ -9,7 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { Link } from 'react-router-dom';
 import { Fade, Popper } from '@mui/material';
-import Paragraph from '../../paragraph';
+import Paragraph from '../../Paragraph';
 
 import styles from './Navigation.module.scss';
 import {
@@ -22,7 +22,6 @@ import {
     LogOutIcon
 } from '../../SgvIcon';
 
-import logo from '../../../images/logo.png';
 
 const cx = classNames.bind(styles);
 
@@ -137,7 +136,7 @@ function Navigation() {
             <MenuList>
                 <MenuItem className={cx('item')}>
                     <Paragraph
-                        text='Hippo'
+
                         style={{
                             fontFamily: "Edu AU VIC WA NT Hand",
                             fontStyle: "italic",
@@ -145,7 +144,9 @@ function Navigation() {
                         }}
                         size={40}
                         bold={800}
-                    />
+                    >
+                        Hippo
+                    </Paragraph>
                 </MenuItem>
                 {ListNavigation.map((nav, index) => (
                     <MenuItem

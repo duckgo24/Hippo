@@ -18,7 +18,7 @@ function Reels() {
         <Box
             display="grid"
             gridTemplateColumns="repeat(3, 1fr)"
-            width="70%"
+            width="50%"
             margin="auto"
             padding="40px 0"
             gap="10px"

@@ -83,13 +83,12 @@ const postSlice = createSlice({
             })
             .addCase(fetchUpdatePost.fulfilled, (state, action) => {
                 const updatedPost = action.payload;
-                const index = state.posts.findIndex(post => post.id === updatedPost.id);
-                
-                if (index !== -1) {
-                    state.posts[index] = updatedPost;
-                }
+                state.posts = state.posts.map(post =>
+                    post.id === updatedPost.id ? { ...post, ...updatedPost } : post
+                );
+
             })
-            
+
             .addCase(fetchUpdatePost.rejected, state => {
                 state.status_post = 'failed';
             })

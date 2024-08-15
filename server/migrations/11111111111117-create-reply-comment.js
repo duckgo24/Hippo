@@ -1,36 +1,19 @@
 'use strict';
+'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Comments', {
+    await queryInterface.createTable('Reply_Comment', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      content: {
-        type: Sequelize.STRING
-      },
-      tag: {
-        type: Sequelize.STRING
-      },
-      num_replies: {
-        type: Sequelize.INTEGER
-      },
-      post_id: {
+      comment_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'posts',
-          key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
-      },
-      video_id: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'videos',
+          model: 'comments',
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -56,6 +39,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Comments');
+    await queryInterface.dropTable('Reply_Comment');
   }
 };

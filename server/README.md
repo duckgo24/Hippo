@@ -18,15 +18,16 @@ EMAIL_SEND=
 EMAIL_PASSWORD=
 ```
 3. Set Up the Database
-   * Start Apache and MySQL in XAMPP.
-   * Open phpMyAdmin.
-   * Create a new database.
-   * Update the database name in config/config.json (development) and db.js.
-4. Run Database Migrations
+   * Create the database name in config/config.json (development) and db.js.
+4. Run auto create database
+```bash
+npx sequelize-cli db:create  
+```
+5. Run Database Migrations
 ```bash
 npx sequelize-cli db:migrate
 ```
-5. Start the Server
+6. Start the Server
 ```bash
 npm start
 ```

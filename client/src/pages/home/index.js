@@ -1,9 +1,9 @@
-import { Box, Menu, MenuItem, Typography } from "@mui/material";
+import { Box, Menu, MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAuthMe } from "../../redux/slice/account.slice";
-import { CheckIcon, DropDownIcon, PlusIcon2, TickIcon } from "../../components/SgvIcon";
-import Paragraph from "../../components/paragraph";
+import { CheckIcon, DropDownIcon, PlusIcon2} from "../../components/SgvIcon";
+import Paragraph from "../../components/Paragraph";
 import Alert from "../../components/Alert";
 import { fetchGetAllPosts } from "../../redux/slice/post.slice";
 import CreatePost from "../../components/ui/CreatePost";
@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchGetAllPostsLiked } from "../../redux/slice/like.slice";
 
 function HomeIcon() {
-    const { my_account } = useSelector(state => state.account);
+    const { status_account, my_account } = useSelector(state => state.account);
     const { status_post, posts } = useSelector(state => state.post);
     const { likePosts } = useSelector(state => state.like);
     const [showCreatePost, setShowCreatePost] = useState(false);
@@ -48,7 +48,7 @@ function HomeIcon() {
         if (text === 'Đã thích') {
             if (likePosts.length === 0) {
                 dispatch(fetchGetAllPostsLiked({ acc_id: my_account.id }));
-            }
+            }        
             setOptionPost('Đã thích');
             setDisplayPosts('liked');
             return;
@@ -63,6 +63,11 @@ function HomeIcon() {
     useEffect(() => {
         dispatch(fetchAuthMe());
         dispatch(fetchGetAllPosts());
+
+        if(status_account && status_account === 'failed') {
+            navigate('/login');
+            return;
+        }
     }, [dispatch]);
 
 
@@ -79,7 +84,6 @@ function HomeIcon() {
                     position='relative'
                     marginLeft='10px'
                 >
-                    <Typography variant='h6'>{my_account.nickname} {my_account.tick ? <TickIcon /> : ''}</Typography>
                     <img src={my_account.avatar ? my_account.avatar : avatarWhite} alt='avatar' height={70} />
                     <button
                         onClick={handleClickIcon}
@@ -92,7 +96,7 @@ function HomeIcon() {
                             justifyContent: "center",
                             alignItems: "center",
                             position: "absolute",
-                            top: "80px",
+                            top: "45px",
                             left: "40px",
                             cursor: 'pointer',
                         }}
@@ -106,7 +110,9 @@ function HomeIcon() {
                     alignItems="center"
                     padding="20px 0"
                 >
-                    <Paragraph text={optionPost} bold='500' style={{ marginBottom: '5px' }} />
+                    <Paragraph bold='500' style={{ marginBottom: '5px' }} >
+                        {optionPost}
+                    </Paragraph>
                     <button
                         id="basic-button"
                         aria-controls={open ? 'basic-menu' : undefined}

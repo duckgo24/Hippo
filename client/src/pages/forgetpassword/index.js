@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Box from '@mui/material/Box';
 import logo from '../../images/logo.png';
 import styles from './ForgetPassword.module.scss';
-import Paragraph from '../../components/paragraph';
+import Paragraph from '../../components/Paragraph';
 import Button from '../../components/Button';
 import Alert from '../../components/Alert';
 import { fetchForgetPassword } from '../../redux/slice/account.slice';
@@ -69,27 +69,31 @@ function ForgetPassword() {
 
             >
                 <img src={logo} alt="Logo" className={cx('logo')} />
-                <Paragraph text="Bạn gặp sự có khi đăng nhập ?" size="20px" bold='500' color='black' />
-                <Paragraph text="Nhập email, số điện thoại hoặc tên người dùng của bạn và chúng tôi sẽ gửi cho bạn một liên kết để truy cập lại vào tài khoản." size="14px" color='gray' />
+                <Paragraph size="20px" bold='500' color='black' >
+                    Bạn gặp sự có khi đăng nhập ?
+                </Paragraph>
+                <Paragraph size="14px" color='gray' >
+                    Nhập email, số điện thoại hoặc tên người dùng của bạn và chúng tôi sẽ gửi cho bạn một liên kết để truy cập lại vào tài khoản.
+                </Paragraph>
                 <input type="text" placeholder="Nhập số điện thoại hoặc tên người dùng" className={cx('input')} value={username} onChange={handleOnChange} />
                 <div style={{
                     position: 'relative',
                     width: '100%',
                 }}>
                     <Button
-                    primary
-                    large
-                    style={{
-                        marginTop: '10px',
-                        fontWeight: '400',
-                        fontSize: '14px',
-                        padding: '10px 20px',
-                    }}
-                    disabled={status === 'loading'}
-                    onClick={handleForgetPassword}
-                >
-                    Gửi mật khẩu
-                </Button>
+                        primary
+                        large
+                        style={{
+                            marginTop: '10px',
+                            fontWeight: '400',
+                            fontSize: '14px',
+                            padding: '10px 20px',
+                        }}
+                        disabled={status === 'loading'}
+                        onClick={handleForgetPassword}
+                    >
+                        Gửi mật khẩu
+                    </Button>
                     {status === 'loading'
                         &&
                         <Loader style={{

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { fetchGetAllAccounts } from "../../redux/slice/account.slice";
 import CardUser from "../../components/CardUser";
-import Paragraph from "../../components/paragraph";
+import Paragraph from "../../components/Paragraph";
 import { Box } from "@mui/material";
 import Button from "../../components/Button";
 
@@ -35,10 +35,12 @@ function Search() {
             {data.account
                 &&
                 <>
-                    <Paragraph text='Gợi ý của bạn' bold='700' style={{
+                    <Paragraph bold='700' style={{
                         padding: '20px 0',
-                    }} />
-                    
+                    }} >
+                        Gợi ý của bạn
+                    </Paragraph>
+
                     <Box
                         display='flex'
                         flexDirection='column'
