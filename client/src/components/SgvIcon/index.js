@@ -310,13 +310,13 @@ const CloseIcon = ({ size = 22, ...props }) => {
             viewBox="0 0 24 24"
             width={size}>
             <title>Đóng</title>
-            <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" stroke-width="2" x1="21" x2="3" y1="3" y2="21"></line>
-            <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" stroke-width="2" x1="21" x2="3" y1="21" y2="3"></line>
+            <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="21" x2="3" y1="3" y2="21"></line>
+            <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="21" x2="3" y1="21" y2="3"></line>
         </svg>
     )
 }
 
-const SubmitIcon = ({ size = 22, ...props }) => {
+const SubmitIcon = ({ size = 22, color = '#45aaf2',...props }) => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -328,7 +328,7 @@ const SubmitIcon = ({ size = 22, ...props }) => {
             {...props}
         >
             <g>
-                <polygon fill="#45aaf2" points="11 16 3 6 29 16 3 26"></polygon>
+                <polygon fill={color} points="11 16 3 6 29 16 3 26"></polygon>
                 <path fill="#3867d6" d="M3.0005,27c-0.3125,0-0.6147-0.1465-0.8076-0.4092c-0.2666-0.3652-0.2559-0.8633,0.0264-1.2158l7.5-9.375l-7.5-9.375C1.937,6.2725,1.9263,5.7744,2.1929,5.4092C2.459,5.0459,2.937,4.9043,3.3589,5.0664l26,10C29.7451,15.2148,30,15.5859,30,16s-0.2549,0.7852-0.6411,0.9336l-26,10C3.2417,26.9785,3.1201,27,3.0005,27z M6.0879,8.2588l5.6929,7.1162c0.2925,0.3652,0.2925,0.8848,0,1.25l-5.6929,7.1162L26.2144,16L6.0879,8.2588z"></path>
             </g>
         </svg>

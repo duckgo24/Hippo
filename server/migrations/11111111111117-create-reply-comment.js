@@ -1,20 +1,25 @@
 'use strict';
-'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Reply_Comment', {
+    await queryInterface.createTable('reply_comment', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      content: {
+        type: Sequelize.TEXT
+      },
+      reply_user: {
+        type: Sequelize.STRING,
+      },
       comment_id: {
         type: Sequelize.INTEGER,
         references: {
           model: 'comments',
-          key: 'id'
+          key: 'comment_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
@@ -39,6 +44,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Reply_Comment');
+    await queryInterface.dropTable('reply_comment');
   }
-};
+}; 

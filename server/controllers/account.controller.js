@@ -97,7 +97,7 @@ class AccountController {
                     path: '/'
                 });
                 res.cookie('access_token', access_token, {
-                     expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 5), 
+                     expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 14), 
                      path: '/',                    
                 });
 
@@ -158,8 +158,6 @@ class AccountController {
 
     async update(req, res, next) {
         try {
-
-
             const account = await db.Account.update({
                 ...req.body
             }, {

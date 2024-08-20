@@ -17,8 +17,7 @@ JWT_SECRECT_REFRESH_KEY=
 EMAIL_SEND=
 EMAIL_PASSWORD=
 ```
-3. Set Up the Database
-   * Create the database name in config/config.json (development) and db.js.
+3. Create the database name in config/config.json (development) and db.js
 4. Run auto create database
 ```bash
 npx sequelize-cli db:create  

@@ -12,7 +12,7 @@ function CardUser({ name, nickname, tick, avatar, size, ...props }) {
             justifyContent='space-around'
             alignItems='center'
             height='50px'
-            maxWidth='100px'
+            maxWidth='130px'
             {...props}
         >
 

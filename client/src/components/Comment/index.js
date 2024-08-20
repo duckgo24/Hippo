@@ -1,155 +1,229 @@
-import { Box, TextareaAutosize } from "@mui/material";
-import CardUser from "../CardUser";
+import { Avatar, Box } from "@mui/material";
 import Paragraph from "../Paragraph";
 import HandleTime from "../../utils/handleTime";
-import EmojiPicker, { Emoji } from "emoji-picker-react";
-import { EmojiIcon, HealIcon, SubmitIcon } from "../SgvIcon";
-import { useState } from "react";
+import { HealIcon, TickIcon } from "../SgvIcon";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Loader from "../Loader";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchDeleteComment, fetchUpdateComment } from "../../redux/slice/comment.slice";
+import { clearReplyComment, fetchDeleteReplyComment, fetchGetAllReplyComment } from "../../redux/slice/reply-comment.slide";
 
 
-const fakeComment = {
-    id: "123",
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    createdAt: "2023-01-01T10:00:00",
-    account: {
-        id: "123",
-        nickname: "user3432",
-        name: "John Doe",
-        avatar: "https://example.com/avatar.jpg",
-        tick: true
-    },
-    tag: "admin",
-    reply: 100,
-    anwers: [
-        {
-            id: "123",
-            content: "This is a answer",
-            createdAt: "2023-01-01T10:00:00",
-            account: {
-                id: "123",
-                nickname: "user3432",
-                avatar: "https://example.com/avatar.jpg"
-            }
-        },
-        {
-            id: "124",
-            content: "This is a answer 2 dgdfgdfgdfgdfgdfgdfgdfgdfgdfgdfgdf",
-            createdAt: "2023-01-01T10:00:00",
-            account: {
-                id: "123",
-                nickname: "user3432",
-                avatar: "https://example.com/avatar.jpg"
-            }
-        },
-        {
-            id: "125",
-            content: "This is a answer 3",
-            createdAt: "2023-01-01T10:00:00",
-            account: {
-                id: "123",
-                nickname: "user3432",
-                avatar: "https://example.com/avatar.jpg"
-            }
-        }
-    ]
-};
 
-function Commemt({ comment }) {
+function Commemt({ comment, handleReplyComment }) {
+    const { my_account } = useSelector(state => state.account)
+    const { status_reply, replyComments } = useSelector(state => state.replyComment)
     const [showReply, setShowReply] = useState(false);
     const [likeComment, setLikeComment] = useState(false);
+    const dispatch = useDispatch();
+
+
     const handleLikeComment = () => {
         setLikeComment(!likeComment);
     }
+
+    const handleDeleteComment = () => {
+        dispatch(fetchDeleteComment({
+            comment_id: comment.comment_id,
+            acc_id: my_account.id,
+        }));
+    }
+
     const handleShowReply = () => {
         setShowReply(!showReply);
+        if (!showReply) {
+            if (comment.comment_id !== replyComments[0]?.comment_id)
+                dispatch(fetchGetAllReplyComment({
+                    comment_id: comment.comment_id,
+                }));
+        }
+
+    };
+
+
+    const handleDeleteReplyComment = (replyComment) => {
+        dispatch(fetchDeleteReplyComment({
+            acc_id: replyComment.accounts.id,
+            id : replyComment.id
+        }))
+        dispatch(fetchUpdateComment({
+            comment_id: comment.comment_id,
+            num_replies: comment.num_replies - 1,
+        }))
     }
+
 
     return (
         <div>
             <Box
-                display="grid"
-                gridTemplateColumns="50% auto"
+                display='flex'
+                flexDirection='row'
+                gap='10px'
+                justifyContent='space-around'
+                maxWidth='90%'
+                margin='auto'
             >
-                <CardUser nickname={fakeComment.account.nickname} name={fakeComment.account.name} avatar={fakeComment.account.avatar} tick={fakeComment.account.tick} />
-                <Paragraph color="rgba(0, 0, 0, 0.7)" size="14px" >
-                    {HandleTime(fakeComment.createdAt)}
-                </Paragraph>
-            </Box>
-            <Box
-                display="flex"
-                padding="0 10px"
-            >
-                <Box>
-                    <Box display="flex">
-                        <Paragraph color="#000" size="14px" style={{
-                            padding: " 0 0 0 20px",
-                            flex: 1
-                        }} >
-                            <Link to={`/profile/${fakeComment.tag}`}>@{fakeComment.tag} </Link>
-                            {fakeComment.content}
-                        </Paragraph>
-                        <button onClick={handleLikeComment}>
-                            <HealIcon size={18} active={likeComment} />
-                        </button>
-                    </Box>
-                    {fakeComment.reply > 0
-                        &&
+                <div>
+                    <Avatar src={comment?.accounts?.avatar} alt={comment?.accounts?.nickname} style={{
+                        height: "32px",
+                        width: "32px",
+                    }} />
+                </div>
+                <div
+                    style={{
+                        flex: 1,
+                    }}
+                >
+                    <Box
+                    >
                         <Box
-                            display="flex"
-                            flexDirection="row"
-                            gap="15px"
+                            display='flex'
+                            flexDirection='row'
+                            gap='10px'
                         >
-                            <button onClick={handleShowReply}>
-                                <Paragraph
-                                    color="rgba(0, 0, 0, 0.7)"
-                                    size="13px"
-                                    bold="600"
-                                    style={{
-                                        padding: " 0 0 0 40px"
-                                    }}
-                                >
-                                    {!showReply ? `━ Xem tất cả ${fakeComment.reply} phản hồi` : `━ Ẩn tất cả ${fakeComment.reply} phản hồi`}
+                            <Paragraph
+                                style={{
+                                    display: 'flex',
+                                    gap: '5px',
+                                    alignItems: 'center'
+                                }}
+                                bold='500'
+                                size='14px'
+                                color='#000'
+                            >
+                                {comment.accounts?.nickname}
+                                {comment.accounts?.tick && <TickIcon />}
+                            </Paragraph>
+                            <Paragraph size='14px' color='#000'>
+                                {HandleTime(comment.createdAt)}
+                            </Paragraph>
+                        </Box>
+                        <Box>
+                            <Box>
+                                <Paragraph size='14px' color='#000'>
+                                    {comment?.tag && <Link to={`/${comment.tag}`}>@{comment?.tag} </Link>}
+                                    {comment?.content}
                                 </Paragraph>
-                            </button>
-                            <Loader size={17} />
-                        </Box>
-                    }
-                    {fakeComment.anwers.length && showReply
-                        &&
-                        <Box
-                            marginLeft="40px"
-                        >
-                            {fakeComment.anwers.map((answer) => {
-                                return (
-                                    <>
-                                        <Box
-                                            display="grid"
-                                            gridTemplateColumns="65% auto"
-                                            key={answer.id}
-                                            marginTop="10px"
-                                        >
-                                            <CardUser nickname={fakeComment.account.nickname} name={fakeComment.account.name} avatar={fakeComment.account.avatar} tick={fakeComment.account.tick} size="28px" />
-                                            <Paragraph text={HandleTime(fakeComment.createdAt)} color="rgba(0, 0, 0, 0.7)" size="14px" />
-                                        </Box>
-                                        <Paragraph color="#000" size="14px" style={{
-                                            padding: " 0 10px 0 20x"
-                                        }} >
-                                            <Link to={`/profile/${answer.account.nickname}`}>@{answer.account.nickname} </Link>
-                                            {answer.content}
+                                <Box
+                                    display='flex'
+                                    flexDirection='row'
+                                    gap="10px"
+                                >
+                                    <Paragraph size='13px' bold="500">
+                                        {comment?.num_likes} lượt thích
+                                    </Paragraph>
+                                    <button onClick={handleReplyComment}>
+                                        <Paragraph size='13px' bold="500">
+                                            Trả lời
                                         </Paragraph>
-                                    </>
+                                    </button>
+                                    {my_account?.id === comment?.accounts?.id
+                                        &&
+                                        <button onClick={handleDeleteComment}>
+                                            <Paragraph size='13px' bold="500">
+                                                Xóa
+                                            </Paragraph>
+                                        </button>
+                                    }
+                                </Box>
+                            </Box>
+                            {
+                                comment?.num_replies > 0
+                                &&
+                                <>
+                                    <button
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px'
 
-                                )
-                            })}
+                                        }}
+                                        onClick={handleShowReply}
+                                    >
+                                        <Paragraph size='13px' bold="500">
+                                            {!showReply ? `── Xem tất cả ` : `── Ẩn tất cả `} {comment?.num_replies} phản hồi
+                                        </Paragraph>
+                                        {status_reply === 'loading' && <Loader size={13} />}
+                                    </button>
+
+                                    {
+                                        showReply
+                                        &&
+                                        <Box
+                                            display='flex'
+                                            flexDirection='column'
+                                            gap='10px'
+                                            marginTop='10px'
+                                        >
+                                            {
+                                                replyComments.map((reply) => {
+
+
+                                                    if (reply.comment_id === comment.comment_id) {
+                                                        return <Box
+                                                            key={reply.id}
+                                                            display='flex'
+                                                            flexDirection='row'
+                                                            gap='10px'
+                                                            justifyContent='space-around'
+                                                        >
+
+                                                            <Avatar src={reply.accounts.avatar} alt={reply?.accounts?.nickname} style={{
+                                                                height: "32px",
+                                                                width: "32px",
+                                                            }} />
+
+                                                            <div style={{ flex: 1 }} >
+                                                                <Box
+                                                                    display='flex'
+                                                                    flexDirection='row'
+                                                                    gap='10px'
+                                                                >
+                                                                    <Paragraph
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            gap: '5px',
+                                                                            alignItems: 'center'
+                                                                        }}
+                                                                        bold='500'
+                                                                        size='14px'
+                                                                        color='#000'
+                                                                    >
+                                                                        {reply?.accounts?.nickname}
+                                                                        {reply?.accounts?.tick && <TickIcon />}
+                                                                    </Paragraph>
+                                                                    <Paragraph size='14px' color='#000'>
+                                                                        {HandleTime(reply?.createdAt)}
+                                                                    </Paragraph>
+                                                                </Box>
+                                                                <Paragraph size='14px' color='#000'>
+                                                                    {reply?.reply_user && <Link to={`/${reply?.reply_user}`}>@{reply?.reply_user} </Link>}
+                                                                    {reply?.content}
+                                                                </Paragraph>
+                                                            </div>
+                                                            <button onClick={() => handleDeleteReplyComment(reply)}>
+                                                                <Paragraph size='14px' color='#000'>
+                                                                    xóa
+                                                                </Paragraph>
+                                                            </button>
+                                                        </Box>
+                                                    }
+                                                })
+                                            }
+
+                                        </Box>
+                                    }
+                                </>
+                            }
                         </Box>
-
-                    }
-                </Box>
-
-
-
+                    </Box>
+                </div>
+                <button onClick={handleLikeComment} style={{
+                    maxHeight: '100px'
+                }}>
+                    <HealIcon size={16} active={likeComment} />
+                </button>
             </Box>
         </div>
     );

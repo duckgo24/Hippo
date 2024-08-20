@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosJWT from "../../utils/axiosJwtInstance";
+import axios from 'axios';
 
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -20,21 +21,26 @@ const fetchCreatePost = createAsyncThunk('posts/create', async (data, { rejectWi
     try {
         await delay(1000);
         const res = await axiosJWT.post(`${process.env.REACT_APP_API_URL}/posts/create`, data);
-        dispatch(resetStatusIdle());
+
         return res.data;
     } catch (error) {
         rejectWithValue(error)
+    } finally {
+        dispatch(resetStatusIdle());
     }
 });
 
 
-const fetchUpdatePost = createAsyncThunk('posts/update', async ({ id, data }, { rejectWithValue, dispatch }) => {
+const fetchUpdatePost = createAsyncThunk('posts/update', async (data , { rejectWithValue, dispatch }) => {
     try {
-        const res = await axiosJWT.put(`${process.env.REACT_APP_API_URL}/posts/update/${id}`, data);
-        dispatch(resetStatusIdle());
+        const { id } = data;
+        const res = await axios.put(`${process.env.REACT_APP_API_URL}/posts/update/${id}`, data);
+
         return res.data;
     } catch (error) {
         rejectWithValue(error)
+    } finally {
+        dispatch(resetStatusIdle());
     }
 });
 

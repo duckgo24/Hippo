@@ -61,7 +61,7 @@ class AuthController {
                         path: '/'
                     });
                     res.cookie('access_token', new_access_token, {
-                        expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 5),
+                        expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 14),
                         path: '/',
                     });
 

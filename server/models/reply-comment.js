@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             ReplyComment.belongsTo(models.Comment, {
                 foreignKey: 'comment_id',
-                as: 'posts',
+                as: 'comments',
             })
             ReplyComment.belongsTo(models.Account, {
                 foreignKey: 'acc_id',
@@ -22,11 +22,20 @@ module.exports = (sequelize, DataTypes) => {
     }
     ReplyComment.init({
         content: DataTypes.STRING,
+        reply_user: DataTypes.STRING,
         acc_id: DataTypes.INTEGER,
-        comment_id: DataTypes.INTEGER,
+        comment_id: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'Comment', 
+                key: 'comment_id' 
+            }
+        },
     }, {
         sequelize,
         modelName: 'ReplyComment',
+        tableName: 'reply_comment'
     });
+
     return ReplyComment;
-};
+}; 

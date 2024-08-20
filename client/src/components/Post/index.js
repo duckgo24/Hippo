@@ -6,9 +6,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUpdatePost } from "../../redux/slice/post.slice";
 import { fetchDislikesPost, fetchLikePost } from "../../redux/slice/like.slice";
 import HandleTime from "../../utils/handleTime";
-import Commemt from "../Comment";
 import Paragraph from "../Paragraph";
 import CommentList from "../CommentList";
+import { fetchGetAllComments } from "../../redux/slice/comment.slice";
 
 const styles = {
     buttonStyle: {
@@ -22,12 +22,12 @@ const styles = {
 
 function Post({ post }) {
     const { my_account } = useSelector(state => state.account);
+    const { comments } = useSelector(state => state.comment);
     const [activeHealIcon, setActiveHealIcon] = useState(
         post?.likes?.some(like => like.acc_id === my_account.id)
     );
     const [anchorEl, setAnchorEl] = useState(null);
     const [openComment, setOpenComment] = useState(false);
-
     const dispatch = useDispatch();
 
 
@@ -49,9 +49,7 @@ function Post({ post }) {
 
             dispatch(fetchUpdatePost({
                 id: post.id,
-                data: {
-                    num_likes: post.num_likes + 1,
-                }
+                num_likes: post.num_likes + 1,
             }));
         } else {
             dispatch(fetchDislikesPost({
@@ -61,20 +59,26 @@ function Post({ post }) {
 
             dispatch(fetchUpdatePost({
                 id: post.id,
-                data: {
-                    num_likes: post.num_likes - 1,
-                }
+                num_likes: post.num_likes - 1,
             }));
         }
     };
+    useEffect(() => {
+        if (openComment) {
+            if (post.id !== comments[0]?.post_id) {
+                dispatch(fetchGetAllComments({
+                    post_id: post.id,
+                }));
+            }
+        }
+    }, [openComment])
 
     useEffect(() => {
-
         const handleScroll = () => {
             setAnchorEl(null);
             setOpenComment(false);
         };
-        
+
         window.addEventListener('scroll', handleScroll)
 
         return () => {
@@ -153,8 +157,9 @@ function Post({ post }) {
                         bgcolor: 'background.paper',
                         borderRadius: 4,
                         boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-                        width: 400,
+                        width: 450,
                         maxWidth: '90%',
+                        minHeight: '100px',
                         marginLeft: 'auto',
                     }}>
                         <Box
@@ -166,9 +171,9 @@ function Post({ post }) {
                             padding=" 0 10px"
 
                         >
-                            <button onClick={handleToggleComments}> 
-                                <CloseIcon size={16} /> 
-                                </button>
+                            <button onClick={handleToggleComments}>
+                                <CloseIcon size={16} />
+                            </button>
                             <Paragraph color="#000" bold="600" style={{
                                 fontSize: '18px',
                                 lineHeight: '20px',
@@ -178,7 +183,8 @@ function Post({ post }) {
                                 Bình luận
                             </Paragraph>
                         </Box>
-                        {openComment && <CommentList />}
+                        {openComment && <CommentList post={post} comment_list={comments} />}
+
                     </Box>
 
                 </Popper>

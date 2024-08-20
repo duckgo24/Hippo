@@ -39,7 +39,7 @@ const fetchDislikesPost = createAsyncThunk('/like/dislike', async (data, { rejec
 
 
 
-const likeReducer = createSlice({
+const likeSlice = createSlice({
     name: 'like',
     initialState: {
         likePosts: [],
@@ -77,6 +77,6 @@ const likeReducer = createSlice({
     },
 });
 
-export default likeReducer.reducer;
+export default likeSlice.reducer;
 
 export { fetchGetAllPostsLiked, fetchLikePost, fetchDislikesPost };

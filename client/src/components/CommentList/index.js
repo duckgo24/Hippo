@@ -1,72 +1,94 @@
 import { Box, TextareaAutosize } from "@mui/material";
 import CardUser from "../CardUser";
-import Paragraph from "../Paragraph";
-import HandleTime from "../../utils/handleTime";
-import EmojiPicker, { Emoji } from "emoji-picker-react";
+import EmojiPicker from "emoji-picker-react";
 import { EmojiIcon, SubmitIcon } from "../SgvIcon";
 import { useState } from "react";
-import Commemt from "../Comment";
+import Comment from "../Comment"; //
+import { useDispatch, useSelector } from "react-redux";
 
+import Loader from "../Loader";
+import { fetchCreateReplyComment } from "../../redux/slice/reply-comment.slide";
+import { fetchCreateComment, fetchUpdateComment } from "../../redux/slice/comment.slice";
+import { fetchUpdatePost } from "../../redux/slice/post.slice";
 
-const fakeComment = {
-    id: "123",
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    createdAt: "2023-01-01T10:00:00",
-    account: {
-        id: "123",
-        nickname: "user3432",
-        name: "John Doe",
-        avatar: "https://example.com/avatar.jpg",
-        tick: true
-    },
-    tag: "@admin",
-    anwers: [
-        {
-            id: "123",
-            content: "This is a answer",
-            createdAt: "2023-01-01T10:00:00",
-            account: {
-                id: "123",
-                name: "John Doe",
-                avatar: "https://example.com/avatar.jpg"
-            }
-        }
-    ]
-};
-
-function CommentList({ data }) {
-
-    const [myComment, setMyComment] = useState("");
+function CommentList({ post, video, comment_list }) {
+    const [inputValue, setInputValue] = useState("");
+    const [typeSend, setTypeSend] = useState("comment");
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const [showReply, setShowReply] = useState(false);
+    const [currentCommentReply, setCurrentCommentReply] = useState(null);
 
-    const iggleChar = ["súc vật", "sủa", "đcm"]
+    const { my_account } = useSelector(state => state.account);
+    const { status_comment } = useSelector(state => state.comment);
+    const { status_reply } = useSelector(state => state.replyComment);
 
+    const dispatch = useDispatch();
+    const forbiddenWords = ["súc vật", "sủa", "đcm"];
 
-    const handleWriteComment = (e) => {
-        const inputValue = e.target.value;
-        if (inputValue.length > 100) {
-            return;
+    const handleChange = (e) => {
+        let value = e.target.value;
+        if (value.length > 100) return;
+
+        forbiddenWords.forEach(word => {
+            value = value.replace(word, "****");
+        });
+
+        setInputValue(value);
+        setShowEmojiPicker(false);
+
+        if (!value) setTypeSend("comment");
+    };
+
+    const handleSendComment = () => {
+        const tag = inputValue.split(' ').find(word => word.startsWith('@'))?.slice(1);
+        if (inputValue.length > 0) {
+            dispatch(fetchCreateComment({
+                content: inputValue,
+                tag: tag || null,
+                num_replies: 0,
+                num_likes: 0,
+                post_id: post?.id,
+                video_id: video?.id,
+                acc_id: my_account.id,
+            }));
+
+            dispatch(fetchUpdatePost({
+                id: post?.id,
+                num_comments: post.num_comments + 1,
+            }))
+            setInputValue("");
         }
 
-        let filteredValue = inputValue;
-        for (const word of iggleChar) {
-            if (inputValue.includes(word)) {
-                filteredValue = filteredValue.replace(word, "****");
-            }
-        }
+    };
 
-        setMyComment(filteredValue);
+    const handleSendReplyComment = () => {
+        if (inputValue.length > 0) {
+            dispatch(fetchCreateReplyComment({
+                content: inputValue.split(' ').slice(1).join(' '),
+                reply_user: currentCommentReply?.accounts?.nickname,
+                comment_id: currentCommentReply?.comment_id,
+                acc_id: my_account.id,
+            }));
+            dispatch(fetchUpdateComment({
+                comment_id: currentCommentReply?.comment_id,
+                num_replies: currentCommentReply?.num_replies + 1,
+            }))
+            setInputValue("");
+            setCurrentCommentReply("comment");
+        }
+    };
+
+    const handleReplyComment = (comment) => {
+        setInputValue(`@${comment?.accounts?.nickname} `);
+        setTypeSend("reply");
+        setCurrentCommentReply(comment);
     };
 
     const handleOnClickEmoji = (emoji) => {
-        setMyComment(prev => prev + emoji.emoji);
+        setInputValue(prev => prev + emoji.emoji);
         setShowEmojiPicker(false);
-    }
+    };
 
-    const handleShowEmojiPicker = () => {
-        setShowEmojiPicker(!showEmojiPicker);
-    }
+    const handleShowEmojiPicker = () => setShowEmojiPicker(!showEmojiPicker);
 
     return (
         <Box>
@@ -75,16 +97,17 @@ function CommentList({ data }) {
                 flexDirection="column"
                 gap="10px"
                 maxHeight="300px"
+                minHeight="120px"
                 width="100%"
-                sx={{
-                    overflowY:"scroll",
-                }}
+                sx={{ overflowY: "scroll" }}
             >
-                <Commemt />
-                <Commemt />
-                <Commemt />
-                <Commemt />
-
+                {comment_list && comment_list.map(comment => (
+                    <Comment
+                        key={comment.comment_id}
+                        comment={comment}
+                        handleReplyComment={() => handleReplyComment(comment)}
+                    />
+                ))}
             </Box>
             <Box
                 display="flex"
@@ -96,48 +119,58 @@ function CommentList({ data }) {
                 borderRadius='20px'
                 position='relative'
             >
-                <CardUser avatar={fakeComment.account.avatar} size="26px" style={{
-                    height: "40px",
-                }} />
-                <TextareaAutosize
-                    style={{
-                        width: '100%',
-                        fontSize: '14px',
-                        border: 'none',
-                        outline: 'none',
-                        borderRadius: '5px',
-                        padding: '4px 8px',
-                    }}
-                    value={myComment}
-                    onChange={handleWriteComment}
-                />
+                <CardUser avatar={post?.accounts?.avatar} size="26px" style={{ height: "40px" }} />
+                <div style={{ flex: 1, position: "relative" }}>
+                    <TextareaAutosize
+                        style={{
+                            width: '100%',
+                            fontSize: '14px',
+                            border: 'none',
+                            outline: 'none',
+                            borderRadius: '5px',
+                            padding: '4px 8px',
+                        }}
+                        value={inputValue}
+                        onChange={handleChange}
+                        disabled={status_comment === 'loading' || status_reply === 'loading'}
+                    />
+                    {(status_comment === 'loading' || status_reply === 'loading') && (
+                        <Loader
+                            size={10}
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '80%',
+                                transform: 'translate(0, -50%)',
+                                zIndex: 1000,
+                            }}
+                        />
+                    )}
+                </div>
                 <button onClick={handleShowEmojiPicker}>
                     <EmojiIcon />
                 </button>
-                {
-                    myComment.length > 0 && myComment
-                    &&
-                    <button>
+                {inputValue.length > 0 && (
+                    <button onClick={typeSend === 'comment' ? handleSendComment : handleSendReplyComment}>
                         <SubmitIcon />
                     </button>
-                }
+                )}
                 <EmojiPicker
                     style={{
                         position: 'absolute',
-                        top: '100%',
+                        top: '-200%',
                         left: '100%',
                         zIndex: 1000,
                         width: '300px',
-                        height: '250px'
+                        height: '250px',
                     }}
-                    searchDisabled={true}
+                    searchDisabled
                     suggestedEmojisMode="none"
                     open={showEmojiPicker}
                     onEmojiClick={handleOnClickEmoji}
-                    lazyLoadEmojis={true}
+                    lazyLoadEmojis
                 />
             </Box>
-
         </Box>
     );
 }

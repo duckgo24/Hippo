@@ -28,10 +28,9 @@ module.exports = (sequelize, DataTypes) => {
       });
       Account.hasMany(models.ReplyComment, {
         foreignKey: 'acc_id',  
-        as: 'reply-comment',
+        as: 'reply_comments',
       });
     }
-
   }
   Account.init({
     username: DataTypes.STRING,
