@@ -34,6 +34,44 @@ class PostController {
         }
     }
 
+    async getMyPosts(req, res, next) {
+        try {
+            const { acc_id } = req.params;
+            console.log(acc_id);
+            
+            if (!acc_id) {
+                return res.status(400).json({ message: 'Missing account_id parameter' });
+            }
+
+            const posts = await db.Post.findAll({
+                where: {
+                    acc_id
+                },
+                include: [
+                    {
+                        model: db.Account,
+                        as: 'accounts',
+                        attributes: ['id', 'nickname', 'avatar', 'tick']
+                    },
+                    {
+                        model: db.Like,
+                        as: 'likes',
+                        attributes: ['acc_id']
+                    }
+                ],
+                order: [
+                    ['createdAt', 'DESC']
+                ]
+            });
+
+            if(posts) {
+                return res.status(200).json(posts);
+            }
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+
 
 
     async createPost(req, res, next) {

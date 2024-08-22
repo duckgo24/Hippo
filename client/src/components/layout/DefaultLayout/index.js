@@ -11,8 +11,17 @@ function DefaultLayout({ children }) {
             display: 'flex',
             height: '100vh',
         }}>
-            <Navigation />
-            <Box flex={1}>
+            <Box
+                minWidth={250}
+                height="100vh"
+            >
+                <Navigation />
+            </Box>
+            <Box
+                display="flex"
+                justifyItems="center"
+                flex={1}
+            >
                 {children}
             </Box>
         </Box>

@@ -35,7 +35,7 @@ const ListNavigation = [
     {
         name: 'Tìm kiếm',
         icon: <SearchIcon />,
-        path: '#',
+        path: '/search',
         isActive: false,
     },
     {
@@ -132,7 +132,7 @@ function Navigation() {
     };
 
     return (
-        <Paper className={cx('navbar')} sx={{ width: 250, maxWidth: '100%', height: '100vh' }}>
+        <Paper className={cx('navbar')} sx={{ width: 250, maxWidth: '100%', height: '100vh', position: 'fixed', top:'0' }}>
             <MenuList>
                 <MenuItem className={cx('item')}>
                     <Paragraph
@@ -165,7 +165,7 @@ function Navigation() {
             <Divider sx={{ marginTop: '10px' }} />
             <MenuItem
                 style={{
-                    position: 'fixed',
+                    position: 'absolute',
                     bottom: '10px',
                     left: '0px',
                     display: 'flex',

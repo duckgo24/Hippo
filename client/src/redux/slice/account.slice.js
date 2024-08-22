@@ -4,8 +4,6 @@ import axiosJWT from "../../utils/axiosJwtInstance";
 import delay from "../../utils/delay";
 
 
-
-
 const fetchAuthMe = createAsyncThunk('accounts/me', async (_, { rejectWithValue, dispatch }) => {
     try {
         const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/auth/me`);
@@ -81,6 +79,17 @@ const fetchSearchAccounts = createAsyncThunk('accounts/search', async (p, { reje
     }
 });
 
+const fetchSuggestAccounts = createAsyncThunk('accounts/suggest', async (_, { rejectWithValue, dispatch }) => {
+    try {
+        await delay(2000);
+        const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/accounts/suggest`);
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    } finally {
+        dispatch(resetStatusIdle());
+    }
+});
 const resetStatusIdle = createAsyncThunk('resetStatusIdle', async (_, { }) => {
     await new Promise((resolve) => setTimeout(resolve, 3000));
 });
@@ -93,7 +102,7 @@ const accountSlice = createSlice({
         my_account: [],
         followers: [],
         following: [],
-        search_accounts: [],
+        filter_accounts: [],
         status_account: 'idle',
     },
     reducers: {
@@ -153,9 +162,21 @@ const accountSlice = createSlice({
             })
             .addCase(fetchGetAllAccounts.fulfilled, (state, action) => {
                 state.status_account = 'succeeded';
-                state.accounts = action.payload;
+                state.filter_accounts = action.payload;
             })
             .addCase(fetchGetAllAccounts.rejected, (state) => {
+                state.status_account = 'failed';
+            })
+
+            //Gợi ý account
+            .addCase(fetchSuggestAccounts.pending, (state) => {
+                state.status_account = 'loading';
+            })
+            .addCase(fetchSuggestAccounts.fulfilled, (state, action) => {
+                state.status_account = 'succeeded';
+                state.filter_accounts = action.payload;
+            })
+            .addCase(fetchSuggestAccounts.rejected, (state) => {
                 state.status_account = 'failed';
             })
 
@@ -165,7 +186,7 @@ const accountSlice = createSlice({
             })
             .addCase(fetchSearchAccounts.fulfilled, (state, action) => {
                 state.status_account = 'succeeded';
-                state.accounts = action.payload;
+                state.filter_accounts = action.payload;
             })
             .addCase(fetchSearchAccounts.rejected, (state) => {
                 state.status_account = 'failed';
@@ -185,5 +206,6 @@ export default accountSlice.reducer;
 
 export {
     fetchAuthMe, fetchRegister, fetchLogin,
-    fetchForgetPassword, fetchGetAllAccounts, fetchSearchAccounts
+    fetchForgetPassword, fetchGetAllAccounts, fetchSearchAccounts ,
+    fetchSuggestAccounts
 };

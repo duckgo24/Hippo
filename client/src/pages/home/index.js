@@ -11,9 +11,10 @@ import Post from "../../components/Post";
 import avatarWhite from "../../images/white-avatar.png";
 import { useNavigate } from "react-router-dom";
 import { fetchGetAllPostsLiked } from "../../redux/slice/like.slice";
+import Cookies from 'js-cookie'
 
 function HomeIcon() {
-    const { status_account, my_account } = useSelector(state => state.account);
+    const { my_account } = useSelector(state => state.account);
     const { status_post, posts } = useSelector(state => state.post);
     const { likePosts } = useSelector(state => state.like);
     const [showCreatePost, setShowCreatePost] = useState(false);
@@ -61,14 +62,18 @@ function HomeIcon() {
     }
 
     useEffect(() => {
-        dispatch(fetchAuthMe());
-        dispatch(fetchGetAllPosts());
 
-        if(status_account && status_account === 'failed') {
+        if(!Cookies.get('access_token')) {
             navigate('/login');
             return;
         }
+
+        dispatch(fetchAuthMe());
+        dispatch(fetchGetAllPosts());
     }, [dispatch]);
+
+
+
 
 
     return (
@@ -76,7 +81,7 @@ function HomeIcon() {
             <Box
                 display="flex"
                 flexDirection="column"
-                width="60%"
+                width="80%"
                 margin="auto"
                 padding="40px 0"
             >

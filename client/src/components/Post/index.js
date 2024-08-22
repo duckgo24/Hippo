@@ -1,6 +1,6 @@
-import { Box, Popper, Typography } from "@mui/material";
+import { Box, Divider, Popper, Typography } from "@mui/material";
 import CardUser from "../CardUser";
-import { CloseIcon, HealIcon, MessageIcon } from "../SgvIcon";
+import { BlockIcon, CloseIcon, DeleteIcon, HealIcon, MessageIcon, MoreIcon } from "../SgvIcon";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUpdatePost } from "../../redux/slice/post.slice";
@@ -20,22 +20,29 @@ const styles = {
     },
 }
 
-function Post({ post }) {
+function Post({ post, style }) {
     const { my_account } = useSelector(state => state.account);
     const { comments } = useSelector(state => state.comment);
     const [activeHealIcon, setActiveHealIcon] = useState(
         post?.likes?.some(like => like.acc_id === my_account.id)
     );
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorElComment, setAnchorElComment] = useState(null);
     const [openComment, setOpenComment] = useState(false);
+
+    const [anchorElOptionPost, setAnchorElOptionPost] = useState(null);
+    const [openOptionPost, setOpenOptionPost] = useState(false);
     const dispatch = useDispatch();
 
 
     const handleToggleComments = (event) => {
-        setAnchorEl(anchorEl ? null : event.currentTarget);
+        setAnchorElComment(anchorElComment ? null : event.currentTarget);
         setOpenComment(!openComment);
     };
 
+    const toggleOptionPost = (e) => {
+        setAnchorElOptionPost(anchorElOptionPost ? null : e.currentTarget);
+        setOpenOptionPost(!openOptionPost);
+    }
 
     const handleClickLike = () => {
         setActiveHealIcon(!activeHealIcon);
@@ -63,6 +70,8 @@ function Post({ post }) {
             }));
         }
     };
+
+
     useEffect(() => {
         if (openComment) {
             if (post.id !== comments[0]?.post_id) {
@@ -75,16 +84,19 @@ function Post({ post }) {
 
     useEffect(() => {
         const handleScroll = () => {
-            setAnchorEl(null);
+            setAnchorElComment(null);
             setOpenComment(false);
+            setAnchorElOptionPost(null);
+            setOpenOptionPost(false);
         };
 
-        window.addEventListener('scroll', handleScroll)
-
+        window.addEventListener('scroll', handleScroll);
         return () => {
-            window.removeEventListener('scroll', () => handleScroll);
-        }
-    }, [])
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
+
 
 
     return (
@@ -108,8 +120,57 @@ function Post({ post }) {
                     cursor: "pointer"
                 },
             }}
+            style={style}
         >
-            <CardUser nickname={post.accounts?.nickname} tick={post.accounts?.tick} avatar={post.accounts?.avatar} />
+            <Box
+                display="flex"
+                justifyContent="space-between"
+            >
+                <CardUser nickname={post.accounts?.nickname} tick={post.accounts?.tick} avatar={post.accounts?.avatar} />
+                <button onClick={toggleOptionPost}>
+                    <MoreIcon />
+                </button>
+                <Popper
+                    open={openOptionPost}
+                    anchorEl={anchorElOptionPost}
+                    placement="bottom"
+                >
+                    <Box
+                        maxWidth="200px"
+                        minWidth="100px"
+                        border="1px solid #ccc"
+                        bgcolor="white"
+                        display='flex'
+                        flexDirection='column'
+                        borderRadius="5px"
+                    >
+                        <button style={{
+                            padding: '5px 10px',
+                        }}>
+                            <Paragraph color="#000">
+                                <BlockIcon size={18} />
+                                Chặn bài viết
+                            </Paragraph>
+                        </button>
+                        <Divider />
+                        {
+                            post.accounts.id == my_account.id
+                            &&
+                            <button style={{
+                                padding: '5px 10px',
+                            }}
+                            >
+                                <Paragraph color="#000">
+                                    <DeleteIcon size={14} />
+                                    Xóa bài viết
+                                </Paragraph>
+                            </button>
+                        }
+                    </Box>
+                </Popper>
+
+
+            </Box>
             <Typography variant="body2">
                 {HandleTime(post.createdAt)}
             </Typography>
@@ -147,7 +208,7 @@ function Post({ post }) {
                 <Popper
                     id="open-comment"
                     open={openComment}
-                    anchorEl={anchorEl}
+                    anchorEl={anchorElComment}
                     placement="right-start"
                 >
 

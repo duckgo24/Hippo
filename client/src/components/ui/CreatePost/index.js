@@ -23,6 +23,7 @@ const cx = classNames.bind(styles)
 function CreatePost({ show }) {
     const { my_account } = useSelector(state => state.account)
     const { status_post } = useSelector(state => state.post);
+    const [typeSend, setTypeSend] = useState("post");
     const [text, setText] = useState("");
     const [numText, setNumText] = useState(0);
     const [image, setImage] = useState(null);
@@ -36,8 +37,8 @@ function CreatePost({ show }) {
     const handleOnChangeImage = async (e) => {
         const data = await GetLinkImage(e.target.files[0]);
         setImage(data);
-
     }
+    
     const handleSubmit = async () => {
         if (fileInputRef.current) {
             fileInputRef.current.click();
@@ -80,7 +81,6 @@ function CreatePost({ show }) {
     useEffect(() => {
         if (status_post === "succeeded") {
             handleCloseForm();
-
         }
     }, [status_post])
 
@@ -160,11 +160,9 @@ function CreatePost({ show }) {
                             {image && <img src={image} alt="image" height="300px" width="320px" />}
                             <input
                                 type="file"
-                                accept="image/*"
                                 ref={fileInputRef}
                                 style={{ display: 'none' }}
                                 onChange={handleOnChangeImage}
-
                             />
                             <button
                                 style={{

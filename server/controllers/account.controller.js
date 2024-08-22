@@ -1,18 +1,22 @@
 
+const { Op } = require('sequelize');
 const db = require('../models/index');
 const jwtService = require('../services/jwt.service');
 const sendmailService = require('../services/sendmail.service');
 
 class AccountController {
-    async getAllAccounts(req, res, next) {
+    async getSuggestAccounts(req, res, next) {
         try {
-            const accounts = await db.Account.findAll({});
+            const accounts = await db.Account.findAll({
+                attributes: { exclude: ['password'] }
+            });
             let start = Math.floor(Math.random() * 8);
             let end = start + 15;
 
             if (end > accounts.length) {
                 end = accounts.length;
             }
+
 
             const responAccount = accounts.slice(start, end);
             return res.json(responAccount);
@@ -24,7 +28,7 @@ class AccountController {
 
     async searchAccount(req, res, next) {
         try {
-            const { q } = req.params;
+            const { q } = req.query;
 
             const resultAccounts = await db.Account.findAll({
                 where: {
@@ -40,11 +44,11 @@ class AccountController {
             return res.status(200).json(resultAccounts);
 
         } catch (error) {
-            return res.status(501).json({ error });
+            return res.status(501).json( error.message );
         }
     }
 
-    
+
 
 
     async register(req, res, next) {
@@ -97,8 +101,8 @@ class AccountController {
                     path: '/'
                 });
                 res.cookie('access_token', access_token, {
-                     expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 14), 
-                     path: '/',                    
+                    expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 10),
+                    path: '/',
                 });
 
                 return res.status(200).json({ ...others });

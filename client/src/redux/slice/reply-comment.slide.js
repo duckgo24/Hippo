@@ -1,4 +1,4 @@
-import { createAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import delay from "../../utils/delay";
 import axiosJWT from "../../utils/axiosJwtInstance";
@@ -35,7 +35,6 @@ const fetchCreateReplyComment = createAsyncThunk('reply/create-reply-comment', a
 const fetchDeleteReplyComment = createAsyncThunk('reply/delete-reply-comment', async (data, { rejectWithValue, dispatch }) => {
     try {
         await delay(2000);
-        const { id} = data
         const res = await axiosJWT.delete(`${process.env.REACT_APP_API_URL}/delele-reply-comment`, {
             params: data
         });
@@ -47,7 +46,7 @@ const fetchDeleteReplyComment = createAsyncThunk('reply/delete-reply-comment', a
     }
 });
 
-const resetStatusIdle = createAsyncThunk('reply/resetStatus', async (_, { }) => {
+const resetStatusIdle = createAsyncThunk('reply/resetStatus', async(_, {}) => {
     await new Promise((resolve) => setTimeout(resolve, 3000));
 });
 

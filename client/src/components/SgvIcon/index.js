@@ -144,7 +144,7 @@ const HealIcon = ({ color = 'rbga(0, 0, 0, 0.54)', size = 26, active = false, ..
 
 const PlusIcon = ({ color = 'rbga(0, 0, 0, 0.54)', size = 26, ...props }) => {
     return (
-        <svg aria-label="Bài viết mới" color={color} fill="currentColor" height={size} role="img" viewBox="0 0 24 24" width={size}>
+        <svg {...props} aria-label="Bài viết mới" color={color} fill="currentColor" height={size} role="img" viewBox="0 0 24 24" width={size}>
             <title>Bài viết mới</title>
             <path d="M2 12v3.45c0 2.849.698 4.005 1.606 4.944.94.909 2.098 1.608 4.946 1.608h6.896c2.848 0 4.006-.7 4.946-1.608C21.302 19.455 22 18.3 22 15.45V8.552c0-2.849-.698-4.006-1.606-4.945C19.454 2.7 18.296 2 15.448 2H8.552c-2.848 0-4.006.699-4.946 1.607C2.698 4.547 2 5.703 2 8.552Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
             <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="6.545" x2="17.455" y1="12.001" y2="12.001"></line>
@@ -316,7 +316,7 @@ const CloseIcon = ({ size = 22, ...props }) => {
     )
 }
 
-const SubmitIcon = ({ size = 22, color = '#45aaf2',...props }) => {
+const SubmitIcon = ({ size = 22, color = '#45aaf2', ...props }) => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -335,6 +335,61 @@ const SubmitIcon = ({ size = 22, color = '#45aaf2',...props }) => {
     )
 }
 
+const MoreIcon = ({ size = 22, color = 'rbga(0, 0, 0, 0.54)', ...props }) => {
+    return (
+        <svg width={size} height={size} color={color} {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="more">
+            <g>
+                <g>
+                    <circle cx="12" cy="12" r="2" />
+                    <circle cx="19" cy="12" r="2" />
+                    <circle cx="5" cy="12" r="2" />
+                </g>
+            </g>
+        </svg>
+    )
+}
+
+const DeleteIcon = ({ size = 22, color = 'rbga(0, 0, 0, 0.54)', ...props }) => {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={size + 5}
+            height={size}
+            viewBox="0 0 24 18"
+            id="delete"
+            {...props}
+        >
+            <g fill="none" fillRule="evenodd" strokeLinecap="round" strokeLinejoin="round">
+                <g stroke="#000" strokeWidth="2" transform="translate(-1441 -1567)">
+                    <g transform="translate(1442 1568)">
+                        <path d="M20 0H7L0 8l7 8h13a2 2 0 002-2V2a2 2 0 00-2-2zM17 5l-6 6M11 5l6 6" />
+                    </g>
+                </g>
+            </g>
+        </svg>
+    )
+}
+
+const BlockIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" id="block" width={size} height={size} {...props}>
+            <path d="M10 .4C4.697.4.399 4.698.399 10A9.6 9.6 0 0 0 10 19.601c5.301 0 9.6-4.298 9.6-9.601 0-5.302-4.299-9.6-9.6-9.6zM2.399 10a7.6 7.6 0 0 1 12.417-5.877L4.122 14.817A7.568 7.568 0 0 1 2.399 10zm7.6 7.599a7.56 7.56 0 0 1-4.815-1.722L15.878 5.184a7.6 7.6 0 0 1-5.879 12.415z" />
+        </svg>
+    )
+}
+
+const SmileFaceIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" id="smile">
+            <g fill="none" fillRule="evenodd" stroke={color}>
+                <path d="M4.5 2.5h15a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3v-13a3 3 0 0 1 3-3Z"/>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 2.5c-1.132 2-2.485 6.798-2.5 10h2c0 4.146.888 5.957 2 9"/>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 13.5c1 2 3 3 5.5 3s4.5-1 5.5-3"/>
+                <path strokeLinecap="round" d="M7.5 7.5v2M16.5 7.5v2"/>
+                </g>
+                </svg>
+    )
+}
 export {
     HomeIcon, SearchIcon, DiscoverIcon,
     ReelsIcon, MessageIcon, HealIcon,
@@ -344,5 +399,6 @@ export {
     ChangeIcon, LogOutIcon, TickIcon,
     PlusIcon2, MediaIcon, EmojiIcon,
     DropDownIcon, CheckIcon, CloseIcon,
-    SubmitIcon
+    SubmitIcon, MoreIcon, DeleteIcon,
+    BlockIcon, SmileFaceIcon
 };

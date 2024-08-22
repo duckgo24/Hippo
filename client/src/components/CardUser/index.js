@@ -3,24 +3,26 @@ import { TickIcon } from "../SgvIcon";
 import Paragraph from "../Paragraph";
 
 
-function CardUser({ name, nickname, tick, avatar, size, ...props }) {
+function CardUser({ name, nickname, tick, avatar, size, onClick,...props }) {
     return (
         <Box
             display='flex'
             flexDirection='row'
             gap='10px'
-            justifyContent='space-around'
             alignItems='center'
             height='50px'
-            maxWidth='130px'
+            maxWidth='200px'
             {...props}
+            onClick={onClick}
         >
 
-            <Avatar src={avatar} alt={name} sx={{
+            <Avatar 
+            src={avatar} alt={name} 
+            sx={{
                 width: size,
                 height: size,
-            }} />
-
+            }}       
+             />
             <div>
                 <Box
                     display='flex'

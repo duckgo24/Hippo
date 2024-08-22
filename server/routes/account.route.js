@@ -7,7 +7,7 @@ const accountController = require('../controllers/account.controller');
 
 
 
-route.get('/all', AccountController.getAllAccounts);
+route.get('/suggest', AccountController.getSuggestAccounts);
 route.get('/search', accountController.searchAccount)
 route.post('/register', AccountController.register);
 route.post('/login', AccountController.login);

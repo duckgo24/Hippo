@@ -16,6 +16,18 @@ const fetchGetAllPosts = createAsyncThunk('posts/get-posts', async (data, { reje
     }
 });
 
+const fetchGetMyPosts = createAsyncThunk('posts/my-posts', async (data, { rejectWithValue, dispatch }) => {
+    try {
+        const { acc_id } = data;
+        const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/posts/my-posts/${acc_id}`);
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response ? error.response.data.message : error.message);
+    } finally {
+        dispatch(resetStatusIdle());
+    }
+});
+
 
 const fetchCreatePost = createAsyncThunk('posts/create', async (data, { rejectWithValue, dispatch }) => {
     try {
@@ -31,7 +43,8 @@ const fetchCreatePost = createAsyncThunk('posts/create', async (data, { rejectWi
 });
 
 
-const fetchUpdatePost = createAsyncThunk('posts/update', async (data , { rejectWithValue, dispatch }) => {
+
+const fetchUpdatePost = createAsyncThunk('posts/update', async (data, { rejectWithValue, dispatch }) => {
     try {
         const { id } = data;
         const res = await axios.put(`${process.env.REACT_APP_API_URL}/posts/update/${id}`, data);
@@ -53,8 +66,7 @@ const resetStatusIdle = createAsyncThunk('post/resetStatus', async (_, { }) => {
 const postSlice = createSlice({
     name: 'post',
     initialState: {
-        my_post: [],
-        filter_post: [],
+        filter_posts: [],
         posts: [],
         status_post: 'idle'
     },
@@ -71,13 +83,25 @@ const postSlice = createSlice({
                 state.status_post = 'failed';
             })
 
+            //Lấy tất cả bài viết của tôi
+            .addCase(fetchGetMyPosts.pending, state => {
+                state.status_post = 'loading';
+            })
+            .addCase(fetchGetMyPosts.fulfilled, (state, action) => {
+                state.filter_posts = action.payload;
+            })
+            .addCase(fetchGetMyPosts.rejected, state => {
+                state.status_post = 'failed';
+            })
+
+
             //Tạo bài viết
             .addCase(fetchCreatePost.pending, state => {
                 state.status_post = 'loading';
             })
             .addCase(fetchCreatePost.fulfilled, (state, action) => {
                 state.status_post = 'succeeded';
-                state.my_post.unshift(action.payload);
+                state.posts.unshift(action.payload);
             })
             .addCase(fetchCreatePost.rejected, state => {
                 state.status_post = 'failed';
@@ -109,6 +133,7 @@ export default postSlice.reducer;
 
 export {
     fetchGetAllPosts,
+    fetchGetMyPosts, 
     fetchCreatePost,
     fetchUpdatePost
 }

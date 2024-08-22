@@ -10,8 +10,8 @@ npm install
 ```
 2. Create a .env File
 ```env
-PORT=
-CLIENT_URL=
+PORT=8080
+CLIENT_URL=http://localhost:3000
 JWT_SECRET_ACCESS_KEY=
 JWT_SECRECT_REFRESH_KEY=
 EMAIL_SEND=

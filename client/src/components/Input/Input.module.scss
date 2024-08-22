@@ -1,0 +1,20 @@
+.input {
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    width: 100%;
+    padding: 10px 16px 10px 50px; 
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+
+.left-icon {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translate(0, -50%);
+    color: rgba(0, 0, 0, 0.54);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+

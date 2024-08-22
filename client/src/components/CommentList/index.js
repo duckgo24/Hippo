@@ -99,7 +99,7 @@ function CommentList({ post, video, comment_list }) {
                 maxHeight="300px"
                 minHeight="120px"
                 width="100%"
-                sx={{ overflowY: "scroll" }}
+                
             >
                 {comment_list && comment_list.map(comment => (
                     <Comment
