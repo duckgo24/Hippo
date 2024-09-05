@@ -30,6 +30,31 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'acc_id',  
         as: 'reply_comments',
       });
+      Account.hasMany(models.Chat, {
+        foreignKey: 'sender_id',
+        as: 'sender',
+      });
+      Account.hasMany(models.Chat, {
+        foreignKey: 'receiver_id',
+        as: 'receiver',
+      });
+      Account.hasMany(models.Friend, {
+        foreignKey: 'acc_id',
+        as: 'friends',
+      });
+      Account.hasMany(models.Friend, {
+        foreignKey: 'friend_id',
+        as: 'friend',
+      });
+
+      Account.hasMany(models.RequestFriend, {
+        foreignKey: 'sender_id',
+        as: 'request_friend_sender',
+      });
+      Account.hasMany(models.RequestFriend, {
+        foreignKey: 'receiver_id',
+        as: 'request_friend_receiver',
+      });
     }
   }
   Account.init({
@@ -43,6 +68,7 @@ module.exports = (sequelize, DataTypes) => {
     tick: DataTypes.BOOLEAN,
   }, {
     sequelize,
+    tableName: 'accounts',
     modelName: 'Account',
   });
   return Account;

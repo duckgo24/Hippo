@@ -28,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         acc_id: DataTypes.INTEGER
     }, {
         sequelize,
+        tableName: 'videos',
         modelName: 'Video',
     });
     return Video;

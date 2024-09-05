@@ -27,14 +27,15 @@ module.exports = (sequelize, DataTypes) => {
         comment_id: {
             type: DataTypes.INTEGER,
             references: {
-                model: 'Comment', 
-                key: 'comment_id' 
+                model: 'Comment',
+                key: 'comment_id'
             }
         },
     }, {
         sequelize,
-        modelName: 'ReplyComment',
-        tableName: 'reply_comment'
+        tableName: 'reply_comment',
+        modelName: 'ReplyComment'
+
     });
 
     return ReplyComment;

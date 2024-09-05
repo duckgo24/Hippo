@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const methodOverride = require('method-override');
 const cookieParser = require('cookie-parser');
+const http = require('http');
 
 const dotenv = require('dotenv');
 
@@ -9,6 +10,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+
+const server = http.createServer(app);
+
 
 
 app.use(cors({
@@ -25,8 +29,12 @@ app.use(
 );
 
 app.use(express.json());
-
 app.use(cookieParser());
+
+//Init Socket
+const initSocket = require('./socket/');
+initSocket(server);
+
 
 
 //Connect to database
@@ -41,8 +49,7 @@ Routes(app);
 //Override methods
 app.use(methodOverride('_method'));
 
-
-app.listen(`${process.env.PORT}`, () => {
+server.listen(`${process.env.PORT}`, () => {
     console.log(`Server is running on port ${process.env.PORT}`);   
 });
 

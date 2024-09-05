@@ -19,10 +19,10 @@ module.exports = {
       });
     }
 
-    return queryInterface.bulkInsert('Accounts', accounts, {});
+    return queryInterface.bulkInsert('accounts', accounts, {});
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete('Accounts', null, {});
+    return queryInterface.bulkDelete('accounts', null, {});
   }
 };

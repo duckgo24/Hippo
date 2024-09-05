@@ -7,7 +7,7 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Fade, Popper } from '@mui/material';
 import Paragraph from '../../Paragraph';
 
@@ -21,105 +21,115 @@ import {
     ChangeIcon,
     LogOutIcon
 } from '../../SgvIcon';
+import { useSelector } from 'react-redux';
 
 
 const cx = classNames.bind(styles);
 
-const ListNavigation = [
-    {
-        path: '/',
-        name: 'Trang chủ',
-        icon: <HomeIcon />,
-        isActive: true,
-    },
-    {
-        name: 'Tìm kiếm',
-        icon: <SearchIcon />,
-        path: '/search',
-        isActive: false,
-    },
-    {
-        path: '/discover',
-        name: 'Khám phá',
-        icon: <DiscoverIcon />,
-        isActive: false,
-    },
-    {
-        path: '/reels',
-        name: 'Reels',
-        icon: <ReelsIcon />,
-        isActive: false,
-    },
-    {
-        path: '/message',
-        name: 'Tin nhắn',
-        icon: <MessageIcon />,
-        isActive: false,
-    },
-    {
-        path: '/notify',
-        name: 'Thông báo',
-        icon: <HealIcon />,
-        isActive: false,
-    },
-    {
-        path: '/sell',
-        name: 'Mua hàng',
-        icon: <PlusIcon />,
-        isActive: false,
-    },
-    {
-        path: '/profile',
-        name: 'Trang cá nhân',
-        icon: <UserIcon />,
-        isActive: false,
-    },
-];
-
-const moreActions = [
-    {
-        path: '/setting',
-        name: 'Cài đặt',
-        icon: <SettingIcon />,
-    },
-    {
-        path: '/activity',
-        name: 'Hoạt động của bạn',
-        icon: <ActiveIcon />,
-    },
-    {
-        path: '/saved',
-        name: 'Đã lưu',
-        icon: <SaveIcon />,
-    },
-    {
-        path: '/toggle-mode',
-        name: 'Chuyển chế độ',
-        icon: <LightIcon />,
-    },
-    {
-        path: '/report',
-        name: 'Báo cáo',
-        icon: <ReportIcon />,
-    },
-    {
-        path: '/switch-account',
-        name: 'Chuyển tài khoản',
-        icon: <ChangeIcon />,
-        isDivider: true,
-    },
-    {
-        path: '/logout',
-        name: 'Đăng xuất',
-        icon: <LogOutIcon />,
-        isDivider: true,
-    },
-];
 
 function Navigation() {
     const [open, setOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [navActive, setNavActive] = useState(0);
+    const { my_account } = useSelector(state => state.account)
+    const navigate = useNavigate();
+
+    const ListNavigation = [
+        {
+            path: '/',
+            name: 'Trang chủ',
+            icon: <HomeIcon />,
+            isActive: true,
+        },
+        {
+            name: 'Tìm kiếm',
+            icon: <SearchIcon />,
+            path: '/search',
+            isActive: false,
+        },
+        {
+            path: '/discover',
+            name: 'Khám phá',
+            icon: <DiscoverIcon />,
+            isActive: false,
+        },
+        {
+            path: '/reels',
+            name: 'Reels',
+            icon: <ReelsIcon />,
+
+            isActive: false,
+        },
+        {
+            path: '/chat',
+            name: 'Tin nhắn',
+            icon: <MessageIcon />,
+            isActive: false,
+        },
+        {
+            path: '/notify',
+            name: 'Thông báo',
+            icon: <HealIcon />,
+            isActive: false,
+        },
+        {
+            path: '/sell',
+            name: 'Mua hàng',
+            icon: <PlusIcon />,
+            isActive: false,
+        },
+        {
+            name: 'Trang cá nhân',
+            icon: <UserIcon />,
+            isActive: false,
+            onClick: () => navigate(`/profile/${my_account?.nickname}`, {
+                state: {
+                    account: my_account,
+                }
+            }),
+
+        },
+    ];
+
+    const moreActions = [
+        {
+            path: '/setting',
+            name: 'Cài đặt',
+            icon: <SettingIcon />,
+        },
+        {
+            path: '/activity',
+            name: 'Hoạt động của bạn',
+            icon: <ActiveIcon />,
+        },
+        {
+            path: '/saved',
+            name: 'Đã lưu',
+            icon: <SaveIcon />,
+        },
+        {
+            path: '/toggle-mode',
+            name: 'Chuyển chế độ',
+            icon: <LightIcon />,
+        },
+        {
+            path: '/report',
+            name: 'Báo cáo',
+            icon: <ReportIcon />,
+        },
+        {
+            path: '/switch-account',
+            name: 'Chuyển tài khoản',
+            icon: <ChangeIcon />,
+            isDivider: true,
+        },
+        {
+            path: '/logout',
+            name: 'Đăng xuất',
+            icon: <LogOutIcon />,
+            isDivider: true,
+        },
+    ];
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -132,11 +142,10 @@ function Navigation() {
     };
 
     return (
-        <Paper className={cx('navbar')} sx={{ width: 250, maxWidth: '100%', height: '100vh', position: 'fixed', top:'0' }}>
+        <Paper className={cx('navbar')} sx={{ width: 250, maxWidth: '100%', height: '100vh', position: 'fixed', top: '0' }}>
             <MenuList>
                 <MenuItem className={cx('item')}>
                     <Paragraph
-
                         style={{
                             fontFamily: "Edu AU VIC WA NT Hand",
                             fontStyle: "italic",
@@ -152,14 +161,20 @@ function Navigation() {
                     <MenuItem
                         key={nav.name}
                         className={cx('item', { active: navActive === index })}
-                        onClick={() => handleNavClick(index)}
-                        component={Link}
-                        to={nav.path}
+                        onClick={() => {
+                            handleNavClick(index);
+                            if (nav?.onClick) {
+                                nav.onClick(); 
+                            }
+                        }}
+                        component={nav.path ? Link : 'div'}
+                        to={nav.path || ''}
                     >
                         <ListItemIcon>{nav.icon}</ListItemIcon>
                         <ListItemText>{nav.name}</ListItemText>
                     </MenuItem>
                 ))}
+
             </MenuList>
 
             <Divider sx={{ marginTop: '10px' }} />

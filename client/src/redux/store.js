@@ -1,23 +1,36 @@
-import { configureStore } from '@reduxjs/toolkit'
 
-import accountReducer from './slice/account.slice'
-import postReducer from './slice/post.slice'
-import likeReducer from './slice/like.slice'
-import commentReducer from './slice/comment.slice'
-import replyCommentReducer from './slice/reply-comment.slide'
+import { configureStore } from '@reduxjs/toolkit';
+import { persistStore, persistReducer } from 'redux-persist';
+import { combineReducers } from 'redux';
 
-const rootReducer = {
-    account: accountReducer,
-    post: postReducer,
-    like: likeReducer,
-    comment: commentReducer,
-    replyComment: replyCommentReducer
-}
+import accountReducer from './slice/account.slice';
+import postReducer from './slice/post.slice';
+import likeReducer from './slice/like.slice';
+import commentReducer from './slice/comment.slice';
+import replyCommentReducer from './slice/reply-comment.slide';
+import friendReducer from './slice/friend.slice';
+import requestFriendReducer from './slice/request-friend.slice';
+
+import persistConfig from './persistConfig';
+
+const rootReducer = combineReducers({
+  account: accountReducer,
+  post: postReducer,
+  like: likeReducer,
+  comment: commentReducer,
+  replyComment: replyCommentReducer,
+  friend: friendReducer,
+  requestFriend: requestFriendReducer,
+});
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-    reducer: rootReducer,
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({
-            serializableCheck: false,
-        }),
-})
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
+});
+
+export const persistor = persistStore(store);

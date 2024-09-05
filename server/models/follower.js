@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         following_user_id: DataTypes.INTEGER
     }, {
         sequelize,
+        tableName: 'followers',
         modelName: 'Follower',
     });
     return Follower;

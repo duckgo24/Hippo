@@ -154,7 +154,7 @@ function Post({ post, style }) {
                         </button>
                         <Divider />
                         {
-                            post.accounts.id == my_account.id
+                            post?.accounts?.id == my_account?.id
                             &&
                             <button style={{
                                 padding: '5px 10px',

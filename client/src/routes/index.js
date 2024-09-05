@@ -1,4 +1,5 @@
 
+import Chat from "../pages/Chat";
 import ForgetPassword from "../pages/forgetpassword";
 import Home from "../pages/home";
 import Login from "../pages/login";
@@ -13,36 +14,41 @@ export const myRoutes = [
     {
         path: '/',
         component: Home,
-        isShowHeader: true,
+        isShowNavigate: true,
     },
     {
         path: '/login',
         component: Login,
-        isShowHeader: false,
+        isShowNavigate: false,
     },
     {
         path: '/register',
         component: Register,
-        isShowHeader: false,
+        isShowNavigate: false,
     },
     {
         path: '/forget-password',
         component: ForgetPassword,
-        isShowHeader: false,
+        isShowNavigate: false,
     },
     {
         path: '/reels',
         component: Reels,
-        isShowHeader: true,
+        isShowNavigate: true,
     } ,
     {
         path: '/search',
         component: Search,
-        isShowHeader: true,
+        isShowNavigate: true,
     },
     {
         path: '/profile/:nickname',
         component: Profile,
-        isShowHeader: true,
+        isShowNavigate: true,
+    },
+    {
+        path: '/chat',
+        component: Chat,
+        isShowNavigate: false,
     }
 ]

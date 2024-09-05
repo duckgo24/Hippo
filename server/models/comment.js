@@ -38,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
         tag: DataTypes.STRING,
     }, {
         sequelize,
+        tableName: 'comments',
         modelName: 'Comment',
     });
     

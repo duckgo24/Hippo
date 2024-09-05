@@ -1,9 +1,10 @@
 import { Avatar, Box } from "@mui/material";
 import { TickIcon } from "../SgvIcon";
 import Paragraph from "../Paragraph";
+import HandleTime from "../../utils/handleTime";
 
 
-function CardUser({ name, nickname, tick, avatar, size, onClick,...props }) {
+function CardUser({ name, nickname, tick, avatar, size, status, lastOnline, onClick, ...props }) {
     return (
         <Box
             display='flex'
@@ -16,13 +17,30 @@ function CardUser({ name, nickname, tick, avatar, size, onClick,...props }) {
             onClick={onClick}
         >
 
-            <Avatar 
-            src={avatar} alt={name} 
-            sx={{
-                width: size,
-                height: size,
-            }}       
-             />
+            <Box
+                position="relative"
+            >
+                <Avatar
+                    src={avatar} alt={name}
+                    sx={{
+                        width: size,
+                        height: size,
+                    }}
+                />
+                {
+                    status === 'online'
+                    &&
+                    <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        right: 0,
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        backgroundColor: '#519B4A',
+                    }}></div>
+                }
+            </Box>
             <div>
                 <Box
                     display='flex'

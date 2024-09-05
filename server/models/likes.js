@@ -30,6 +30,7 @@ module.exports = (sequelize, DataTypes) => {
         video_id: DataTypes.INTEGER,
     }, {
         sequelize,
+        tableName: 'likes',
         modelName: 'Like',
     });
     return Like;

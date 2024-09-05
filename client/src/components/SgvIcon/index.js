@@ -224,7 +224,7 @@ const LogOutIcon = () => {
 
             </defs>
             <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
-                <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6199.000000)" fill="#000000">
+                <g id="DribbbleLight-Preview" transform="translate(-300.000000, -6199.000000)" fill="#000000">
                     <g id="icons" transform="translate(56.000000, 160.000000)">
                         <path d="M258,6051 L259,6051 C259.552,6051 260,6051.247 260,6051.799 L260,6051.598 C260,6052.15 260,6052.611 259,6052.611 L259,6052.637 C258,6052.637 258,6053.136 258,6053.689 L258,6053.792 C258,6054.345 257.552,6055 257,6055 L255,6055 C254.448,6055 254,6054.449 254,6053.896 L254,6053.792 C254,6053.24 253.552,6053 253,6053 L249,6053 C248.448,6053 248,6052.449 248,6051.896 L248,6051.792 C248,6051.24 248.448,6051 249,6051 L254,6051 L258,6051 Z M260,6046 C260,6046.552 259.552,6047 259,6047 L257,6047 C256.448,6047 256,6046.552 256,6046 C256,6045.448 256.448,6045 257,6045 L259,6045 C259.552,6045 260,6045.448 260,6046 L260,6046 Z M252,6046 C252,6046.552 251.552,6047 251,6047 L249,6047 C248.448,6047 248,6046.552 248,6046 C248,6045.448 248.448,6045 249,6045 L251,6045 C251.552,6045 252,6045.448 252,6046 L252,6046 Z M262,6056 C262,6056.552 261.552,6057 261,6057 L247,6057 C246.448,6057 246,6056.552 246,6056 L246,6042 C246,6041.448 246.448,6041 247,6041 L261,6041 C261.552,6041 262,6041.448 262,6042 L262,6056 Z M264,6041 C264,6039.895 263.105,6039 262,6039 L246,6039 C244.895,6039 244,6039.895 244,6041 L244,6057 C244,6058.105 244.895,6059 246,6059 L262,6059 C263.105,6059 264,6058.105 264,6057 L264,6041 Z" id="emoji_tongue_sticking_out-_square_round-[#442]">
 
@@ -380,16 +380,40 @@ const BlockIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
 
 const SmileFaceIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" id="smile">
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} id="smile">
             <g fill="none" fillRule="evenodd" stroke={color}>
-                <path d="M4.5 2.5h15a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3v-13a3 3 0 0 1 3-3Z"/>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 2.5c-1.132 2-2.485 6.798-2.5 10h2c0 4.146.888 5.957 2 9"/>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 13.5c1 2 3 3 5.5 3s4.5-1 5.5-3"/>
-                <path strokeLinecap="round" d="M7.5 7.5v2M16.5 7.5v2"/>
-                </g>
-                </svg>
+                <path d="M4.5 2.5h15a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3v-13a3 3 0 0 1 3-3Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 2.5c-1.132 2-2.485 6.798-2.5 10h2c0 4.146.888 5.957 2 9" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 13.5c1 2 3 3 5.5 3s4.5-1 5.5-3" />
+                <path strokeLinecap="round" d="M7.5 7.5v2M16.5 7.5v2" />
+            </g>
+        </svg>
     )
 }
+
+const ImageIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 32 32" id="image"> 
+            <path fill="#c6e3ff" d="M30 8v15.1L24 17l-6.68 5.13L11 13 2 23V8a2 2 0 0 1 2-2h24a2 2 0 0 1 2 2Z"></path>
+            <path fill="#0478ed" d="M30 24.1a1 1 0 0 1-.71-.3l-5.38-5.47-6 4.59a1 1 0 0 1-1.43-.22l-5.6-8.09-8.14 9.08A1 1 0 0 1 1 23V8a3 3 0 0 1 3-3h24a3 3 0 0 1 3 3v15.1a1 1 0 0 1-1 1ZM11 12h.06a1 1 0 0 1 .76.43l5.72 8.27 5.85-4.49a1 1 0 0 1 1.32.09L29 20.66V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12.41l7.26-8.08A1 1 0 0 1 11 12Z"></path>
+            <path fill="#56aaff" d="M20 26H4a2 2 0 0 1-2-2v-1l9-10 6.32 9.13Z"></path>
+            <path fill="#0478ed" d="M20 27H4a3 3 0 0 1-3-3v-1a1 1 0 0 1 .26-.67l9-10a1 1 0 0 1 1.57.1l9 13A1 1 0 0 1 20 27ZM3 23.4v.6a1 1 0 0 0 1 1h14.09L10.9 14.61Z"></path>
+            <path fill="#56aaff" d="M30 23.1v.9a2 2 0 0 1-2 2h-8l-2.68-3.87L24 17Z"></path>
+            <path fill="#0478ed" d="M28 27h-8a1 1 0 0 1-.82-.43L16.5 22.7a1 1 0 0 1 .21-1.36l6.68-5.13a1 1 0 0 1 1.32.09l6 6.1a1 1 0 0 1 .29.7v.9a3 3 0 0 1-3 3Zm-7.48-2H28a1 1 0 0 0 1-1v-.49l-5.09-5.18-5.22 4Z"></path>
+            <circle cx="20" cy="12" r="2" fill="#56aaff"></circle>
+        </svg>
+    )
+}
+
+const GifIcon = ({size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props  }) => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" id="gif">
+            <path stroke="#000" strokeLinejoin="round" d="M2 6C2 3.79086 3.79086 2 6 2H18C20.2091 2 22 3.79086 22 6V18C22 20.2091 20.2091 22 18 22H6C3.79086 22 2 20.2091 2 18V6Z"></path>
+            <path stroke="#000" strokeLinecap="round" strokeLinejoin="round" d="M12 8V16M15 16V12M19 8H15.5C15.2239 8 15 8.22386 15 8.5V12M15 12H18M9 8H7.5C6.11929 8 5 9.11929 5 10.5V12 13.7778C5 15.0051 5.99492 16 7.22222 16V16C8.20406 16 9 15.2041 9 14.2222V12.5C9 12.2239 8.77614 12 8.5 12H7.5"></path>
+        </svg>
+    )
+}
+
 export {
     HomeIcon, SearchIcon, DiscoverIcon,
     ReelsIcon, MessageIcon, HealIcon,
@@ -400,5 +424,7 @@ export {
     PlusIcon2, MediaIcon, EmojiIcon,
     DropDownIcon, CheckIcon, CloseIcon,
     SubmitIcon, MoreIcon, DeleteIcon,
-    BlockIcon, SmileFaceIcon
+    BlockIcon, SmileFaceIcon, ImageIcon,
+    GifIcon
+
 };

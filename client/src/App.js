@@ -13,7 +13,7 @@ function App() {
       <Routes>
         {myRoutes.map((route, index) => {
           const Page = route.component;
-          const Layout = route.isShowHeader ? DefaultLayout : Fragment
+          const Layout = route.isShowNavigate ? DefaultLayout : Fragment
           return <Route key={index} path={route.path} element={<Layout> <Page /> </Layout>} />
         })}
       </Routes>

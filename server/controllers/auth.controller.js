@@ -40,8 +40,6 @@ class AuthController {
     async refreshToken(req, res, next) {
         try {
             const refresh_token = req.headers.refresh_cookie;
-            console.log(refresh_token);
-
             if (!refresh_token) {
                 return res.status(401).json({ error: 'No refresh token provided' });
             }

@@ -15,7 +15,7 @@ function Input({ leftIcon, rightIcon, placeholder, value, onChange, classNames, 
 
     return (
         <Box position="relative">
-            <span className={cx('left-icon')}>{leftIcon}</span>
+            {leftIcon && <span className={cx('left-icon')}>{leftIcon}</span>}
             <input
                 style={style}
                 className={classes}
@@ -23,7 +23,7 @@ function Input({ leftIcon, rightIcon, placeholder, value, onChange, classNames, 
                 value={value}
                 onChange={onChange}
             />
-            <span className={cx('right-icon')}>{rightIcon}</span>
+           {rightIcon && <span className={cx('right-icon')}>{rightIcon}</span>}
 
         </Box>
     )

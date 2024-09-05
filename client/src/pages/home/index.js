@@ -2,7 +2,7 @@ import { Box, Menu, MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAuthMe } from "../../redux/slice/account.slice";
-import { CheckIcon, DropDownIcon, PlusIcon2} from "../../components/SgvIcon";
+import { CheckIcon, DropDownIcon, PlusIcon2 } from "../../components/SgvIcon";
 import Paragraph from "../../components/Paragraph";
 import Alert from "../../components/Alert";
 import { fetchGetAllPosts } from "../../redux/slice/post.slice";
@@ -12,11 +12,13 @@ import avatarWhite from "../../images/white-avatar.png";
 import { useNavigate } from "react-router-dom";
 import { fetchGetAllPostsLiked } from "../../redux/slice/like.slice";
 import Cookies from 'js-cookie'
+import { fetchGetAllFriend } from "../../redux/slice/friend.slice";
 
 function HomeIcon() {
     const { my_account } = useSelector(state => state.account);
     const { status_post, posts } = useSelector(state => state.post);
     const { likePosts } = useSelector(state => state.like);
+    const { friends } = useSelector(state => state.friend);
     const [showCreatePost, setShowCreatePost] = useState(false);
     const [idxMenuDropDown, setIdxMenuDropDown] = useState(0);
     const [displayPosts, setDisplayPosts] = useState('all');
@@ -49,7 +51,7 @@ function HomeIcon() {
         if (text === 'Đã thích') {
             if (likePosts.length === 0) {
                 dispatch(fetchGetAllPostsLiked({ acc_id: my_account.id }));
-            }        
+            }
             setOptionPost('Đã thích');
             setDisplayPosts('liked');
             return;
@@ -63,13 +65,17 @@ function HomeIcon() {
 
     useEffect(() => {
 
-        if(!Cookies.get('access_token')) {
+        if (!Cookies.get('access_token')) {
             navigate('/login');
             return;
         }
 
+
+        dispatch(fetchGetAllFriend({ acc_id: my_account?.id }));
         dispatch(fetchAuthMe());
         dispatch(fetchGetAllPosts());
+
+        
     }, [dispatch]);
 
 
@@ -83,6 +89,7 @@ function HomeIcon() {
                 flexDirection="column"
                 width="80%"
                 margin="auto"
+                height="100%"
                 padding="40px 0"
             >
                 <Box

@@ -32,6 +32,7 @@ module.exports = (sequelize, DataTypes) => {
         acc_id: DataTypes.INTEGER
     }, {
         sequelize,
+        tableName: 'posts',
         modelName: 'Post',
     });
     return Post;

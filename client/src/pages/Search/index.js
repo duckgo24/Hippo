@@ -31,7 +31,9 @@ function Search() {
         setSearchValue(e.target.value);
     }
     const handleOnClickAccount = (account) => {
-        navigate(`/profile/@${account.nickname}`, <Profile account={account} />)
+        navigate(`/profile/${account.nickname}`, {state: {
+            account
+        }});
     }
 
 
