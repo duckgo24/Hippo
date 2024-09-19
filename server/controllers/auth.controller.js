@@ -43,17 +43,15 @@ class AuthController {
             if (!refresh_token) {
                 return res.status(401).json({ error: 'No refresh token provided' });
             }
-
             jwtService.verify(refresh_token, async (err, user) => {
                 if (err) {
                     return res.status(401).json({ error: 'Invalid refresh token' });
                 }
 
                 if (user) {
-                    console.log(user);
-
                     const new_access_token = jwtService.sign({ id: user.id, nickname: user.nickname, role: user.role }, '1d');
                     const new_refresh_token = jwtService.sign({ id: user.id, nickname: user.nickname, role: user.role }, '365d');
+
                     res.cookie('refresh_token', new_refresh_token, {
                         expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 14),
                         path: '/'
@@ -65,8 +63,6 @@ class AuthController {
 
                     return res.status(200).json({ access_token: new_access_token });
                 }
-
-
             });
         } catch (error) {
             return res.status(501).json({ error });

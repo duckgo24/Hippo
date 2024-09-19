@@ -44,7 +44,7 @@ class AccountController {
             return res.status(200).json(resultAccounts);
 
         } catch (error) {
-            return res.status(501).json( error.message );
+            return res.status(501).json(error.message);
         }
     }
 
@@ -162,19 +162,38 @@ class AccountController {
 
     async update(req, res, next) {
         try {
-            const account = await db.Account.update({
-                ...req.body
-            }, {
+            const checkAccount = await db.Account.findOne({
                 where: {
                     id: req.params.id
                 }
             });
 
-            if (account[0] === 1) {
-                return res.status(200).json(account);
-            } else {
+            if (!checkAccount) {
                 return res.status(404).json({ error: 'Account not found' });
             }
+
+            if(checkAccount) {
+                const account = await db.Account.update({
+                    ...req.body
+                }, {
+                    where: {
+                        id: req.params.id
+                    }
+                });
+    
+                if (account[0] === 1) {
+                    return res.status(200).json({
+                        ...checkAccount.dataValues,
+                        isOnline: req.body.isOnline,
+                        lastOnline: req.body.lastOnline
+                    });
+                } else {
+                    return res.status(404).json({ error: 'Account not found' });
+                }
+            }
+            
+
+            
 
 
         } catch (error) {

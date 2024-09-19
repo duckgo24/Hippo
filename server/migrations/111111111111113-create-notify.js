@@ -2,26 +2,26 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('chats', {
+    await queryInterface.createTable('messages', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      title: {
+        type: Sequelize.STRING
+      },
       content: {
         type: Sequelize.TEXT
       },
-      sender_id: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'accounts',
-          key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+      type: {
+        type: Sequelize.STRING
       },
-      receiver_id: {
+      status: {
+        type: Sequelize.BOOLEAN
+      },
+      acc_id: {
         type: Sequelize.INTEGER,
         references: {
           model: 'accounts',
@@ -41,6 +41,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('chats');
+    await queryInterface.dropTable('messages');
   }
 }; 

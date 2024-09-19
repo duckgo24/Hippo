@@ -34,6 +34,13 @@ module.exports = {
       tick: {
         type: Sequelize.BOOLEAN
       },
+      isOnline: {
+        type: Sequelize.BOOLEAN
+      },
+      lastOnline:  {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

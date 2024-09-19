@@ -30,14 +30,6 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'acc_id',  
         as: 'reply_comments',
       });
-      Account.hasMany(models.Chat, {
-        foreignKey: 'sender_id',
-        as: 'sender',
-      });
-      Account.hasMany(models.Chat, {
-        foreignKey: 'receiver_id',
-        as: 'receiver',
-      });
       Account.hasMany(models.Friend, {
         foreignKey: 'acc_id',
         as: 'friends',
@@ -55,6 +47,25 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'receiver_id',
         as: 'request_friend_receiver',
       });
+
+      Account.hasMany(models.RoomParticipant, {
+        foreignKey: 'user_id',
+        as: 'room_participant',
+      });
+
+      Account.hasMany(models.RoomMessage, {
+        foreignKey: 'sender_id',
+        as: 'message_sender'
+      });
+      Account.hasMany(models.RoomMessage, {
+        foreignKey: 'receiver_id',
+        as: 'message_receiver'
+      });
+
+      Account.hasMany(models.Notify, {
+        foreignKey: 'acc_id',
+        as: 'notify_account',
+      });
     }
   }
   Account.init({
@@ -66,6 +77,8 @@ module.exports = (sequelize, DataTypes) => {
     avatar: DataTypes.STRING,
     bio: DataTypes.STRING,
     tick: DataTypes.BOOLEAN,
+    isOnline: DataTypes.BOOLEAN,
+    lastOnline: DataTypes.DATE
   }, {
     sequelize,
     tableName: 'accounts',

@@ -45,6 +45,8 @@ function Register() {
             avatar: avatarWhite,
             bio: '',
             tick: false,
+            isOnline: false,
+            lastOnline: new Date(),
         }));
 
         setFormData({});

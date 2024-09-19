@@ -1,14 +1,19 @@
 import { Box, Divider, Popper, Typography } from "@mui/material";
-import CardUser from "../CardUser";
-import { BlockIcon, CloseIcon, DeleteIcon, HealIcon, MessageIcon, MoreIcon } from "../SgvIcon";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUpdatePost } from "../../redux/slice/post.slice";
-import { fetchDislikesPost, fetchLikePost } from "../../redux/slice/like.slice";
-import HandleTime from "../../utils/handleTime";
-import Paragraph from "../Paragraph";
-import CommentList from "../CommentList";
-import { fetchGetAllComments } from "../../redux/slice/comment.slice";
+
+
+import CardUser from "../../CardUser";
+import { BlockIcon, CloseIcon, DeleteIcon, HealIcon, MessageIcon, MoreIcon } from "../../SgvIcon";
+import Paragraph from "../../Paragraph";
+import CommentList from "../../comment_component/CommentList";
+import RenderWithCondition from "../../RenderWithCondition";
+
+import { fetchLikePost, fetchDislikesPost } from "../../../redux/slice/like.slice";
+import { fetchUpdatePost } from "../../../redux/slice/post.slice";
+import { fetchGetAllComments } from "../../../redux/slice/comment.slice";
+import HandleTime from "../../../utils/handleTime";
+
 
 const styles = {
     buttonStyle: {
@@ -33,10 +38,15 @@ function Post({ post, style }) {
     const [openOptionPost, setOpenOptionPost] = useState(false);
     const dispatch = useDispatch();
 
+    const prevPost = useRef();
 
     const handleToggleComments = (event) => {
-        setAnchorElComment(anchorElComment ? null : event.currentTarget);
-        setOpenComment(!openComment);
+        if (post?.id !== prevPost.current?.id) {
+            setAnchorElComment(anchorElComment ? null : event.currentTarget);
+            setOpenComment(!openComment);
+            prevPost.current = post;
+        }
+
     };
 
     const toggleOptionPost = (e) => {
@@ -46,27 +56,26 @@ function Post({ post, style }) {
 
     const handleClickLike = () => {
         setActiveHealIcon(!activeHealIcon);
-
         if (!activeHealIcon) {
             dispatch(fetchLikePost({
                 acc_id: my_account.id,
-                post_id: post.id,
+                post_id: post?.id,
                 is_like: true
             }));
 
             dispatch(fetchUpdatePost({
-                id: post.id,
-                num_likes: post.num_likes + 1,
+                id: post?.id,
+                num_likes: post?.num_likes + 1,
             }));
         } else {
             dispatch(fetchDislikesPost({
                 acc_id: my_account.id,
-                post_id: post.id,
+                post_id: post?.id,
             }));
 
             dispatch(fetchUpdatePost({
-                id: post.id,
-                num_likes: post.num_likes - 1,
+                id: post?.id,
+                num_likes: post?.num_likes - 1,
             }));
         }
     };
@@ -74,13 +83,12 @@ function Post({ post, style }) {
 
     useEffect(() => {
         if (openComment) {
-            if (post.id !== comments[0]?.post_id) {
-                dispatch(fetchGetAllComments({
-                    post_id: post.id,
-                }));
-            }
+            dispatch(fetchGetAllComments({
+                post_id: post?.id,
+            }));
         }
     }, [openComment])
+
 
     useEffect(() => {
         const handleScroll = () => {
@@ -89,6 +97,7 @@ function Post({ post, style }) {
             setAnchorElOptionPost(null);
             setOpenOptionPost(false);
         };
+
 
         window.addEventListener('scroll', handleScroll);
         return () => {
@@ -126,7 +135,7 @@ function Post({ post, style }) {
                 display="flex"
                 justifyContent="space-between"
             >
-                <CardUser nickname={post.accounts?.nickname} tick={post.accounts?.tick} avatar={post.accounts?.avatar} />
+                <CardUser nickname={post?.accounts?.nickname} tick={post?.accounts?.tick} avatar={post?.accounts?.avatar} />
                 <button onClick={toggleOptionPost}>
                     <MoreIcon />
                 </button>
@@ -153,9 +162,7 @@ function Post({ post, style }) {
                             </Paragraph>
                         </button>
                         <Divider />
-                        {
-                            post?.accounts?.id == my_account?.id
-                            &&
+                        <RenderWithCondition condition={post?.accounts?.id == my_account?.id}>
                             <button style={{
                                 padding: '5px 10px',
                             }}
@@ -165,21 +172,19 @@ function Post({ post, style }) {
                                     Xóa bài viết
                                 </Paragraph>
                             </button>
-                        }
+                        </RenderWithCondition>
                     </Box>
                 </Popper>
-
-
             </Box>
             <Typography variant="body2">
-                {HandleTime(post.createdAt)}
+                {HandleTime(post?.createdAt)}
             </Typography>
             <Typography variant="subtitle2">
-                {post.title}
+                {post?.title}
             </Typography>
 
             <div style={{ overflow: 'hidden', borderRadius: '5px' }}>
-                <img src={post.image} alt={post.title} height={290} loading="lazy" style={{
+                <img src={post?.image} alt={post?.title} height={290} loading="lazy" style={{
                     display: 'block',
                     width: '100%',
                     objectFit: 'cover',
@@ -199,11 +204,11 @@ function Post({ post, style }) {
                         }}
                         active={activeHealIcon}
                     />
-                    {post.num_likes}
+                    {post?.num_likes}
                 </button>
                 <button aria-describedby="open-comment" style={styles.buttonStyle} onClick={handleToggleComments}>
                     <MessageIcon size={23} />
-                    {post.num_comments}
+                    {post?.num_comments}
                 </button>
                 <Popper
                     id="open-comment"
@@ -244,8 +249,9 @@ function Post({ post, style }) {
                                 Bình luận
                             </Paragraph>
                         </Box>
-                        {openComment && <CommentList post={post} comment_list={comments} />}
-
+                        <RenderWithCondition condition={openComment}>
+                            <CommentList post={post} comment_list={comments} />
+                        </RenderWithCondition>
                     </Box>
 
                 </Popper>

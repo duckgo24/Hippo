@@ -6,7 +6,7 @@ const route = express.Router();
 
 
 route.get('/me', authController.me);
-route.get('/refresh', authController.refreshToken);
+route.get('/refresh',authController.refreshToken);
 
 
 

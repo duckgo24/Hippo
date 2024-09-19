@@ -24,8 +24,6 @@ const verifyToken = async (req, res, next) => {
 const authenMeByToken = async (req, res, next) => {
     let acc_id;
     
-    
-
     if (req.body && req.body.acc_id) {
         acc_id = req.body.acc_id;
     } else if (req.params && req.params.acc_id) {
@@ -33,9 +31,6 @@ const authenMeByToken = async (req, res, next) => {
     } else if (req.query && req.query.acc_id) {
         acc_id = req.query.acc_id;
     }
-    console.log(acc_id);
-    
-
 
     try {
         verifyToken(req, res, () => {

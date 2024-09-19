@@ -47,7 +47,13 @@ export const myRoutes = [
         isShowNavigate: true,
     },
     {
-        path: '/chat',
+        path: '/chat/:nickname',
+        component: Chat,
+        isShowNavigate: false,
+    }
+    ,
+    {
+        path: '/chat/',
         component: Chat,
         isShowNavigate: false,
     }

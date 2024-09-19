@@ -4,7 +4,7 @@ const friendController = require('../controllers/friend.controller');
 const { authenMeByToken } = require('../middleware/authen.middleware');
 
 
-router.get('/get-all-friend', authenMeByToken, friendController.getFriends);
+router.get('/get-all-friend', friendController.getFriends);
 router.get('/check-friend', friendController.checkFriend);
 router.get('/find-friend', friendController.findFriend);
 router.post('/add-friend', friendController.addFriend);

@@ -1,18 +1,22 @@
-import { Box, Menu, MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAuthMe } from "../../redux/slice/account.slice";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Cookies from 'js-cookie'
+
+import { Box, Menu, MenuItem } from "@mui/material";
+import { fetchAuthMe, fetchUpdateAccount } from "../../redux/slice/account.slice";
 import { CheckIcon, DropDownIcon, PlusIcon2 } from "../../components/SgvIcon";
 import Paragraph from "../../components/Paragraph";
 import Alert from "../../components/Alert";
 import { fetchGetAllPosts } from "../../redux/slice/post.slice";
-import CreatePost from "../../components/ui/CreatePost";
-import Post from "../../components/Post";
 import avatarWhite from "../../images/white-avatar.png";
-import { useNavigate } from "react-router-dom";
 import { fetchGetAllPostsLiked } from "../../redux/slice/like.slice";
-import Cookies from 'js-cookie'
 import { fetchGetAllFriend } from "../../redux/slice/friend.slice";
+import CreatePost from "../../components/post_component/CreatePost";
+import Post from "../../components/post_component/Post";
+import RenderWithCondition from "../../components/RenderWithCondition";
+
 
 function HomeIcon() {
     const { my_account } = useSelector(state => state.account);
@@ -64,18 +68,31 @@ function HomeIcon() {
     }
 
     useEffect(() => {
-
         if (!Cookies.get('access_token')) {
-            navigate('/login');
-            return;
+            if (!Cookies.get('refresh_token')) {
+                navigate('/login')
+            } else {
+                async function a() {
+                    const res = await axios.get(`${process.env.REACT_APP_API_URL}/auth/refresh`, {
+                        headers: {
+                            refresh_cookie: Cookies.get('refresh_token'),
+                        },
+                        withCredentials: true,
+                    })
+                    Cookies.set('access_token', res.data.access_token);
+                }
+                a();
+            }
         }
-
 
         dispatch(fetchGetAllFriend({ acc_id: my_account?.id }));
         dispatch(fetchAuthMe());
         dispatch(fetchGetAllPosts());
-
-        
+        dispatch(fetchUpdateAccount({
+            acc_id: my_account?.id,
+            isOnline: true,
+            lastOnline: new Date()
+        }))
     }, [dispatch]);
 
 
@@ -173,13 +190,14 @@ function HomeIcon() {
                     flexDirection="column"
                 >
                     {(displayPosts === 'all' ? posts : likePosts)?.map(post => (
-                        <Post key={post.id} post={post} />
+                        <Post key={post?.id} post={post} />
                     ))}
                 </Box>
                 <CreatePost show={showCreatePost} />
-                {status_post === 'succeeded' && (
+                <RenderWithCondition condition={status_post === 'succeeded'}>
                     <Alert type='success' title='Thông báo' message='Đăng bài thành công' />
-                )}
+                </RenderWithCondition>
+
             </Box>
         </>
     );

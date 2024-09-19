@@ -79,8 +79,23 @@ class PostController {
             const post = await db.Post.create(req.body);
 
             if (post) {
-                return res.status(201).json(post);
+                console.log(post);
+                
+                const res_post = await db.Post.findOne({
+                    where: {
+                        id: post?.id
+                    },
+                    include: [
+                        {
+                            model: db.Account,
+                            as: 'accounts',
+                            attributes: ['id', 'nickname', 'avatar', 'tick']
+                        }
+                    ]
+                })
+                return res.status(201).json(res_post);
             }
+            
         } catch (error) {
             res.status(501).json({ error });
         }

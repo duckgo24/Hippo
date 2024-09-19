@@ -7,11 +7,12 @@ function HandleTime(time) {
     const diffMinutes = Math.floor(diffSeconds / 60);
     const diffHours = Math.floor(diffMinutes / 60);
     const diffDays = Math.floor(diffHours / 24);
-
-    if(diffMinutes < 60) {
+    
+    if(diffSeconds < 60) {
+        return `vừa xong`;
+    } else if(diffMinutes < 60) {
         return `${diffMinutes} phút trước`;
-    }
-    else if (diffHours < 24) {
+    } else if (diffHours < 24) {
         return `${diffHours} giờ trước`;
     } else if (diffDays < 7) {
         return `${diffDays} ngày trước`;

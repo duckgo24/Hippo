@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Avatar, Box, Divider, Modal, Popper, Tab, Tabs } from "@mui/material";
+import { Avatar, Box, Divider, Modal, Popper, Tab, Tabs, Link, } from "@mui/material";
 import Paragraph from "../../components/Paragraph";
 import Button from "../../components/Button";
 import { fetchGetMyPosts } from "../../redux/slice/post.slice";
-import Post from "../../components/Post";
+
 import Input from "../../components/Input";
-import { PlusIcon, SmileFaceIcon } from "../../components/SgvIcon";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { fetchAddFriend, fetchCheckFriend, fetchDeleteFriend, } from "../../redux/slice/friend.slice";
+import { PlusIcon, SmileFaceIcon, TickIcon } from "../../components/SgvIcon";
+import { useLocation, useNavigate } from "react-router-dom";
+import { fetchAddFriend, fetchCheckFriend, fetchDeleteFriend, fetchGetAllFriend, } from "../../redux/slice/friend.slice";
 import { fetchCreateRequestFriend, fetchDeleteRequestFriend, fetchFindRequestFriendWithReceiver, fetchFindRequestFriendWithSender, fetchRefuseRequestFriend, } from "../../redux/slice/request-friend.slice";
 import RenderWithCondition from "../../components/RenderWithCondition";
-
+import CardUser from "../../components/CardUser";
+import testImage from "../../images/test.jpg";
+import { fetchCreateRoom } from "../../redux/slice/room.slice";
+import Post from "../../components/post_component/Post";
 
 function TabPanel({ value, index, children }) {
     return (
@@ -23,8 +26,8 @@ function TabPanel({ value, index, children }) {
 
 function Profile() {
     const { my_account } = useSelector(state => state.account);
-    const { filter_posts, status_post } = useSelector(state => state.post);
-    const { get_friend } = useSelector(state => state.friend);
+    const { filter_posts } = useSelector(state => state.post);
+    const { get_friend, friends } = useSelector(state => state.friend);
     const { get_request_friend_sender, get_request_friend_receiver } = useSelector(state => state.requestFriend);
     const [currentTab, setCurrentTab] = useState(0);
     const [openModalExitProfile, setOpenModalExitProfile] = useState(false);
@@ -32,7 +35,6 @@ function Profile() {
     const navigate = useNavigate();
     const inputFileAvatarRef = useRef();
     const { state } = useLocation();
-    const nickname = useParams();
 
     const [anchorElOptionFriend, setAnchorElOptionFriend] = useState(null);
     const [openOptionFriend, setOpenOptionFriend] = useState(false);
@@ -45,11 +47,7 @@ function Profile() {
 
     const currentAccount = useMemo(() => {
         return state?.account ? state?.account : my_account;
-    }, [state?.account]);
-
-
-
-
+    }, [state?.account, my_account]);
 
     const handleChangeTab = (e, tab) => {
         setCurrentTab(tab);
@@ -77,11 +75,6 @@ function Profile() {
             acc_id: my_account?.id,
             friend_id: currentAccount?.id
         }))
-
-        dispatch(fetchDeleteFriend({
-            acc_id: currentAccount?.id,
-            friend_id: my_account?.id
-        }))
     }
 
     const handleConfirmAddFriend = () => {
@@ -91,15 +84,15 @@ function Profile() {
             status: 'friend'
         }))
 
-        dispatch(fetchAddFriend({
-            acc_id: currentAccount?.id,
-            friend_id: my_account?.id,
-            status: 'friend'
-        }))
-
         dispatch(fetchDeleteRequestFriend({
             acc_id: currentAccount?.id,
             receiver_id: my_account?.id
+        }))
+
+        dispatch(fetchCreateRoom({
+            room_id: `${my_account?.id}-${currentAccount?.id}`,
+            acc_id: my_account?.id,
+            friend_id: currentAccount?.id
         }))
     }
 
@@ -125,6 +118,22 @@ function Profile() {
         })
     }
 
+    const handleOnChatFriend = () => {
+        navigate('/chat', {
+            state: {
+                account: currentAccount
+            }
+        })
+    }
+
+
+    const handleClickFriendCard = (friend) => {
+        navigate(`/profile/${friend?.nickname}`, {
+            state: {
+                account: friend
+            }
+        })
+    }
 
 
 
@@ -142,24 +151,32 @@ function Profile() {
 
     useEffect(() => {
         if (my_account?.id !== currentAccount?.id) {
-            dispatch(fetchFindRequestFriendWithSender({
-                sender_id: my_account?.id,
-                receiver_id: currentAccount?.id
-            }))
-
-            dispatch(fetchFindRequestFriendWithReceiver({
-                sender_id: currentAccount?.id,
-                receiver_id: my_account?.id
-            }))
 
             dispatch(fetchCheckFriend({
                 acc_id: my_account?.id,
                 friend_id: currentAccount?.id
             }))
+
+            if (get_friend.friend_id) {
+                dispatch(fetchFindRequestFriendWithSender({
+                    sender_id: my_account?.id,
+                    receiver_id: currentAccount?.id
+                }))
+
+                dispatch(fetchFindRequestFriendWithReceiver({
+                    sender_id: currentAccount?.id,
+                    receiver_id: my_account?.id
+                }))
+            }
         }
-
-
     }, [])
+
+    useEffect(() => {
+        dispatch(fetchGetAllFriend({
+            acc_id: currentAccount?.id,
+            limit: 9
+        }))
+    }, [currentAccount])
 
     return (
         <Box
@@ -208,6 +225,7 @@ function Profile() {
                             </Paragraph>
                             <Paragraph color="rgba(0, 0, 0, 0.8)">
                                 {currentAccount?.nickname}
+                                {currentAccount?.tick && <TickIcon />}
                             </Paragraph>
                             <Paragraph
                                 color="rgba(0, 0, 0, 0.8)"
@@ -233,19 +251,37 @@ function Profile() {
                     </Box>
                     {currentAccount?.id === my_account?.id && (
                         <>
-                            <Button
-                                large
-                                style={{
-                                    border: "1px solid #dbdbdb",
-                                    padding: "10px 20px",
-                                    borderRadius: "10px",
-                                    fontSize: "16px",
-                                    fontWeight: "500",
-                                }}
-                                onClick={handleToggleModalExitProfile}
+                            <Box
+                                display="flex"
+                                gap="20px"
                             >
-                                Chỉnh sửa trang cá nhân
-                            </Button>
+                                <Button
+                                    large
+                                    style={{
+                                        border: "1px solid #dbdbdb",
+                                        padding: "10px 20px",
+                                        borderRadius: "10px",
+                                        fontSize: "16px",
+                                        fontWeight: "500",
+                                    }}
+                                    onClick={handleToggleModalExitProfile}
+                                >
+                                    Chỉnh sửa trang cá nhân
+                                </Button>
+                                <Button
+                                    large
+                                    style={{
+                                        border: "1px solid #dbdbdb",
+                                        padding: "10px 20px",
+                                        borderRadius: "10px",
+                                        fontSize: "16px",
+                                        fontWeight: "500",
+                                    }}
+                                    onClick={handleToggleModalExitProfile}
+                                >
+                                    Cài đặt
+                                </Button>
+                            </Box>
                             <Modal
                                 open={openModalExitProfile}
                                 onClose={() => setOpenModalExitProfile(false)}
@@ -338,8 +374,9 @@ function Profile() {
                         <Box display="flex" justifyContent="space-between" gap="20px">
                             <RenderWithCondition
                                 condition={
-                                   !get_friend && 
-                                   !get_request_friend_sender.status === 'pending'
+                                    !get_request_friend_sender?.sender_id && !get_request_friend_receiver?.receiver_id
+                                    &&
+                                    !get_friend?.friend_id
                                 }
                             >
                                 <Button
@@ -358,7 +395,7 @@ function Profile() {
                                     Kết bạn
                                 </Button>
                             </RenderWithCondition>
-                            
+
                             <RenderWithCondition
                                 condition={
                                     get_request_friend_receiver?.sender_id === currentAccount?.id
@@ -459,6 +496,15 @@ function Profile() {
                                         flexDirection='column'
                                         zIndex="9999"
                                     >
+                                        <Button
+                                            onClick={handleOnChatFriend}
+                                            style={{
+                                                fontSize: "16px",
+                                                padding: "8px 30px",
+                                                color: "#fff"
+                                            }}>
+                                            Nhắn tin
+                                        </Button>
                                         <Button onClick={handleDeleteFriend} style={{
                                             fontSize: "16px",
                                             padding: "8px 30px",
@@ -479,7 +525,7 @@ function Profile() {
 
 
 
-                            
+
                             <Button
                                 onClick={handleSendBlockUser}
                                 large
@@ -500,6 +546,50 @@ function Profile() {
                         </Box>
                     )}
                 </Box>
+                <Box
+                    padding="0 10px"
+                    marginTop="10px"
+                >
+                    <Paragraph bold="700">Bạn bè</Paragraph>
+                    <Box
+                        display="grid"
+                        gridTemplateColumns="repeat(3, 1fr)"
+                        marginTop="10px"
+                    >
+                        {friends && friends.map(friend => (
+                            <CardUser
+                                onClick={() => handleClickFriendCard(friend.friend)}
+                                key={friend?.id} nickname={friend?.friend?.nickname} name={friend?.friend?.full_name} tick={friend?.friend?.tick}
+                                avatar={friend?.friend?.avatar}
+                            />
+                        ))}
+                        {
+                            [1, 2, 3, 4, 5, 6, 7].map((item, index) => (
+                                <CardUser onClick={handleClickFriendCard} key={index} nickname={"Test21"} name={"Nguoi dung 21"} tick={item % 2 || null}
+                                    avatar={testImage}
+                                />
+                            ))
+                        }
+                    </Box>
+                    <Link
+                        href={`/${currentAccount?.nickname}/friends`}
+                        sx={{
+                            fontSize: "14px",
+                            textDecoration: "none",
+                            fontWeight: "500",
+                            padding: "5px 0",
+                            display: "block",
+                            width: "100%",
+                            textAlign: "center",
+                            marginTop: "10px",
+                            ':hover': {
+                                cursor: "pointer",
+                                textDecoration: "underline",
+                            }
+                        }}
+                    >Xem tất cả</Link>
+                </Box>
+
 
                 <Tabs
                     value={currentTab}

@@ -10,6 +10,8 @@ import commentReducer from './slice/comment.slice';
 import replyCommentReducer from './slice/reply-comment.slide';
 import friendReducer from './slice/friend.slice';
 import requestFriendReducer from './slice/request-friend.slice';
+import roomReducer from './slice/room.slice';
+import roomMessageReducer from './slice/room-message.slice';
 
 import persistConfig from './persistConfig';
 
@@ -21,6 +23,8 @@ const rootReducer = combineReducers({
   replyComment: replyCommentReducer,
   friend: friendReducer,
   requestFriend: requestFriendReducer,
+  room: roomReducer,
+  roomMessage: roomMessageReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

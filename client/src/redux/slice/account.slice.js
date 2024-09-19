@@ -90,6 +90,19 @@ const fetchSuggestAccounts = createAsyncThunk('accounts/suggest', async (_, { re
         dispatch(resetStatusIdle());
     }
 });
+
+const fetchUpdateAccount = createAsyncThunk('accounts/update', async (data, { rejectWithValue, dispatch }) => {
+    try {
+        const { acc_id } = data;
+        const res = await axiosJWT.put(`${process.env.REACT_APP_API_URL}/accounts/update/${acc_id}`, data);
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    } finally {
+        dispatch(resetStatusIdle());
+    }
+});
+
 const resetStatusIdle = createAsyncThunk('resetStatusIdle', async (_, { }) => {
     await new Promise((resolve) => setTimeout(resolve, 3000));
 });
@@ -206,6 +219,6 @@ export default accountSlice.reducer;
 
 export {
     fetchAuthMe, fetchRegister, fetchLogin,
-    fetchForgetPassword, fetchGetAllAccounts, fetchSearchAccounts ,
-    fetchSuggestAccounts
+    fetchForgetPassword, fetchGetAllAccounts, fetchSearchAccounts,
+    fetchSuggestAccounts, fetchUpdateAccount
 };

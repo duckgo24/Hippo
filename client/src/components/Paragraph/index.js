@@ -11,7 +11,6 @@ function Paragraph({ children, size, bold, color = 'rgba(0,0,0,0.7)', style, cla
         padding: '4px 0',
         width: 'auto',
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
         gap: '5px',
        ...style,

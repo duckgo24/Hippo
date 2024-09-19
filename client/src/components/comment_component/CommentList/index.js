@@ -1,15 +1,19 @@
-import { Box, TextareaAutosize } from "@mui/material";
-import CardUser from "../CardUser";
-import EmojiPicker from "emoji-picker-react";
-import { EmojiIcon, SubmitIcon } from "../SgvIcon";
 import { useState } from "react";
-import Comment from "../Comment"; //
 import { useDispatch, useSelector } from "react-redux";
+import { Box, TextareaAutosize } from "@mui/material";
+import EmojiPicker from "emoji-picker-react";
 
-import Loader from "../Loader";
-import { fetchCreateReplyComment } from "../../redux/slice/reply-comment.slide";
-import { fetchCreateComment, fetchUpdateComment } from "../../redux/slice/comment.slice";
-import { fetchUpdatePost } from "../../redux/slice/post.slice";
+import Comment from "../Comment";
+import CardUser from "../../CardUser";
+import Loader from "../../Loader";
+import { EmojiIcon, SubmitIcon } from "../../SgvIcon";
+
+import { fetchCreateComment, fetchUpdateComment } from "../../../redux/slice/comment.slice";
+import { fetchUpdatePost } from "../../../redux/slice/post.slice";
+import { fetchCreateReplyComment } from "../../../redux/slice/reply-comment.slide";
+
+
+
 
 function CommentList({ post, video, comment_list }) {
     const [inputValue, setInputValue] = useState("");

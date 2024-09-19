@@ -4,10 +4,11 @@ import axiosJWT from "../../utils/axiosJwtInstance";
 
 const fetchGetAllFriend = createAsyncThunk('friend/fetchGetAllFriend', async (data, { dispatch, rejectWithValue }) => {
     try {
-        const { acc_id } = data;
+        const { acc_id, limit } = data;
         const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/friend/get-all-friend`, {
             params: {
-                acc_id
+                acc_id,
+                limit
             }
         });
         return res.data;
@@ -141,11 +142,11 @@ const friendSlice = createSlice({
         .addCase(fetchDeleteFriend.fulfilled, (state, action) => {
             state.status_friend = 'success';
             state.friends = state.friends.filter(friend => 
-                friend.acc_id !== action.payload?.acc_id &&
-                friend.friend_id !== action?.payload?.friend_id
+                friend.friend_id !== action.payload.friend_id || friend.acc_id !== action.payload.acc_id
             )
             state.get_friend = {}
         })
+        
         .addCase(fetchDeleteFriend.rejected, (state, action) => {
             state.status_friend = 'failed';
         })
