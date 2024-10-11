@@ -7,10 +7,10 @@ import styles from "./Button.module.scss";
 
 const cx = classNames.bind(styles);
 
-function Button({children, primary, to, href, onClick, small, medium, large, disabled,...props}) {
+function Button({ children, primary, to, href, onClick, small, medium, large, disabled, leftIcon, RightIcon, ...props }) {
 
 
-    const classes = cx('button',{
+    const classes = cx('button', {
         primary,
         small,
         medium,
@@ -21,28 +21,30 @@ function Button({children, primary, to, href, onClick, small, medium, large, dis
     const _props = {
         onClick,
         disabled,
-       ...props
+        ...props
     }
 
     let TagDefault = 'button';
 
-    if(href) {
+    if (href) {
         TagDefault = 'a'
         _props.href = href;
     }
 
-    if(to) {
+    if (to) {
         TagDefault = Link
         _props.to = to;
     }
 
 
 
-    return ( 
+    return (
         <TagDefault className={classes} {..._props}>
+            {leftIcon && <span className={cx('left-icon')}>{leftIcon}</span>}
             {children}
+            {RightIcon && <span className={cx('right-icon')}>{RightIcon}</span>}
         </TagDefault>
-     );
+    );
 }
 
 export default Button;

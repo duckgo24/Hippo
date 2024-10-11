@@ -1,3 +1,4 @@
+const { UUIDV4 } = require('sequelize');
 const db = require('../models/index');
 const jwtService = require('../services/jwt.service');
 
@@ -36,6 +37,9 @@ class AuthController {
             console.log(error);
         }
     };
+
+
+
 
     async refreshToken(req, res, next) {
         try {

@@ -1,7 +1,6 @@
 import { Avatar, Box } from "@mui/material";
 import { TickIcon } from "../SgvIcon";
 import Paragraph from "../Paragraph";
-import HandleTime from "../../utils/handleTime";
 
 
 function CardUser({ name, nickname, tick, avatar, size, status, lastOnline, onClick, ...props }) {

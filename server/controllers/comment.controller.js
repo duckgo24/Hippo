@@ -94,7 +94,7 @@ class commentController {
     
 
     async updateComment(req, res, next) {
-        const { comment_id } = req.params;
+        const { comment_id, num_replies } = req.params;
     
         try {
             const findComment = await db.Comment.findOne({

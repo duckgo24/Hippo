@@ -1,11 +1,11 @@
-
+import Home from "../pages/Home";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import ForgetPassword from "../pages/ForgetPassword";
 import Chat from "../pages/Chat";
-import ForgetPassword from "../pages/forgetpassword";
-import Home from "../pages/home";
-import Login from "../pages/login";
+import Discover from "../pages/Discover";
 import Profile from "../pages/Profile";
 import Reels from "../pages/Reels";
-import Register from "../pages/register";
 import Search from "../pages/Search";
 
 
@@ -40,21 +40,25 @@ export const myRoutes = [
         path: '/search',
         component: Search,
         isShowNavigate: true,
-    },
+    } ,
     {
         path: '/profile/:nickname',
         component: Profile,
         isShowNavigate: true,
-    },
+    } ,
     {
         path: '/chat/:nickname',
         component: Chat,
         isShowNavigate: false,
-    }
-    ,
+    } ,
     {
         path: '/chat/',
         component: Chat,
         isShowNavigate: false,
+    } ,
+    {
+        path: '/discover',
+        component: Discover,
+        isShowNavigate: true,
     }
 ]

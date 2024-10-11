@@ -23,6 +23,8 @@ module.exports = (sequelize, DataTypes) => {
         sender_id: DataTypes.INTEGER,
         receiver_id: DataTypes.INTEGER,
         content: DataTypes.STRING,
+        image: DataTypes.STRING,
+        video: DataTypes.STRING,
         seen: DataTypes.BOOLEAN,
         room_id: DataTypes.STRING,
     }, {

@@ -11,11 +11,12 @@ import HandleTime from "../../../utils/handleTime";
 import RenderWithCondition from "../../RenderWithCondition";
 import { HealIcon, TickIcon } from "../../SgvIcon";
 import Loader from "../../Loader";
+import { fetchUpdatePost } from "../../../redux/slice/post.slice";
 
 
 
 
-function Commemt({ comment, handleReplyComment }) {
+function Commemt({ comment, onReplyComment }) {
     const { my_account } = useSelector(state => state.account)
     const { status_reply, replyComments } = useSelector(state => state.replyComment)
     const [showReply, setShowReply] = useState(false);
@@ -29,9 +30,13 @@ function Commemt({ comment, handleReplyComment }) {
 
     const handleDeleteComment = () => {
         dispatch(fetchDeleteComment({
-            comment_id: comment.comment_id,
-            acc_id: my_account.id,
+            comment_id: comment?.comment_id,
+            acc_id: my_account?.id,
         }));
+        dispatch(fetchUpdatePost({
+            id: comment?.post_id,
+            num_comments: comment?.num_comments - 1,
+        }))
     }
 
     const handleShowReply = () => {
@@ -42,18 +47,18 @@ function Commemt({ comment, handleReplyComment }) {
                     comment_id: comment.comment_id,
                 }));
         }
-
     };
 
 
     const handleDeleteReplyComment = (replyComment) => {
         dispatch(fetchDeleteReplyComment({
-            acc_id: replyComment.accounts.id,
-            id: replyComment.id
+            acc_id: replyComment?.accounts.id,
+            id: replyComment?.id
         }))
+
         dispatch(fetchUpdateComment({
-            comment_id: comment.comment_id,
-            num_replies: comment.num_replies - 1,
+            comment_id: comment?.comment_id,
+            num_replies: comment?.num_replies - 1,
         }))
     }
 
@@ -112,7 +117,7 @@ function Commemt({ comment, handleReplyComment }) {
                                     <Paragraph size='13px' bold="500">
                                         {comment?.num_likes} lượt thích
                                     </Paragraph>
-                                    <button onClick={handleReplyComment}>
+                                    <button onClick={onReplyComment}>
                                         <Paragraph size='13px' bold="500">
                                             Trả lời
                                         </Paragraph>
@@ -128,7 +133,6 @@ function Commemt({ comment, handleReplyComment }) {
                                 </Box>
                             </Box>
                             <RenderWithCondition condition={comment?.num_replies > 0}>
-
                                 <button
                                     style={{
                                         display: 'flex',
@@ -141,7 +145,7 @@ function Commemt({ comment, handleReplyComment }) {
                                     <Paragraph size='13px' bold="500">
                                         {!showReply ? `── Xem tất cả ` : `── Ẩn tất cả `} {comment?.num_replies} phản hồi
                                     </Paragraph>
-                                    <RenderWithCondition condition={status_reply === 'loading'}>
+                                    <RenderWithCondition condition={status_reply === 'loading' && replyComments.comment_id === comment?.comment_id}>
                                         <Loader size={13} />
                                     </RenderWithCondition>
                                 </button>

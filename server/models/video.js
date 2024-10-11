@@ -16,13 +16,17 @@ module.exports = (sequelize, DataTypes) => {
             })
             Video.belongsTo(models.Account, {
                 foreignKey: 'acc_id',
-                as: 'account',
+                as: 'accounts',
+            })
+            Video.hasMany(models.Like, {
+                foreignKey: 'video_id',
+                as: 'likes',
             })
         }
     }
     Video.init({
         title: DataTypes.STRING,
-        content: DataTypes.STRING,
+        video: DataTypes.STRING,
         num_likes: DataTypes.INTEGER,
         num_comments: DataTypes.INTEGER,
         acc_id: DataTypes.INTEGER

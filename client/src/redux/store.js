@@ -5,6 +5,7 @@ import { combineReducers } from 'redux';
 
 import accountReducer from './slice/account.slice';
 import postReducer from './slice/post.slice';
+import videoReducer from './slice/video.slice';
 import likeReducer from './slice/like.slice';
 import commentReducer from './slice/comment.slice';
 import replyCommentReducer from './slice/reply-comment.slide';
@@ -18,6 +19,7 @@ import persistConfig from './persistConfig';
 const rootReducer = combineReducers({
   account: accountReducer,
   post: postReducer,
+  video: videoReducer,
   like: likeReducer,
   comment: commentReducer,
   replyComment: replyCommentReducer,
@@ -38,3 +40,4 @@ export const store = configureStore({
 });
 
 export const persistor = persistStore(store);
+

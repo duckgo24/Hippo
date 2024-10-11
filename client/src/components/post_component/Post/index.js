@@ -15,38 +15,22 @@ import { fetchGetAllComments } from "../../../redux/slice/comment.slice";
 import HandleTime from "../../../utils/handleTime";
 
 
-const styles = {
-    buttonStyle: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '10px',
-        fontSize: '16px'
-    },
-}
-
-function Post({ post, style }) {
+function Post({ post, openComment, onToggleComments, style }) {
     const { my_account } = useSelector(state => state.account);
     const { comments } = useSelector(state => state.comment);
     const [activeHealIcon, setActiveHealIcon] = useState(
         post?.likes?.some(like => like.acc_id === my_account.id)
     );
     const [anchorElComment, setAnchorElComment] = useState(null);
-    const [openComment, setOpenComment] = useState(false);
-
     const [anchorElOptionPost, setAnchorElOptionPost] = useState(null);
     const [openOptionPost, setOpenOptionPost] = useState(false);
+
     const dispatch = useDispatch();
 
-    const prevPost = useRef();
 
     const handleToggleComments = (event) => {
-        if (post?.id !== prevPost.current?.id) {
-            setAnchorElComment(anchorElComment ? null : event.currentTarget);
-            setOpenComment(!openComment);
-            prevPost.current = post;
-        }
-
+        onToggleComments();
+        setAnchorElComment(event.currentTarget);
     };
 
     const toggleOptionPost = (e) => {
@@ -80,33 +64,25 @@ function Post({ post, style }) {
         }
     };
 
-
     useEffect(() => {
         if (openComment) {
             dispatch(fetchGetAllComments({
                 post_id: post?.id,
             }));
         }
-    }, [openComment])
-
+    }, [openComment]);
 
     useEffect(() => {
         const handleScroll = () => {
             setAnchorElComment(null);
-            setOpenComment(false);
-            setAnchorElOptionPost(null);
             setOpenOptionPost(false);
         };
-
 
         window.addEventListener('scroll', handleScroll);
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
     }, []);
-
-
-
 
     return (
         <Box
@@ -120,16 +96,14 @@ function Post({ post, style }) {
             border="1px solid #ccc"
             borderRadius="5px"
             boxShadow="0 2px 5px rgba(0, 0, 0, 0.1)"
-            background="white"
+            backgroundColor="white"
             color="black"
-            maxWidth={450}
-            width={450}
+            width="100%"
             sx={{
                 '&:hover': {
                     cursor: "pointer"
                 },
             }}
-            style={style}
         >
             <Box
                 display="flex"
@@ -184,18 +158,38 @@ function Post({ post, style }) {
             </Typography>
 
             <div style={{ overflow: 'hidden', borderRadius: '5px' }}>
-                <img src={post?.image} alt={post?.title} height={290} loading="lazy" style={{
-                    display: 'block',
-                    width: '100%',
-                    objectFit: 'cover',
-                }} />
+                <RenderWithCondition condition={post?.image}>
+                    <img src={post?.image} alt={post?.title} height={290} loading="lazy" style={{
+                        display: 'block',
+                        width: '100%',
+                        objectFit: 'cover',
+                    }} />
+                </RenderWithCondition>
+                <RenderWithCondition condition={post?.video}>
+                    <video src={post?.video} controls height={290} style={{
+                        display: 'block',
+                        width: '100%',
+                        objectFit: 'cover',
+                    }} />
+                </RenderWithCondition>
             </div>
 
             <Box
                 display="flex"
                 gap="10px"
             >
-                <button style={styles.buttonStyle} onClick={handleClickLike} >
+                <button
+                    style={{
+
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '10px',
+                        fontSize: '16px'
+
+                    }}
+                    onClick={handleClickLike}
+                >
                     <HealIcon
                         size={23}
                         color={activeHealIcon ? "#f00" : "#000"}
@@ -206,7 +200,17 @@ function Post({ post, style }) {
                     />
                     {post?.num_likes}
                 </button>
-                <button aria-describedby="open-comment" style={styles.buttonStyle} onClick={handleToggleComments}>
+                <button
+                    aria-describedby="open-comment"
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '10px',
+                        fontSize: '16px'
+                    }}
+                    onClick={handleToggleComments}
+                >
                     <MessageIcon size={23} />
                     {post?.num_comments}
                 </button>
@@ -214,9 +218,8 @@ function Post({ post, style }) {
                     id="open-comment"
                     open={openComment}
                     anchorEl={anchorElComment}
-                    placement="right-start"
+                    placement="bottom-start"
                 >
-
                     <Box sx={{
                         border: 1,
                         p: 1,
@@ -224,7 +227,7 @@ function Post({ post, style }) {
                         borderRadius: 4,
                         boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
                         width: 450,
-                        maxWidth: '90%',
+                        maxWidth: '100%',
                         minHeight: '100px',
                         marginLeft: 'auto',
                     }}>
@@ -235,7 +238,6 @@ function Post({ post, style }) {
                             alignItems="center"
                             gap="10px"
                             padding=" 0 10px"
-
                         >
                             <button onClick={handleToggleComments}>
                                 <CloseIcon size={16} />
@@ -253,7 +255,6 @@ function Post({ post, style }) {
                             <CommentList post={post} comment_list={comments} />
                         </RenderWithCondition>
                     </Box>
-
                 </Popper>
             </Box>
         </Box>

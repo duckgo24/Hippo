@@ -1,11 +1,11 @@
 const express = require('express');
 const authController = require('../controllers/auth.controller');
+const vnpayService = require('../services/vnpay.service');
 const route = express.Router();
 
 
 
 
-route.get('/me', authController.me);
-route.get('/refresh',authController.refreshToken);
+route.post('/payment', vnpayService)
 
 module.exports = route;

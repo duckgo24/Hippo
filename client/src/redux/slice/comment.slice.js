@@ -99,7 +99,7 @@ const commentSlice = createSlice({
                 state.status_comment = "loading";
             })
             .addCase(fetchDeleteComment.fulfilled, (state, action) => {
-                state.comments = state.comments.filter(comment => comment.comment_id !== action.payload.comment_id);
+                state.comments = state.comments.filter(comment => comment?.comment_id !== action.payload?.comment_id);
                 state.status_comment = "succeeded";
             })
 

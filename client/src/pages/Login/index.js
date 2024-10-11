@@ -16,6 +16,7 @@ import Button from '../../components/Button';
 import Loader from '../../components/Loader';
 import { fetchLogin } from '../../redux/slice/account.slice';
 import Alert from '../../components/Alert';
+import OAuthGoogle from '../../services/oauth/oauth.google';
 
 
 const cx = classNames.bind(styles);
@@ -65,9 +66,17 @@ function Login() {
             margin='auto'
             textAlign='center'
         >
+
             <Box
                 width='50%'
             >
+
+                
+
+
+
+
+
                 <img src={logo} alt="Logo" />
                 <Paragraph size="24px" bold='500' color='black' >
                     Chào mừng đến với Hippo
@@ -111,6 +120,7 @@ function Login() {
                     >
                         Đăng nhập
                     </Button>
+                    <OAuthGoogle />
                     {status_account === 'loading'
                         &&
                         <Loader style={{

@@ -122,7 +122,7 @@ const MessageIcon = ({ color = 'rbga(0, 0, 0, 0.54)', size = 26, ...props }) => 
     )
 }
 
-const HealIcon = ({ color = 'rbga(0, 0, 0, 0.54)', size = 26, active = false, ...props }) => {
+const HealIcon = ({ color = 'rgba(0, 0, 0, 0.54)', size = 26, active = false, ...props }) => {
     return (
         <svg
             className={cx(active ? 'active' : '')}
@@ -131,7 +131,7 @@ const HealIcon = ({ color = 'rbga(0, 0, 0, 0.54)', size = 26, active = false, ..
             height={size}
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#0000008a"
+            stroke={color}
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -393,7 +393,7 @@ const SmileFaceIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) =
 
 const ImageIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 32 32" id="image"> 
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 32 32" id="image">
             <path fill="#c6e3ff" d="M30 8v15.1L24 17l-6.68 5.13L11 13 2 23V8a2 2 0 0 1 2-2h24a2 2 0 0 1 2 2Z"></path>
             <path fill="#0478ed" d="M30 24.1a1 1 0 0 1-.71-.3l-5.38-5.47-6 4.59a1 1 0 0 1-1.43-.22l-5.6-8.09-8.14 9.08A1 1 0 0 1 1 23V8a3 3 0 0 1 3-3h24a3 3 0 0 1 3 3v15.1a1 1 0 0 1-1 1ZM11 12h.06a1 1 0 0 1 .76.43l5.72 8.27 5.85-4.49a1 1 0 0 1 1.32.09L29 20.66V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12.41l7.26-8.08A1 1 0 0 1 11 12Z"></path>
             <path fill="#56aaff" d="M20 26H4a2 2 0 0 1-2-2v-1l9-10 6.32 9.13Z"></path>
@@ -405,11 +405,38 @@ const ImageIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
     )
 }
 
-const GifIcon = ({size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props  }) => {
+const GifIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" id="gif">
             <path stroke="#000" strokeLinejoin="round" d="M2 6C2 3.79086 3.79086 2 6 2H18C20.2091 2 22 3.79086 22 6V18C22 20.2091 20.2091 22 18 22H6C3.79086 22 2 20.2091 2 18V6Z"></path>
             <path stroke="#000" strokeLinecap="round" strokeLinejoin="round" d="M12 8V16M15 16V12M19 8H15.5C15.2239 8 15 8.22386 15 8.5V12M15 12H18M9 8H7.5C6.11929 8 5 9.11929 5 10.5V12 13.7778C5 15.0051 5.99492 16 7.22222 16V16C8.20406 16 9 15.2041 9 14.2222V12.5C9 12.2239 8.77614 12 8.5 12H7.5"></path>
+        </svg>
+    )
+}
+
+
+const AudioIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
+    return (
+        <svg
+            aria-label="Audio image"
+            fill="currentColor"
+            width={size}
+            height={size}
+            viewBox="0 0 24 24"
+            {...props}
+        >
+            <title>Audio image</title>
+            <path d="M21.002 16.972V2.044a.999.999 0 0 0-.36-.769 1.012 1.012 0 0 0-.823-.214L6.816 3.479A1 1 0 0 0 6 4.462v10.864A3.75 3.75 0 1 0 9 19V9.56l9.003-1.675v5.442A3.75 3.75 0 1 0 21.005 17c0-.01-.003-.02-.003-.029Z"></path>
+        </svg>
+    )
+}
+
+const ShareIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props}) => {
+    return (
+        <svg aria-label="Share" fill="currentColor" height={size}  viewBox="0 0 24 24" width={size}>
+            <title>Share</title>
+            <line fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" x1="22" x2="9.218" y1="3" y2="10.083"></line>
+            <polygon fill="none" points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334" stroke="currentColor" strokeLinejoin="round" strokeWidth="2"></polygon>
         </svg>
     )
 }
@@ -425,6 +452,6 @@ export {
     DropDownIcon, CheckIcon, CloseIcon,
     SubmitIcon, MoreIcon, DeleteIcon,
     BlockIcon, SmileFaceIcon, ImageIcon,
-    GifIcon
+    GifIcon, AudioIcon, ShareIcon
 
 };

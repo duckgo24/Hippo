@@ -41,6 +41,8 @@ class RoomMessageController {
     }
     async createMessage(req, res, next) {
         const { acc_id: sender_id } = req.body;
+        console.log(req.body);
+        
         try {
             const message = await db.RoomMessage.create({
                 ...req.body,

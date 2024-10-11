@@ -94,9 +94,9 @@ class AccountController {
             if (account) {
                 const { password, ...others } = account.dataValues;
                 const access_token = jwtService.sign({ id: account.id, nickname: account.nickname, role: account.role }, '1h');
-                const refesh_token = jwtService.sign({ id: account.id, nickname: account.nickname, role: account.role }, '365d');
+                const refresh_token = jwtService.sign({ id: account.id, nickname: account.nickname, role: account.role }, '365d');
 
-                res.cookie('refresh_token', refesh_token, {
+                res.cookie('refresh_token', refresh_token, {
                     expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 14),
                     path: '/'
                 });

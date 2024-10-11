@@ -1,21 +1,20 @@
+import axios from "axios";
 
 
 function GetLinkImage(path) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = async () => {
-            const imgBase64 = reader.result.split(',')[1];
+            const formData = new FormData();
+            formData.append('image', path);
             try {
-                const formData = new FormData();
-                formData.append('image', imgBase64);
-    
-                const res = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.REACT_APP_IMGBB_KEY}`, {
-                    method: 'POST',
-                    body: formData,
+                const response = await axios.post(`${process.env.REACT_APP_API_URL}/upload/image`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
                 });
-    
-                const data = await res.json();
-                resolve(data.data?.url);
+                console.log(response.data);
+                resolve(response.data?.url);
             } catch (error) {
                 reject(error);
             }

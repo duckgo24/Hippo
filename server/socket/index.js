@@ -1,5 +1,6 @@
 const { Server } = require('socket.io');
 const { addUser, getUser, delUser } = require('./user');
+const db = require('../models');
 
 const initSocket = (server) => {
     const io = new Server(server, {
@@ -11,6 +12,7 @@ const initSocket = (server) => {
     });
 
     io.on('connection', (socket) => {
+
         socket.on('join-room', (data) => {
             const { room_id, username } = data;
             const { user, error } = addUser({
@@ -56,11 +58,16 @@ const initSocket = (server) => {
         socket.on('disconnect', () => {
             const user = getUser(socket.id);
             const _user = delUser(socket.id);
+
+            
+        
             if (_user) {
                 socket.leave(user.room_id);
                 console.log(`User '${user?.username}' left room ${user?.room_id}`);
             }
         });
+
+       
     });
 }
 

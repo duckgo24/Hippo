@@ -57,6 +57,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'sender_id',
         as: 'message_sender'
       });
+      
       Account.hasMany(models.RoomMessage, {
         foreignKey: 'receiver_id',
         as: 'message_receiver'

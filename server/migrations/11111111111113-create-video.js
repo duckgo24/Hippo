@@ -12,6 +12,9 @@ module.exports = {
       title: {
         type: Sequelize.STRING
       },
+      video: {
+        type: Sequelize.STRING
+      },
       num_likes: {
         type: Sequelize.INTEGER
       },

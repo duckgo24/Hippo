@@ -157,7 +157,7 @@ function Profile() {
                 friend_id: currentAccount?.id
             }))
 
-            if (get_friend.friend_id) {
+            if (get_friend?.friend_id) {
                 dispatch(fetchFindRequestFriendWithSender({
                     sender_id: my_account?.id,
                     receiver_id: currentAccount?.id
@@ -619,7 +619,16 @@ function Profile() {
                     <Tab label="Đã thích" />
                 </Tabs>
 
-                <TabPanel value={currentTab} index={0}>
+                <TabPanel
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "20px",
+                    }}
+                    value={currentTab} index={0}
+                >
                     {
                         !filter_posts
                             ?

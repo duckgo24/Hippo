@@ -27,12 +27,39 @@ import { useSelector } from 'react-redux';
 const cx = classNames.bind(styles);
 
 
+
+
 function Navigation() {
-    const [open, setOpen] = useState(false);
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [openMoreAction, setOpenMoreAction] = useState(false);
+    const [openNotify, setOpenNotify] = useState(false);
+    const [anchorElMoreAction, setAnchorElMoreAction] = useState(null);
+    const [anchorElNotify, setAnchorElNotify] = useState(null);
     const [navActive, setNavActive] = useState(0);
     const { my_account } = useSelector(state => state.account)
     const navigate = useNavigate();
+
+    const handleToggleNotify = (event) => {
+        if (event) {
+            setAnchorElNotify(event.currentTarget);
+            setOpenNotify((prevOpen) => !prevOpen);
+        }
+        console.log(event);
+        
+    };
+
+
+    const handleItemMoreActionClick = (event) => {
+        setAnchorElMoreAction(event.currentTarget);
+        setOpenMoreAction((prevOpen) => !prevOpen);
+    };
+
+    const handleNavClick = (index) => {
+        setNavActive(index);
+        setOpenMoreAction(false);
+    };
+
+
+
 
     const ListNavigation = [
         {
@@ -67,11 +94,12 @@ function Navigation() {
             isActive: false,
         },
         {
-            path: '/notify',
             name: 'Thông báo',
             icon: <HealIcon />,
             isActive: false,
+            onClick: (event) => handleToggleNotify(event),
         },
+
         {
             path: '/sell',
             name: 'Mua hàng',
@@ -131,15 +159,8 @@ function Navigation() {
         },
     ];
 
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-        setOpen((prevOpen) => !prevOpen);
-    };
 
-    const handleNavClick = (index) => {
-        setNavActive(index);
-        setOpen(false);
-    };
+
 
     return (
         <Paper className={cx('navbar')} sx={{ width: 250, maxWidth: '100%', height: '100vh', position: 'fixed', top: '0' }}>
@@ -164,7 +185,7 @@ function Navigation() {
                         onClick={() => {
                             handleNavClick(index);
                             if (nav?.onClick) {
-                                nav.onClick(); 
+                                nav.onClick();
                             }
                         }}
                         component={nav.path ? Link : 'div'}
@@ -172,7 +193,26 @@ function Navigation() {
                     >
                         <ListItemIcon>{nav.icon}</ListItemIcon>
                         <ListItemText>{nav.name}</ListItemText>
+                        <Popper open={openNotify} anchorEl={anchorElNotify} transition placement='top-end'>
+                            {({ TransitionProps }) => (
+                                <Fade {...TransitionProps} timeout={350}>
+                                    <MenuList
+                                        sx={{
+                                            boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px',
+                                            minWidth: '260px',
+                                            marginLeft: '10px',
+                                            marginBottom: '10px',
+                                            zIndex: 1000,
+                                            backgroundColor: '#fff',
+                                        }}
+                                    >
+
+                                    </MenuList>
+                                </Fade>
+                            )}
+                        </Popper>
                     </MenuItem>
+
                 ))}
 
             </MenuList>
@@ -187,7 +227,7 @@ function Navigation() {
                     alignItems: 'center',
                     width: '250px',
                 }}
-                onClick={handleClick}
+                onClick={handleItemMoreActionClick}
                 className={cx('item')}
             >
                 <ListItemIcon>
@@ -195,7 +235,7 @@ function Navigation() {
                 </ListItemIcon>
                 <ListItemText>Xem thêm</ListItemText>
 
-                <Popper open={open} anchorEl={anchorEl} transition placement='top-end'>
+                <Popper open={openMoreAction} anchorEl={anchorElMoreAction} transition placement='top-end'>
                     {({ TransitionProps }) => (
                         <Fade {...TransitionProps} timeout={350}>
                             <MenuList
@@ -212,7 +252,7 @@ function Navigation() {
                                     <React.Fragment key={action.name}>
                                         {action.isDivider && <Divider />}
                                         <MenuItem
-                                            onClick={handleNavClick}
+
                                             className={cx('item')}
                                             component={Link}
                                             to={action.path}

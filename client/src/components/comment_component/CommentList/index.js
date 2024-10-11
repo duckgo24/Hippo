@@ -11,6 +11,7 @@ import { EmojiIcon, SubmitIcon } from "../../SgvIcon";
 import { fetchCreateComment, fetchUpdateComment } from "../../../redux/slice/comment.slice";
 import { fetchUpdatePost } from "../../../redux/slice/post.slice";
 import { fetchCreateReplyComment } from "../../../redux/slice/reply-comment.slide";
+import RenderWithCondition from "../../RenderWithCondition";
 
 
 
@@ -41,6 +42,7 @@ function CommentList({ post, video, comment_list }) {
 
         if (!value) setTypeSend("comment");
     };
+
 
     const handleSendComment = () => {
         const tag = inputValue.split(' ').find(word => word.startsWith('@'))?.slice(1);
@@ -103,13 +105,13 @@ function CommentList({ post, video, comment_list }) {
                 maxHeight="300px"
                 minHeight="120px"
                 width="100%"
-                
+                overflow="auto"
             >
-                {comment_list && comment_list.map(comment => (
+                {comment_list && comment_list.length > 0 && comment_list.map(comment => (
                     <Comment
                         key={comment.comment_id}
                         comment={comment}
-                        handleReplyComment={() => handleReplyComment(comment)}
+                        onReplyComment={() => handleReplyComment(comment)}
                     />
                 ))}
             </Box>
@@ -136,9 +138,14 @@ function CommentList({ post, video, comment_list }) {
                         }}
                         value={inputValue}
                         onChange={handleChange}
-                        disabled={status_comment === 'loading' || status_reply === 'loading'}
+                        disabled={status_comment === 'loading' ||
+                            status_reply === 'loading'
+                        }
                     />
-                    {(status_comment === 'loading' || status_reply === 'loading') && (
+                    <RenderWithCondition
+                        condition={status_comment === 'loading' ||
+                            status_reply === 'loading'}
+                    >
                         <Loader
                             size={10}
                             style={{
@@ -149,7 +156,7 @@ function CommentList({ post, video, comment_list }) {
                                 zIndex: 1000,
                             }}
                         />
-                    )}
+                    </RenderWithCondition>
                 </div>
                 <button onClick={handleShowEmojiPicker}>
                     <EmojiIcon />
