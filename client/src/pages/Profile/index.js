@@ -157,7 +157,11 @@ function Profile() {
                 friend_id: currentAccount?.id
             }))
 
+<<<<<<< HEAD
             if (get_friend?.friend_id) {
+=======
+            if (get_friend.friend_id) {
+>>>>>>> 29fc6b1... update future Chat
                 dispatch(fetchFindRequestFriendWithSender({
                     sender_id: my_account?.id,
                     receiver_id: currentAccount?.id

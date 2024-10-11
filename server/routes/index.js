@@ -10,8 +10,11 @@ const friendRoute = require('./friend.route');
 const requestFriendRoute = require('./request-friend.route');
 const roomRoute = require('./room.route');
 const RoomMessageRoute = require('./room-message.route');
+<<<<<<< HEAD
 const cloudinaryRoute = require('./cloudinary.route');
 const vnpayRoute = require('./vnpay.route');
+=======
+>>>>>>> 29fc6b1... update future Chat
 
 function Routes(app) {
     app.use('/api/v1/accounts', AccountRoute)
@@ -25,8 +28,11 @@ function Routes(app) {
     app.use('/api/v1/request-friends', requestFriendRoute) 
     app.use('/api/v1/rooms', roomRoute)
     app.use('/api/v1/messages', RoomMessageRoute)
+<<<<<<< HEAD
     app.use('/api/v1/upload', cloudinaryRoute)
     app.use('/api/v1/', vnpayRoute)
+=======
+>>>>>>> 29fc6b1... update future Chat
 }
 
 module.exports = Routes;

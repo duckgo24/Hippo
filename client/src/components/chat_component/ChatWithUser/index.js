@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import classNames from "classnames/bind";
 import { useDispatch, useSelector } from "react-redux";
+<<<<<<< HEAD
 import { Avatar, Box, Button } from "@mui/material";
+=======
+import { Avatar, Box } from "@mui/material";
+>>>>>>> 29fc6b1... update future Chat
 import EmojiPicker from "emoji-picker-react";
 
 
@@ -10,12 +14,20 @@ import SocketService from "../../../utils/SocketService";
 import Paragraph from "../../Paragraph";
 import RenderWithCondition from "../../RenderWithCondition";
 import MessageChat from "../MessageChat";
+<<<<<<< HEAD
 import { CloseIcon, EmojiIcon, GifIcon, ImageIcon, MoreIcon, SubmitIcon } from "../../SgvIcon";
 import Loading from "../../Loading";
 import { fetchGetAllMessages, fetchCreateMessage } from "../../../redux/slice/room-message.slice";
 
 import styles from "./ChatWithUser.module.scss";
 import GetLinkImage from "../../../utils/GetLinkImage";
+=======
+import { EmojiIcon, GifIcon, ImageIcon, MoreIcon, SubmitIcon } from "../../SgvIcon";
+import Loading from "../../Loading";
+import {fetchGetAllMessages, fetchCreateMessage } from "../../../redux/slice/room-message.slice";
+
+import styles from "./ChatWithUser.module.scss";
+>>>>>>> 29fc6b1... update future Chat
 const cx = classNames.bind(styles);
 
 
@@ -25,12 +37,27 @@ function ChatWithUser({ user_chat }) {
     const { user, room_id } = user_chat;
     const [openEmoji, setOpenEmoji] = useState(false);
     const [myMessage, setMyMessage] = useState("");
+<<<<<<< HEAD
     const [imageUrl, setImageUrl] = useState(null);
     const [messages, setMessages] = useState();
     const prevUserChatRef = useRef(user_chat);
     const dispatch = useDispatch();
     const imageInputRef = useRef();
 
+=======
+    const [messages, setMessages] = useState();
+    const prevUserChatRef = useRef(user_chat);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        if (prevUserChatRef.current !== user_chat) {
+            setMessages([]);
+            console.log('Previous chat:', prevUserChatRef.current);
+            console.log('Current chat:', user_chat);
+            prevUserChatRef.current = user_chat;
+        }
+    }, [user_chat]);
+>>>>>>> 29fc6b1... update future Chat
 
     const handleOnChangeMyMessage = (e) => {
         setMyMessage(e.target.value);
@@ -40,6 +67,7 @@ function ChatWithUser({ user_chat }) {
         setOpenEmoji(prev => !prev);
     }
 
+<<<<<<< HEAD
     const handleOnChooseImage = () => {
         if (imageInputRef.current) {
             imageInputRef.current.click();
@@ -59,12 +87,19 @@ function ChatWithUser({ user_chat }) {
 
     const handleOnSendMessage = () => {
 
+=======
+    const handleOnSendMessage = () => {
+        if (!myMessage) return;
+>>>>>>> 29fc6b1... update future Chat
 
         SocketService.emit("send-message", {
             sender: my_account,
             receiver: user,
             content: myMessage,
+<<<<<<< HEAD
             iamge: imageUrl,
+=======
+>>>>>>> 29fc6b1... update future Chat
             created_at: new Date(),
             room_id,
             hasNewMessage: true
@@ -76,13 +111,20 @@ function ChatWithUser({ user_chat }) {
             receiver_id: user.id,
             content: myMessage,
             video: "",
+<<<<<<< HEAD
             image: imageUrl,
+=======
+            image: "",
+>>>>>>> 29fc6b1... update future Chat
             seen: false,
             room_id
         }))
 
         setMyMessage("");
+<<<<<<< HEAD
         setImageUrl(null);
+=======
+>>>>>>> 29fc6b1... update future Chat
     };
 
     const handleClickEmoji = (emojiObject) => {
@@ -90,6 +132,7 @@ function ChatWithUser({ user_chat }) {
         setOpenEmoji(false);
     }
 
+<<<<<<< HEAD
 
     useEffect(() => {
         if (prevUserChatRef.current !== user_chat) {
@@ -100,6 +143,8 @@ function ChatWithUser({ user_chat }) {
         }
     }, [user_chat]);
 
+=======
+>>>>>>> 29fc6b1... update future Chat
     useEffect(() => {
         SocketService.on("receive-message", (data) => {
             console.log(data);
@@ -137,6 +182,10 @@ function ChatWithUser({ user_chat }) {
     useEffect(() => {
         if (status_message === 'succeeded') {
             setMessages(room_messages[0]);
+<<<<<<< HEAD
+=======
+            console.log(room_messages[0]);
+>>>>>>> 29fc6b1... update future Chat
         }
     }, [status_message]);
 
@@ -168,6 +217,7 @@ function ChatWithUser({ user_chat }) {
                 </Box>
             </Box>
 
+<<<<<<< HEAD
             <Box
                 padding="2px 10px"
                 sx={{
@@ -175,6 +225,9 @@ function ChatWithUser({ user_chat }) {
                 }}
                 height={650}
             >
+=======
+            <Box flex={1} padding="2px 10px">
+>>>>>>> 29fc6b1... update future Chat
                 <RenderWithCondition condition={status_message === 'loading'}>
                     <Loading />
                 </RenderWithCondition>
@@ -182,11 +235,16 @@ function ChatWithUser({ user_chat }) {
                     {
                         messages?.room_messages
                         && messages?.room_messages.map((message, index) => (
+<<<<<<< HEAD
                             <MessageChat key={index} message={message} sender={message.message_sender} />
+=======
+                            <MessageChat key={index} message={message.content} sender={message.message_sender} />
+>>>>>>> 29fc6b1... update future Chat
                         ))
                     }
                 </RenderWithCondition>
             </Box>
+<<<<<<< HEAD
             <Box
                 display="flex"
                 flexDirection="row"
@@ -197,6 +255,12 @@ function ChatWithUser({ user_chat }) {
                 <button onClick={handleOnChooseImage}>
                     <ImageIcon />
                     <input type="file" style={{ display: 'none' }} ref={imageInputRef} onChange={getImageUrl} />
+=======
+
+            <Box display="flex" flexDirection="row" gap="10px" position="relative">
+                <button>
+                    <ImageIcon />
+>>>>>>> 29fc6b1... update future Chat
                 </button>
                 <button>
                     <GifIcon />
@@ -232,11 +296,16 @@ function ChatWithUser({ user_chat }) {
                         lazyLoadEmojis={true}
                     />
                 )}
+<<<<<<< HEAD
                 <RenderWithCondition condition={myMessage || imageUrl}>
+=======
+                <RenderWithCondition condition={myMessage}>
+>>>>>>> 29fc6b1... update future Chat
                     <button onClick={handleOnSendMessage}>
                         <SubmitIcon />
                     </button>
                 </RenderWithCondition>
+<<<<<<< HEAD
 
                 <Box
                     position="absolute"
@@ -272,6 +341,8 @@ function ChatWithUser({ user_chat }) {
                         </button>
                     </RenderWithCondition>
                 </Box>
+=======
+>>>>>>> 29fc6b1... update future Chat
             </Box>
         </Box>
     );

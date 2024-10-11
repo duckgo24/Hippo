@@ -1,11 +1,12 @@
 const querystring = require('qs');
 const moment = require('moment');
 const crypto = require("crypto");
+const dotenv = require('dotenv');
 
 module.exports = function vnpayService(req, res) {
     const ipAddr = getClientIp(req) || '127.0.0.1'; 
-    const tmnCode = 'HXQYMHU8';
-    const secretKey = 'TGJ1CSHRLHJN715W7C717B06VJUXI93N';
+    const tmnCode = process.env.VNP_TMN_CODE;
+    const secretKey = process.env.VNP_HASH_SECRET;
     const vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
     const returnUrl = 'http://localhost:3000/';
 

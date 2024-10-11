@@ -11,7 +11,10 @@ import HandleTime from "../../../utils/handleTime";
 import RenderWithCondition from "../../RenderWithCondition";
 import { HealIcon, TickIcon } from "../../SgvIcon";
 import Loader from "../../Loader";
+<<<<<<< HEAD:client/src/components/comment_component/Comment/index.js
 import { fetchUpdatePost } from "../../../redux/slice/post.slice";
+=======
+>>>>>>> 29fc6b1... update future Chat:client/src/components/Comment/index.js
 
 
 
@@ -52,8 +55,13 @@ function Commemt({ comment, onReplyComment }) {
 
     const handleDeleteReplyComment = (replyComment) => {
         dispatch(fetchDeleteReplyComment({
+<<<<<<< HEAD:client/src/components/comment_component/Comment/index.js
             acc_id: replyComment?.accounts.id,
             id: replyComment?.id
+=======
+            acc_id: replyComment.accounts.id,
+            id: replyComment.id
+>>>>>>> 29fc6b1... update future Chat:client/src/components/Comment/index.js
         }))
 
         dispatch(fetchUpdateComment({
@@ -133,6 +141,10 @@ function Commemt({ comment, onReplyComment }) {
                                 </Box>
                             </Box>
                             <RenderWithCondition condition={comment?.num_replies > 0}>
+<<<<<<< HEAD:client/src/components/comment_component/Comment/index.js
+=======
+
+>>>>>>> 29fc6b1... update future Chat:client/src/components/Comment/index.js
                                 <button
                                     style={{
                                         display: 'flex',
@@ -145,7 +157,11 @@ function Commemt({ comment, onReplyComment }) {
                                     <Paragraph size='13px' bold="500">
                                         {!showReply ? `── Xem tất cả ` : `── Ẩn tất cả `} {comment?.num_replies} phản hồi
                                     </Paragraph>
+<<<<<<< HEAD:client/src/components/comment_component/Comment/index.js
                                     <RenderWithCondition condition={status_reply === 'loading' && replyComments.comment_id === comment?.comment_id}>
+=======
+                                    <RenderWithCondition condition={status_reply === 'loading'}>
+>>>>>>> 29fc6b1... update future Chat:client/src/components/Comment/index.js
                                         <Loader size={13} />
                                     </RenderWithCondition>
                                 </button>

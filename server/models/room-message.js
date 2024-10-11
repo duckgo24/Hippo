@@ -23,8 +23,11 @@ module.exports = (sequelize, DataTypes) => {
         sender_id: DataTypes.INTEGER,
         receiver_id: DataTypes.INTEGER,
         content: DataTypes.STRING,
+<<<<<<< HEAD
         image: DataTypes.STRING,
         video: DataTypes.STRING,
+=======
+>>>>>>> 29fc6b1... update future Chat
         seen: DataTypes.BOOLEAN,
         room_id: DataTypes.STRING,
     }, {

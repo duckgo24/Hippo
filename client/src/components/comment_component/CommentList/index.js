@@ -11,7 +11,10 @@ import { EmojiIcon, SubmitIcon } from "../../SgvIcon";
 import { fetchCreateComment, fetchUpdateComment } from "../../../redux/slice/comment.slice";
 import { fetchUpdatePost } from "../../../redux/slice/post.slice";
 import { fetchCreateReplyComment } from "../../../redux/slice/reply-comment.slide";
+<<<<<<< HEAD:client/src/components/comment_component/CommentList/index.js
 import RenderWithCondition from "../../RenderWithCondition";
+=======
+>>>>>>> 29fc6b1... update future Chat:client/src/components/CommentList/index.js
 
 
 
