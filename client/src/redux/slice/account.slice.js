@@ -205,6 +205,21 @@ const accountSlice = createSlice({
                 state.status_account = 'failed';
             })
 
+            //Cập nhật account
+            .addCase(fetchUpdateAccount.pending, (state) => {
+                state.status_account = 'loading';
+            })
+            .addCase(fetchUpdateAccount.fulfilled, (state, action) => {
+                state.status_account = 'succeeded';
+                state.my_account = {
+                    ...state.my_account,
+                    ...action.payload
+                };
+            })
+            .addCase(fetchUpdateAccount.rejected, (state) => {
+                state.status_account = 'failed';
+            })
+
             //Reset status
             .addCase(resetStatusIdle.fulfilled, (state) => {
                 state.status_account = 'idle';

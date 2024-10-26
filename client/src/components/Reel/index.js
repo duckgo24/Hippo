@@ -1,5 +1,5 @@
 import { Box, Popper } from "@mui/material";
-import { AudioIcon, CloseIcon, HealIcon, MessageIcon, MoreIcon, ShareIcon } from "../SgvIcon";
+import { AudioIcon, CloseIcon, HealIcon, LocationIcon, MessageIcon, MoreIcon, ShareIcon } from "../SgvIcon";
 
 
 import styles from './Reel.module.scss';
@@ -7,14 +7,25 @@ import classNames from "classnames/bind";
 import CardUser from "../CardUser";
 import Button from "../Button";
 import Paragraph from "../Paragraph";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import CommentList from "../comment_component/CommentList";
 import RenderWithCondition from "../RenderWithCondition";
+import { useSelector } from "react-redux";
 const cx = classNames.bind(styles);
 
 
-function Reel({ reel, onReelInView, onClickReel }) {
+function Reel({ reel, onReelInView, currentOpenReel, onToggleComments }) {
+
+    const [anchorElComment, setAnchorElComment] = useState(null);
+    const { comments } = useSelector(state => state.comment);
     const reelRef = useRef();
+    const isCommentOpen = currentOpenReel === reel.id;
+
+    const handleToggleComments = (event) => {
+        setAnchorElComment(event.currentTarget);
+        onToggleComments(reel?.id);
+    };
+
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -41,18 +52,19 @@ function Reel({ reel, onReelInView, onClickReel }) {
     }, [onReelInView]);
 
 
-
     return (
         <Box
             display="flex"
             alignItems="center"
             gap="10px"
             height="90vh"
+        
         >
             <Box
                 boxShadow="rgba(99, 99, 99, 0.2) 0px 2px 8px 0px"
                 padding="10px"
                 borderRadius="10px"
+                position="relative"
             >
                 <video
                     style={{
@@ -60,7 +72,7 @@ function Reel({ reel, onReelInView, onClickReel }) {
                     }}
                     src={reel?.video}
                     controls
-                    width="450px" height="450px"
+                    width="550px" height="550px"
                     ref={reelRef}
                     autoPlay
                     muted
@@ -71,9 +83,11 @@ function Reel({ reel, onReelInView, onClickReel }) {
                     gap="10px"
                 >
                     <CardUser nickname={reel?.accounts?.nickname} avatar={reel?.accounts?.avatar} tick={reel?.accounts?.tick} />
-                    <Button small primary>Theo dõi</Button>
+                    <RenderWithCondition condition={reel?.location}>
+                        <Paragraph size="14px" color="#000">  <LocationIcon color="#000" /> {reel?.location}</Paragraph>
+                    </RenderWithCondition>
                 </Box>
-                <Paragraph size="14px">{reel?.title}</Paragraph>
+                <Paragraph size="14px" color="#000">{reel?.title}</Paragraph>
                 <Box
                     position="relative"
                     bgcolor="rgba(0, 0, 0, 0.1)"
@@ -112,12 +126,14 @@ function Reel({ reel, onReelInView, onClickReel }) {
                     flexDirection="column"
                     alignItems="center"
                 >
-                    <Button>
+                    <Button onClick={handleToggleComments}>
                         <MessageIcon color="#000" />
                     </Button>
                     <Paragraph color="#000" size="14px">{reel?.num_comments} </Paragraph>
-
                     <Popper
+                        id="open-comment"
+                        open={isCommentOpen}
+                        anchorEl={anchorElComment}
                         placement="bottom-start"
                     >
                         <Box sx={{
@@ -139,7 +155,7 @@ function Reel({ reel, onReelInView, onClickReel }) {
                                 gap="10px"
                                 padding=" 0 10px"
                             >
-                                <button>
+                                <button onClick={handleToggleComments}>
                                     <CloseIcon size={16} />
                                 </button>
                                 <Paragraph color="#000" bold="600" style={{
@@ -151,9 +167,9 @@ function Reel({ reel, onReelInView, onClickReel }) {
                                     Bình luận
                                 </Paragraph>
                             </Box>
-                            <RenderWithCondition >
-                                <CommentList />
-                            </RenderWithCondition>
+
+                            <CommentList video={reel} comment_list={comments} />
+
                         </Box>
                     </Popper>
                 </Box>
@@ -164,7 +180,9 @@ function Reel({ reel, onReelInView, onClickReel }) {
                     <MoreIcon />
                 </Button>
             </Box>
+
         </Box>
+
     );
 }
 

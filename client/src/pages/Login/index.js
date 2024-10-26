@@ -70,13 +70,6 @@ function Login() {
             <Box
                 width='50%'
             >
-
-                
-
-
-
-
-
                 <img src={logo} alt="Logo" />
                 <Paragraph size="24px" bold='500' color='black' >
                     Chào mừng đến với Hippo

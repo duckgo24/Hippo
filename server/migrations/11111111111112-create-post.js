@@ -22,13 +22,25 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       acc_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'accounts',
           key: 'id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
+      },
+      location: {
+        type: Sequelize.STRING
+      },
+      privacy: {
+        type: Sequelize.BOOLEAN
+      },
+      isComment: {
+        type: Sequelize.BOOLEAN
+      },
+      tag: {
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

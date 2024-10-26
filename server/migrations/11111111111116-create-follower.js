@@ -11,7 +11,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       follower_user_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'accounts',
           key: 'id'
@@ -20,7 +20,7 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       following_user_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'accounts',
           key: 'id'

@@ -4,7 +4,7 @@ import { Avatar, Box, Divider, Modal, Popper, Tab, Tabs, Link, } from "@mui/mate
 import Paragraph from "../../components/Paragraph";
 import Button from "../../components/Button";
 import { fetchGetMyPosts } from "../../redux/slice/post.slice";
-
+import Alert from "../../components/Alert";
 import Input from "../../components/Input";
 import { PlusIcon, SmileFaceIcon, TickIcon } from "../../components/SgvIcon";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -15,6 +15,8 @@ import CardUser from "../../components/CardUser";
 import testImage from "../../images/test.jpg";
 import { fetchCreateRoom } from "../../redux/slice/room.slice";
 import Post from "../../components/post_component/Post";
+import BoxInfoUser from "../../components/BoxInfoUser";
+import { fetchAuthMe } from "../../redux/slice/account.slice";
 
 function TabPanel({ value, index, children }) {
     return (
@@ -25,15 +27,15 @@ function TabPanel({ value, index, children }) {
 }
 
 function Profile() {
-    const { my_account } = useSelector(state => state.account);
+    const { my_account, status_account } = useSelector(state => state.account);
     const { filter_posts } = useSelector(state => state.post);
     const { get_friend, friends } = useSelector(state => state.friend);
     const { get_request_friend_sender, get_request_friend_receiver } = useSelector(state => state.requestFriend);
     const [currentTab, setCurrentTab] = useState(0);
-    const [openModalExitProfile, setOpenModalExitProfile] = useState(false);
+    const [openModalEditProfile, setOpenModalEditProfile] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const inputFileAvatarRef = useRef();
+
     const { state } = useLocation();
 
     const [anchorElOptionFriend, setAnchorElOptionFriend] = useState(null);
@@ -42,8 +44,8 @@ function Profile() {
     const toggleOptionFriend = (e) => {
         setOpenOptionFriend(prev => !prev)
         setAnchorElOptionFriend(e.currentTarget);
-
     }
+
 
     const currentAccount = useMemo(() => {
         return state?.account ? state?.account : my_account;
@@ -53,14 +55,10 @@ function Profile() {
         setCurrentTab(tab);
     };
 
-    const handleChangeAvatar = () => {
-        if (inputFileAvatarRef && inputFileAvatarRef.current) {
-            inputFileAvatarRef.current.click();
-        }
-    };
+
 
     const handleToggleModalExitProfile = () => {
-        setOpenModalExitProfile(!openModalExitProfile);
+        setOpenModalEditProfile(!openModalEditProfile);
     }
 
     const handleSendRequestFriend = () => {
@@ -157,11 +155,7 @@ function Profile() {
                 friend_id: currentAccount?.id
             }))
 
-<<<<<<< HEAD
-            if (get_friend?.friend_id) {
-=======
-            if (get_friend.friend_id) {
->>>>>>> 29fc6b1... update future Chat
+            if (!get_friend?.friend_id) {
                 dispatch(fetchFindRequestFriendWithSender({
                     sender_id: my_account?.id,
                     receiver_id: currentAccount?.id
@@ -191,6 +185,7 @@ function Profile() {
             margin="auto"
             padding="40px 0 0 0"
             gap="20px"
+            position="relative"
         >
             <Paragraph
                 size="16px"
@@ -287,90 +282,15 @@ function Profile() {
                                 </Button>
                             </Box>
                             <Modal
-                                open={openModalExitProfile}
-                                onClose={() => setOpenModalExitProfile(false)}
+                                open={openModalEditProfile}
+                                onClose={() => setOpenModalEditProfile(false)}
                                 sx={{
                                     display: "flex",
                                     justifyContent: "center",
                                     alignItems: "center",
                                 }}
                             >
-                                <Box
-                                    width={500}
-                                    height={500}
-                                    boxShadow="rgba(0, 0, 0, 0.35) 0px 5px 15px"
-                                    bgcolor="#fff"
-                                    borderRadius={5}
-                                    padding="30px 25px"
-                                >
-
-                                    <Box
-                                        display="flex"
-                                        justifyContent="space-between"
-                                    >
-                                        <Box flex={1}>
-                                            <label
-                                                style={{
-                                                    padding: "0 20px",
-                                                }}
-                                            >Tên người dùng</label>
-                                            <Input
-                                                leftIcon={<SmileFaceIcon size={30} color="#000" />}
-                                                value={currentAccount?.full_name}
-                                                style={{
-                                                    border: "none",
-                                                }}
-                                            />
-                                            <Divider style={{
-                                                backgroundColor: "#000",
-                                                height: "2px"
-                                            }} />
-                                        </Box>
-                                        <Box
-                                            position="relative"
-                                            height="65px"
-                                            width="65px"
-                                            marginLeft="20px"
-                                        >
-                                            <Avatar
-                                                src={currentAccount?.avatar}
-                                                alt={currentAccount?.nickname}
-                                                onClick={handleChangeAvatar}
-                                                sx={{
-                                                    position: 'relative',
-                                                    cursor: 'pointer',
-                                                    height: '100%',
-                                                    width: '100%',
-                                                    borderRadius: '50%',
-                                                    objectFit: 'cover',
-                                                    ":before": {
-                                                        content: '""',
-                                                        position: 'absolute',
-                                                        top: 0,
-                                                        left: 0,
-                                                        bottom: 0,
-                                                        right: 0,
-
-                                                    },
-                                                    ":hover:before": {
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.45)',
-                                                    },
-                                                }}
-                                            />
-                                            <PlusIcon color="rgba(0, 0, 0, 0.45)" style={{
-                                                position: 'absolute',
-                                                bottom: 0,
-                                                left: 0,
-                                            }} />
-                                            <input ref={inputFileAvatarRef} type="file" style={{
-                                                display: 'none',
-                                            }} />
-                                        </Box>
-
-
-                                    </Box>
-
-                                </Box>
+                                <BoxInfoUser account={my_account} onChangeInfo={() => setOpenModalEditProfile(false)} />
                             </Modal>
                         </>
                     )}
@@ -653,6 +573,13 @@ function Profile() {
                     Đã thích
                 </TabPanel>
             </Box>
+
+            <RenderWithCondition condition={status_account === 'succeeded' && !openModalEditProfile}>
+                <Alert type={'success'} message={"Cap nhat tai khoan thanh cong"} title={"Thong bao"} />
+            </RenderWithCondition>
+
+
+
         </Box>
     );
 }

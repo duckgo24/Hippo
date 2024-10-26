@@ -1,21 +1,15 @@
 import { useSelector } from "react-redux";
 import { Avatar, Box } from "@mui/material";
 import Paragraph from "../../Paragraph";
-<<<<<<< HEAD
 import RenderWithCondition from "../../RenderWithCondition";
-=======
->>>>>>> 29fc6b1... update future Chat
 
 
 
 function MessageChat({ sender, message }) {
     const { my_account } = useSelector(state => state.account);
 
-<<<<<<< HEAD
     console.log(message);
 
-=======
->>>>>>> 29fc6b1... update future Chat
     return (
         <Box
             sx={{
@@ -26,7 +20,6 @@ function MessageChat({ sender, message }) {
                 position: "relative",
             }}
         >
-<<<<<<< HEAD
             <RenderWithCondition condition={my_account?.id !== sender?.id}>
                 <Avatar src={sender?.avatar} alt={sender?.avatar} />
             </RenderWithCondition>
@@ -50,19 +43,6 @@ function MessageChat({ sender, message }) {
                     {message?.content}
                 </Paragraph>
             </RenderWithCondition>
-=======
-            {my_account?.id !== sender?.id && <Avatar src={sender?.avatar} alt={sender?.avatar} />}
-            <Paragraph
-                style={{
-                    color: my_account?.id === sender?.id ? "#fff" : "#000",
-                    padding: "8px",
-                    borderRadius: "8px",
-                    backgroundColor: my_account?.id === sender?.id ? "#0084ff" : "#e4e6eb",
-                    wordBreak: "break-word",
-                }}>
-                {message}
-            </Paragraph>
->>>>>>> 29fc6b1... update future Chat
         </Box>
     );
 }

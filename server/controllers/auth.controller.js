@@ -16,8 +16,6 @@ class AuthController {
                         const account = await db.Account.findOne({
                             where: {
                                 id: user.id,
-                                nickname: user.nickname,
-                                role: user.role
                             }
                         });
 

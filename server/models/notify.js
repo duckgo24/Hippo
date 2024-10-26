@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         context: DataTypes.STRING,
         type: DataTypes.STRING,
         status: DataTypes.BOOLEAN,
-        acc_id: DataTypes.INTEGER,
+        acc_id: DataTypes.STRING
     }, {
         sequelize,
         tableName: 'notifies',

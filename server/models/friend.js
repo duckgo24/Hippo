@@ -12,12 +12,12 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'friend_id',
                 as: 'friend',
             })
-        }
+        } 
     }
 
     Friend.init({
-        acc_id: DataTypes.INTEGER,
-        friend_id: DataTypes.INTEGER,
+        acc_id: DataTypes.STRING,
+        friend_id: DataTypes.STRING,
         status: DataTypes.STRING,
     }, {
         sequelize,

@@ -8,7 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { Link, useNavigate } from 'react-router-dom';
-import { Fade, Popper } from '@mui/material';
+import { Avatar, Fade, Popper } from '@mui/material';
 import Paragraph from '../../Paragraph';
 
 import styles from './Navigation.module.scss';
@@ -108,7 +108,7 @@ function Navigation() {
         },
         {
             name: 'Trang cá nhân',
-            icon: <UserIcon />,
+            icon: <img src={my_account?.avatar} style={{ height:35, width:35 }}/>,
             isActive: false,
             onClick: () => navigate(`/profile/${my_account?.nickname}`, {
                 state: {

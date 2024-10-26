@@ -16,6 +16,17 @@ class RoomController {
                             user_id: acc_id
                         },
                     },
+                    {
+                        model: db.RoomMessage,
+                        as: 'room_messages',
+                        attributes: ['content', 'image', 'video', 'seen', 'createdAt', 'sender_id'],                       
+                         where: {
+                          
+
+                        },                        
+                        order: [['createdAt', 'DESC']],
+                        limit: 1
+                    }
                 ]
             });
 
@@ -44,7 +55,8 @@ class RoomController {
                     participants: {
                         sender: sender.dataValues.room_participant,
                         receiver: receiver.dataValues.room_participant
-                    }
+                    },
+                    lastMessage: room.room_messages
                 };
             }));
 

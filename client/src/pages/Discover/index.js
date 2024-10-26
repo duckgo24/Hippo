@@ -4,9 +4,13 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@mui/material';
+import SocketService from '../../utils/SocketService';
+import { useSelector } from 'react-redux';
 
 function Discover() {
 
+    const { my_account } = useSelector(state => state.account);
 
     const [amount, setAmount] = useState(0);
     const [orderId, setOrderId] = useState('');
@@ -19,14 +23,25 @@ function Discover() {
                 orderInfo: 'Thanh toán hóa đơn',
                 orderType: 'billpayment',
             });
-    
-            
-        
-           
+
+
+
+
         } catch (error) {
             console.error('Error during payment:', error);
         }
     };
+
+    const handleTest = () => {
+        SocketService.emit('send-notify', {
+            senderId: my_account.id,
+            receiverId: '78b52ca3-4d8b-4335-9432-606001358258',
+            data: {
+                message: 'Hello, this is a test notification',
+            }
+        });
+
+    }
 
     return (
         <div>
@@ -44,6 +59,7 @@ function Discover() {
                 onChange={(e) => setAmount(e.target.value)}
             />
             <button onClick={handlePayment}>Thanh toán</button>
+            <Button onClick={handleTest}>Test</Button>
         </div>
     );
 };

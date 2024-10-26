@@ -1,15 +1,16 @@
 
 import axios from 'axios';
 
-function GetLinkVideo(formData) {
+function GetLinkVideo(file) {
     return new Promise(async (resolve, reject) => {
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/upload/video`, formData, {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/upload/video`, {
+              video: file,
+            }, {
               headers: {
                 'Content-Type': 'multipart/form-data',
               },
             });
-            console.log(response.data);
             
             resolve(response.data?.url);
           } catch (error) {

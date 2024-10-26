@@ -118,11 +118,11 @@ const postSlice = createSlice({
                 );
 
             })
-
             .addCase(fetchUpdatePost.rejected, state => {
                 state.status_post = 'failed';
             })
 
+            //
             .addCase(resetStatusIdle.fulfilled, state => {
                 state.status_post = 'idle';
             })

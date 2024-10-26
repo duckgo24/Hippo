@@ -16,8 +16,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     RequestFriend.init({
-        sender_id: DataTypes.INTEGER,
-        receiver_id: DataTypes.INTEGER,
+        sender_id: DataTypes.STRING,
+        receiver_id: DataTypes.STRING,
         status: DataTypes.INTEGER,
     }, {
         sequelize,

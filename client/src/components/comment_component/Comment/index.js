@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Avatar, Box } from "@mui/material";
@@ -11,35 +11,31 @@ import HandleTime from "../../../utils/handleTime";
 import RenderWithCondition from "../../RenderWithCondition";
 import { HealIcon, TickIcon } from "../../SgvIcon";
 import Loader from "../../Loader";
-<<<<<<< HEAD:client/src/components/comment_component/Comment/index.js
 import { fetchUpdatePost } from "../../../redux/slice/post.slice";
-=======
->>>>>>> 29fc6b1... update future Chat:client/src/components/Comment/index.js
+import { fetchUpdateVideo } from "../../../redux/slice/video.slice";
 
 
 
 
-function Commemt({ comment, onReplyComment }) {
+function Commemt({ comment, onReplyComment, onUpdatePostWhereDelete }) {
     const { my_account } = useSelector(state => state.account)
     const { status_reply, replyComments } = useSelector(state => state.replyComment)
     const [showReply, setShowReply] = useState(false);
     const [likeComment, setLikeComment] = useState(false);
     const dispatch = useDispatch();
 
-
     const handleLikeComment = () => {
         setLikeComment(!likeComment);
     }
+
+    
 
     const handleDeleteComment = () => {
         dispatch(fetchDeleteComment({
             comment_id: comment?.comment_id,
             acc_id: my_account?.id,
         }));
-        dispatch(fetchUpdatePost({
-            id: comment?.post_id,
-            num_comments: comment?.num_comments - 1,
-        }))
+        onUpdatePostWhereDelete();
     }
 
     const handleShowReply = () => {
@@ -55,20 +51,26 @@ function Commemt({ comment, onReplyComment }) {
 
     const handleDeleteReplyComment = (replyComment) => {
         dispatch(fetchDeleteReplyComment({
-<<<<<<< HEAD:client/src/components/comment_component/Comment/index.js
             acc_id: replyComment?.accounts.id,
             id: replyComment?.id
-=======
-            acc_id: replyComment.accounts.id,
-            id: replyComment.id
->>>>>>> 29fc6b1... update future Chat:client/src/components/Comment/index.js
         }))
 
         dispatch(fetchUpdateComment({
             comment_id: comment?.comment_id,
             num_replies: comment?.num_replies - 1,
+            acc_id: my_account?.id
         }))
+
+        dispatch(fetchUpdatePost({
+            id: comment?.post_id,
+            num_comments: comment?.posts?.num_comments - 1,
+        }))
+
     }
+
+    useEffect(() => {
+        console.log(comment?.posts?.num_comments - 1)
+    }, [])
 
 
     return (
@@ -141,10 +143,6 @@ function Commemt({ comment, onReplyComment }) {
                                 </Box>
                             </Box>
                             <RenderWithCondition condition={comment?.num_replies > 0}>
-<<<<<<< HEAD:client/src/components/comment_component/Comment/index.js
-=======
-
->>>>>>> 29fc6b1... update future Chat:client/src/components/Comment/index.js
                                 <button
                                     style={{
                                         display: 'flex',
@@ -157,11 +155,7 @@ function Commemt({ comment, onReplyComment }) {
                                     <Paragraph size='13px' bold="500">
                                         {!showReply ? `── Xem tất cả ` : `── Ẩn tất cả `} {comment?.num_replies} phản hồi
                                     </Paragraph>
-<<<<<<< HEAD:client/src/components/comment_component/Comment/index.js
                                     <RenderWithCondition condition={status_reply === 'loading' && replyComments.comment_id === comment?.comment_id}>
-=======
-                                    <RenderWithCondition condition={status_reply === 'loading'}>
->>>>>>> 29fc6b1... update future Chat:client/src/components/Comment/index.js
                                         <Loader size={13} />
                                     </RenderWithCondition>
                                 </button>
@@ -216,11 +210,13 @@ function Commemt({ comment, onReplyComment }) {
                                                                 {reply?.content}
                                                             </Paragraph>
                                                         </div>
-                                                        <button onClick={() => handleDeleteReplyComment(reply)}>
-                                                            <Paragraph size='14px' color='#000'>
-                                                                xóa
-                                                            </Paragraph>
-                                                        </button>
+                                                        <RenderWithCondition condition={my_account?.id === reply?.acc_id}>
+                                                            <button onClick={() => handleDeleteReplyComment(reply)}>
+                                                                <Paragraph size='14px' color='#000'>
+                                                                    xóa
+                                                                </Paragraph>
+                                                            </button>
+                                                        </RenderWithCondition>
                                                     </Box>
                                                 }
                                             })

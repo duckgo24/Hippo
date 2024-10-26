@@ -52,15 +52,6 @@ export const myRoutes = [
         isShowNavigate: false,
     } ,
     {
-<<<<<<< HEAD
-=======
-        path: '/chat/:nickname',
-        component: Chat,
-        isShowNavigate: false,
-    }
-    ,
-    {
->>>>>>> 29fc6b1... update future Chat
         path: '/chat/',
         component: Chat,
         isShowNavigate: false,

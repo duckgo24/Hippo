@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     ReplyComment.init({
         content: DataTypes.STRING,
         reply_user: DataTypes.STRING,
-        acc_id: DataTypes.INTEGER,
+        acc_id: DataTypes.STRING,
         comment_id: {
             type: DataTypes.INTEGER,
             references: {

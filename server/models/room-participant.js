@@ -16,11 +16,11 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     RoomParticipant.init({
-        user_id: DataTypes.INTEGER,
+        user_id: DataTypes.STRING,
         room_id: DataTypes.STRING,
     }, {
         sequelize,
-        tableName: 'room-participants',
+        tableName: 'room_participants',
         modelName: 'RoomParticipant',
     });
     

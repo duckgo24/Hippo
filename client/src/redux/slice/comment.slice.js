@@ -1,15 +1,23 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import axiosJWT from "../../utils/axiosJwtInstance";
 import delay from "../../utils/delay";
+import { useSelector } from "react-redux";
+import axios from "axios";
+
+;
 
 const fetchGetAllComments = createAsyncThunk('comment/get-comments', async (data, { rejectWithValue, dispatch }) => {
     try {
-        const { post_id, video_id } = data;
+        const { post_id, video_id, acc_id } = data;
+        console.log(acc_id);
+        
         let params = post_id ? { post_id } : { video_id };
 
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/get-all-comment`, {
-            params
+        const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/get-all-comment`, {
+            params: {
+                ...params,
+                acc_id
+            }
         });
         return res.data;
     } catch (error) {
@@ -22,7 +30,7 @@ const fetchGetAllComments = createAsyncThunk('comment/get-comments', async (data
 const fetchCreateComment = createAsyncThunk('comment/create', async (data, { rejectWithValue, dispatch }) => {
     try {
         await delay(2000);
-        const res = await axios.post(`${process.env.REACT_APP_API_URL}/create-comment`, data);
+        const res = await axiosJWT.post(`${process.env.REACT_APP_API_URL}/create-comment`, data);
         return res.data;
     } catch (error) {
         rejectWithValue(error);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -6,7 +6,7 @@ import Cookies from 'js-cookie'
 
 import { Avatar, Box, Modal } from "@mui/material";
 import { fetchAuthMe, fetchUpdateAccount } from "../../redux/slice/account.slice";
-import {  EmojiIcon, ImageIcon, MessageIcon } from "../../components/SgvIcon";
+import { EmojiIcon, ImageIcon, MessageIcon } from "../../components/SgvIcon";
 import Alert from "../../components/Alert";
 import Button from "../../components/Button";
 import { fetchGetAllPosts } from "../../redux/slice/post.slice";
@@ -16,8 +16,9 @@ import Post from "../../components/post_component/Post";
 import RenderWithCondition from "../../components/RenderWithCondition";
 import { fetchGetAllVideos } from "../../redux/slice/video.slice";
 
+import SocketService from "../../utils/SocketService";
 
-function HomeIcon() {
+function Home() {
     const { my_account } = useSelector(state => state.account);
     const { status_post, posts } = useSelector(state => state.post);
     const { videos, status_video } = useSelector(state => state.video);
@@ -34,10 +35,8 @@ function HomeIcon() {
         setShowCreatePost(!showCreatePost);
     }
 
- 
-    const handleToggleComments = (postId) => {
-        console.log(postId);
 
+    const handleToggleComments = (postId) => {
         if (openPostId === postId) {
             setOpenPostId(null);
         } else {
@@ -75,7 +74,7 @@ function HomeIcon() {
     }, [dispatch]);
 
 
-    const videoAndpost = useCallback(() => {
+    const videoAndpost = useMemo(() => {
         const arr = [];
         var postIndex = 0;
         var videoIndex = 0;
@@ -95,21 +94,24 @@ function HomeIcon() {
             }
         }
 
+        
+
         return arr;
     }, [videos, posts]);
 
-    // useEffect(() => {
-    //     const handleOffline = () => {
-    //         SocketService.emit('disconnect', { acc_id: my_account?.id });
-    //     };
+    useEffect(() => {
+        SocketService.emit('join-room-userId', my_account?.id);
 
-    //     window.addEventListener('offline', handleOffline);
+        SocketService.on('receive-notify', (notification) => {
+          console.log(notification);
+        });
 
-    //     return () => {
-    //         window.removeEventListener('offline', handleOffline);  
+        return () => {
+            SocketService.off('receive-notify');
+        };
+        
+    }, [my_account?.id]);
 
-    //     };
-    // }, [my_account?.id]);
 
 
     return (
@@ -117,7 +119,7 @@ function HomeIcon() {
         <Box
             display="flex"
             flexDirection="column"
-            width="550px"
+            width="600px"
             margin="auto"
             height="100%"
             padding="40px 0"
@@ -173,21 +175,17 @@ function HomeIcon() {
                             openComment={openPostId === post?.id}
                         />
                     ))} */}
-                <RenderWithCondition condition={videoAndpost() && videoAndpost().length > 0}>
-                    {
-                        videoAndpost().map((item) => {
-                            return (
-                                <Post
-                                    key={item.id}
-                                    post={item}
-                                    onToggleComments={() => handleToggleComments(item.id)}
-                                    openComment={openPostId === item.id}
-                                />
-                            )
+                {/* <RenderWithCondition condition={videoAndpost && videoAndpost.length > 0}>
+                    {videoAndpost.map((item) => (
+                        <Post
+                            key={item.id}
+                            post={item}
+                            onToggleComments={() => handleToggleComments(item?.id)}
+                            openComment={openPostId === item?.id}
+                        />
+                    ))}
+                </RenderWithCondition> */}
 
-                        })
-                    }
-                </RenderWithCondition>
             </Box>
             <Modal
                 open={showCreatePost}
@@ -207,4 +205,4 @@ function HomeIcon() {
     );
 }
 
-export default HomeIcon;
+export default Home;

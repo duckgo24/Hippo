@@ -2,8 +2,6 @@
 const jwtService = require("../services/jwt.service");
 
 
-
-
 const verifyToken = async (req, res, next) => {
     try {
         const token = req.headers.authorization.split(' ')[1];
@@ -31,7 +29,6 @@ const authenMeByToken = async (req, res, next) => {
     } else if (req.query && req.query.acc_id) {
         acc_id = req.query.acc_id;
     }
-
     try {
         verifyToken(req, res, () => {
 

@@ -20,19 +20,16 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     RoomMessage.init({
-        sender_id: DataTypes.INTEGER,
-        receiver_id: DataTypes.INTEGER,
+        sender_id: DataTypes.STRING,
+        receiver_id: DataTypes.STRING,
         content: DataTypes.STRING,
-<<<<<<< HEAD
         image: DataTypes.STRING,
         video: DataTypes.STRING,
-=======
->>>>>>> 29fc6b1... update future Chat
         seen: DataTypes.BOOLEAN,
         room_id: DataTypes.STRING,
     }, {
         sequelize,
-        tableName: 'room-messages',
+        tableName: 'room_messages',
         modelName: 'RoomMessage',
     });
     

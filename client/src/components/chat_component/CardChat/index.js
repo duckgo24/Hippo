@@ -6,15 +6,18 @@ import Paragraph from "../../Paragraph";
 import HandleTime from "../../../utils/handleTime";
 
 import Styles from "./CardChat.module.scss"
+import { useEffect } from "react";
+import RenderWithCondition from "../../RenderWithCondition";
 const cx = classNames.bind(Styles);
 
-function CardChat({ account, lastMessage, room_id, selected, hasNewMessage, className, onClick }) {
+function CardChat({ account, lastMessage, newMessage, room_id, selected, hasNewMessage, className, onClick }) {
 
     const { my_account } = useSelector(state => state.account);
     const classes = cx('card-chat', {
         selected: selected,
         [className]: className,
     })
+
 
 
     return (
@@ -44,30 +47,47 @@ function CardChat({ account, lastMessage, room_id, selected, hasNewMessage, clas
                 flex={1}
             >
                 <Paragraph bold="700">{account?.full_name}</Paragraph>
-                {lastMessage &&
+               
                     <Box
                         display="flex"
                         gap="10px"
                         flexDirection="row"
                         flexWrap="nowrap"
                     >
-                        
-                        {
-                            lastMessage?.sender?.id === my_account?.id && lastMessage?.room_id === room_id
-                                ?
-                                <>
-                                    <Paragraph>Bạn: {lastMessage?.content}</Paragraph>
-                                    <Paragraph> • {HandleTime(lastMessage?.created_at)}</Paragraph>
-                                </>
-                                :
-                                <>
-                                    <Paragraph bold={"700"}>{lastMessage?.content}</Paragraph>
-                                    <Paragraph> • {HandleTime(lastMessage?.created_at)}</Paragraph>
-                                </>
-                        }
+
+                        <RenderWithCondition condition={lastMessage && !newMessage}>
+                            {
+                                lastMessage?.sender_id == my_account?.id
+                                    ?
+                                    <>
+                                        <Paragraph>Bạn: {lastMessage?.content}</Paragraph>
+                                        <Paragraph> • {HandleTime(lastMessage?.createdAt)}</Paragraph>
+                                    </>
+                                    :
+                                    <>
+                                        <Paragraph bold={"700"}>{lastMessage?.content}</Paragraph>
+                                        <Paragraph> • {HandleTime(lastMessage?.createdAt)}</Paragraph>
+                                    </>
+                            }
+                        </RenderWithCondition>
+                        <RenderWithCondition condition={newMessage}>
+                            {
+                                newMessage?.sender?.id === my_account?.id && newMessage?.room_id === room_id
+                                    ?
+                                    <>
+                                        <Paragraph>Bạn: {newMessage?.content}</Paragraph>
+                                        <Paragraph> • {HandleTime(newMessage?.created_at)}</Paragraph>
+                                    </>
+                                    :
+                                    <>
+                                        <Paragraph bold={"700"}>{newMessage?.content}</Paragraph>
+                                        <Paragraph> • {HandleTime(newMessage?.created_at)}</Paragraph>
+                                    </>
+                            }
+                        </RenderWithCondition>
 
                     </Box>
-                }
+                
             </Box>
 
         </Box>

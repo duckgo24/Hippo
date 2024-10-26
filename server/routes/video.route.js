@@ -6,6 +6,9 @@ const videoController = require('../controllers/video.controller');
 
 route.get('/get-videos', videoController.getAllVideos);
 route.post('/create', authenMeByToken ,videoController.createVideo);
+route.put('/update/:id', videoController.updateVideo);
+route.delete('/delete/:id', authenMeByToken, videoController.deleteVideo);
+
 
 module.exports = route;
 

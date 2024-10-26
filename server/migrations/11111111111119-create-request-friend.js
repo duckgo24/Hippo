@@ -10,7 +10,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       sender_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'accounts',
           key: 'id'
@@ -19,7 +19,7 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       receiver_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'accounts',
           key: 'id'

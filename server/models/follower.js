@@ -18,8 +18,8 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     Follower.init({
-        follower_user_id: DataTypes.INTEGER,
-        following_user_id: DataTypes.INTEGER
+        follower_user_id: DataTypes.STRING,
+        following_user_id: DataTypes.STRING,
     }, {
         sequelize,
         tableName: 'followers',

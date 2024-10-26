@@ -81,19 +81,6 @@ function Chat() {
         );
     }, [my_account?.nickname, navigate]);
 
-    const renderedCardChats = useMemo(() => {
-        return cardChats.map((card, index) => (
-            <CardChat
-                key={index}
-                room_id={card?.room_id}
-                account={card?.participants?.receiver}
-                lastMessage={lastMessage?.room_id === card?.room_id ? lastMessage : null}
-                selected={currentUser?.user?.id === card?.participants?.receiver?.id}
-                hasNewMessage={card?.hasNewMessage}
-                onClick={() => handleOnClickCardChat(card?.participants?.receiver, card?.room_id)}
-            />
-        ));
-    }, [cardChats, currentUser?.user?.id, handleOnClickCardChat, lastMessage]);
 
     return (
         <Box display="flex" flexDirection="row" height="100vh" overflow="hidden">
@@ -120,7 +107,18 @@ function Chat() {
                     </Paragraph>
                 </Box>
                 <Box display="flex" flexDirection="column" gap="5px" sx={{ overflowY: "auto", paddingLeft: "20px" }}>
-                    {renderedCardChats}
+                    {cardChats.map((card, index) => (
+                        <CardChat
+                            key={index}
+                            room_id={card?.room_id}
+                            account={card?.participants?.receiver}
+                            newMessage={lastMessage?.room_id === card?.room_id ? lastMessage : null}
+                            lastMessage={card?.lastMessage[0]}
+                            selected={currentUser?.user?.id === card?.participants?.receiver?.id}
+                            hasNewMessage={card?.hasNewMessage}
+                            onClick={() => handleOnClickCardChat(card?.participants?.receiver, card?.room_id)}
+                        />
+                    ))}
                 </Box>
             </Box>
             <Box

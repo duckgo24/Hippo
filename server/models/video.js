@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'comment_id',
                 as: 'comments',
             })
+            Video.hasMany(models.BlockPost, {
+                foreignKey: 'video_id',
+                as: 'block-posts',
+            })
             Video.belongsTo(models.Account, {
                 foreignKey: 'acc_id',
                 as: 'accounts',
@@ -29,7 +33,11 @@ module.exports = (sequelize, DataTypes) => {
         video: DataTypes.STRING,
         num_likes: DataTypes.INTEGER,
         num_comments: DataTypes.INTEGER,
-        acc_id: DataTypes.INTEGER
+        acc_id: DataTypes.STRING,
+        tag: DataTypes.STRING,
+        location: DataTypes.STRING,
+        privacy: DataTypes.BOOLEAN,
+        isComment: DataTypes.BOOLEAN,
     }, {
         sequelize,
         tableName: 'videos',

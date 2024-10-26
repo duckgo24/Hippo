@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import delay from "../../utils/delay";
 import axiosJWT from "../../utils/axiosJwtInstance";
 
@@ -10,7 +9,7 @@ const fetchGetAllReplyComment = createAsyncThunk('reply/getAllReplyComment', asy
     try {
         await delay(2000);
         const { comment_id } = data;
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/${comment_id}/get-replies-comment`)
+        const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/${comment_id}/get-replies-comment`)
         return res.data
     } catch (error) {
         return rejectWithValue(error.response ? error.response.data.message : error.message);
@@ -23,7 +22,7 @@ const fetchGetAllReplyComment = createAsyncThunk('reply/getAllReplyComment', asy
 const fetchCreateReplyComment = createAsyncThunk('reply/create-reply-comment', async (data, { rejectWithValue, dispatch }) => {
     try {
         await delay(2000);
-        const res = await axios.post(`${process.env.REACT_APP_API_URL}/reply-comment`, data);
+        const res = await axiosJWT.post(`${process.env.REACT_APP_API_URL}/create-reply-comment`, data);
         return res.data;
     } catch (error) {
         rejectWithValue(error);

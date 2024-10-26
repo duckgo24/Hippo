@@ -12,5 +12,8 @@ route.post('/create', authenMeByToken ,PostController.createPost);
 route.put('/update/:id',PostController.updatePost);
 route.delete('/delete/:id', authenMeByToken,PostController.deletePost);
 
+
+
+
 module.exports = route;
 

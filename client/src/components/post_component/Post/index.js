@@ -1,12 +1,10 @@
 import { Box, Divider, Popper, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-<<<<<<< HEAD:client/src/components/post_component/Post/index.js
-=======
 
 
 import CardUser from "../../CardUser";
-import { BlockIcon, CloseIcon, DeleteIcon, HealIcon, MessageIcon, MoreIcon } from "../../SgvIcon";
+import { BlockIcon, CloseIcon, DeleteIcon, HealIcon, LocationIcon, MessageIcon, MoreIcon } from "../../SgvIcon";
 import Paragraph from "../../Paragraph";
 import CommentList from "../../comment_component/CommentList";
 import RenderWithCondition from "../../RenderWithCondition";
@@ -15,20 +13,7 @@ import { fetchLikePost, fetchDislikesPost } from "../../../redux/slice/like.slic
 import { fetchUpdatePost } from "../../../redux/slice/post.slice";
 import { fetchGetAllComments } from "../../../redux/slice/comment.slice";
 import HandleTime from "../../../utils/handleTime";
-
->>>>>>> 29fc6b1... update future Chat:client/src/components/Post/index.js
-
-
-import CardUser from "../../CardUser";
-import { BlockIcon, CloseIcon, DeleteIcon, HealIcon, MessageIcon, MoreIcon } from "../../SgvIcon";
-import Paragraph from "../../Paragraph";
-import CommentList from "../../comment_component/CommentList";
-import RenderWithCondition from "../../RenderWithCondition";
-
-import { fetchLikePost, fetchDislikesPost } from "../../../redux/slice/like.slice";
-import { fetchUpdatePost } from "../../../redux/slice/post.slice";
-import { fetchGetAllComments } from "../../../redux/slice/comment.slice";
-import HandleTime from "../../../utils/handleTime";
+import { fetchBlockPost } from "../../../redux/slice/block-post.slice";
 
 
 function Post({ post, openComment, onToggleComments, style }) {
@@ -46,17 +31,8 @@ function Post({ post, openComment, onToggleComments, style }) {
     const prevPost = useRef();
 
     const handleToggleComments = (event) => {
-<<<<<<< HEAD:client/src/components/post_component/Post/index.js
         onToggleComments();
         setAnchorElComment(event.currentTarget);
-=======
-        if (post?.id !== prevPost.current?.id) {
-            setAnchorElComment(anchorElComment ? null : event.currentTarget);
-            setOpenComment(!openComment);
-            prevPost.current = post;
-        }
-
->>>>>>> 29fc6b1... update future Chat:client/src/components/Post/index.js
     };
 
     const toggleOptionPost = (e) => {
@@ -90,10 +66,18 @@ function Post({ post, openComment, onToggleComments, style }) {
         }
     };
 
+    const handleClickBlockPost = () => {
+        dispatch(fetchBlockPost({
+            post_id: post?.id,
+            acc_id: my_account?.id,
+        }))
+    }
+
     useEffect(() => {
         if (openComment) {
             dispatch(fetchGetAllComments({
                 post_id: post?.id,
+                acc_id: my_account?.id,
             }));
         }
     }, [openComment]);
@@ -137,7 +121,14 @@ function Post({ post, openComment, onToggleComments, style }) {
                 display="flex"
                 justifyContent="space-between"
             >
-                <CardUser nickname={post?.accounts?.nickname} tick={post?.accounts?.tick} avatar={post?.accounts?.avatar} />
+                <Box
+                    display="flex"
+                    gap="10px"
+                >
+                    <CardUser nickname={post?.accounts?.nickname} tick={post?.accounts?.tick} avatar={post?.accounts?.avatar} />
+                 
+                </Box>
+
                 <button onClick={toggleOptionPost}>
                     <MoreIcon />
                 </button>
@@ -155,7 +146,9 @@ function Post({ post, openComment, onToggleComments, style }) {
                         flexDirection='column'
                         borderRadius="5px"
                     >
-                        <button style={{
+                        <button
+                        onClick={handleClickBlockPost}
+                         style={{
                             padding: '5px 10px',
                         }}>
                             <Paragraph color="#000">
@@ -186,7 +179,6 @@ function Post({ post, openComment, onToggleComments, style }) {
             </Typography>
 
             <div style={{ overflow: 'hidden', borderRadius: '5px' }}>
-<<<<<<< HEAD:client/src/components/post_component/Post/index.js
                 <RenderWithCondition condition={post?.image}>
                     <img src={post?.image} alt={post?.title} height={290} loading="lazy" style={{
                         display: 'block',
@@ -201,13 +193,6 @@ function Post({ post, openComment, onToggleComments, style }) {
                         objectFit: 'cover',
                     }} />
                 </RenderWithCondition>
-=======
-                <img src={post?.image} alt={post?.title} height={290} loading="lazy" style={{
-                    display: 'block',
-                    width: '100%',
-                    objectFit: 'cover',
-                }} />
->>>>>>> 29fc6b1... update future Chat:client/src/components/Post/index.js
             </div>
 
             <Box

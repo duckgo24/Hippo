@@ -7,6 +7,7 @@ import accountReducer from './slice/account.slice';
 import postReducer from './slice/post.slice';
 import videoReducer from './slice/video.slice';
 import likeReducer from './slice/like.slice';
+import blockPostReducer from './slice/block-post.slice';
 import commentReducer from './slice/comment.slice';
 import replyCommentReducer from './slice/reply-comment.slide';
 import friendReducer from './slice/friend.slice';
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   post: postReducer,
   video: videoReducer,
   like: likeReducer,
+  blockPost: blockPostReducer,
   comment: commentReducer,
   replyComment: replyCommentReducer,
   friend: friendReducer,

@@ -1,5 +1,7 @@
 
 const { Op } = require('sequelize');
+const uuid = require('uuid');
+const bcrypt = require('bcrypt');
 const db = require('../models/index');
 const jwtService = require('../services/jwt.service');
 const sendmailService = require('../services/sendmail.service');
@@ -10,16 +12,17 @@ class AccountController {
             const accounts = await db.Account.findAll({
                 attributes: { exclude: ['password'] }
             });
-            let start = Math.floor(Math.random() * 8);
-            let end = start + 15;
+            // let start = Math.floor(Math.random() * 8);
+            // let end = start + 15;
 
-            if (end > accounts.length) {
-                end = accounts.length;
-            }
+            // if (end > accounts.length) {
+            //     end = accounts.length;
+            // }
 
 
-            const responAccount = accounts.slice(start, end);
-            return res.json(responAccount);
+            // const responAccount = accounts.slice(start, end);
+            // return res.json(responAccount);
+            return res.json(accounts);
         } catch (error) {
             next(error);
         }
@@ -29,6 +32,10 @@ class AccountController {
     async searchAccount(req, res, next) {
         try {
             const { q } = req.query;
+            if (!q || !q.trim()) {
+                return res.status(400).json({ error: 'Search query is required' });
+            }
+
 
             const resultAccounts = await db.Account.findAll({
                 where: {
@@ -53,6 +60,10 @@ class AccountController {
 
     async register(req, res, next) {
         const formData = req.body;
+        const { password } = formData;
+
+        const hashPassword = await bcrypt.hash(password, 10);
+        formData.password = hashPassword;
 
         try {
             if (formData) {
@@ -67,7 +78,10 @@ class AccountController {
                     return res.status(409).json({ error: 'Username is already taken' });
                 }
 
-                const account = await db.Account.create(formData);
+                const account = await db.Account.create({
+                    ...formData,
+                    id: uuid.v4(),
+                });
                 return res.status(201).json(account);
             }
         } catch (error) {
@@ -82,31 +96,36 @@ class AccountController {
 
             const account = await db.Account.findOne({
                 where: {
-                    username,
-                    password
+                    username
                 }
             });
+
+            const isMatchPassword = await bcrypt.compare(password, account.password);
+
+            if (!isMatchPassword) {
+                return res.status(401).json({ error: 'Invalid username or password' });
+            }
 
             if (!account) {
                 return res.status(401).json({ error: 'Invalid username or password' });
             }
 
-            if (account) {
-                const { password, ...others } = account.dataValues;
-                const access_token = jwtService.sign({ id: account.id, nickname: account.nickname, role: account.role }, '1h');
-                const refresh_token = jwtService.sign({ id: account.id, nickname: account.nickname, role: account.role }, '365d');
 
-                res.cookie('refresh_token', refresh_token, {
-                    expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 14),
-                    path: '/'
-                });
-                res.cookie('access_token', access_token, {
-                    expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 10),
-                    path: '/',
-                });
+            const { _password, ...others } = account.dataValues;
+            const access_token = jwtService.sign({ id: account.id }, '1h');
+            const refresh_token = jwtService.sign({ id: account.id }, '365d');
 
-                return res.status(200).json({ ...others });
-            }
+            res.cookie('refresh_token', refresh_token, {
+                expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 14),
+                path: '/'
+            });
+            res.cookie('access_token', access_token, {
+                expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 10),
+                path: '/',
+            });
+
+            return res.status(200).json({ ...others });
+
         }
         catch (error) {
             return res.status(501).json({ error });
@@ -172,7 +191,7 @@ class AccountController {
                 return res.status(404).json({ error: 'Account not found' });
             }
 
-            if(checkAccount) {
+            if (checkAccount) {
                 const account = await db.Account.update({
                     ...req.body
                 }, {
@@ -180,7 +199,7 @@ class AccountController {
                         id: req.params.id
                     }
                 });
-    
+
                 if (account[0] === 1) {
                     return res.status(200).json({
                         ...checkAccount.dataValues,
@@ -191,13 +210,13 @@ class AccountController {
                     return res.status(404).json({ error: 'Account not found' });
                 }
             }
-            
 
-            
+
+
 
 
         } catch (error) {
-            return res.status(501).json({ error: 'Error' });
+            return res.status(501).json({ error: error.message });
         }
     }
 

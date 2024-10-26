@@ -169,6 +169,10 @@ class PostController {
         }
     }
 
+    async blockPost(req, res, next) {
+
+    }
+
 }
 
 module.exports = new PostController();

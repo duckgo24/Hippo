@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'post_id',
                 as: 'comments',
             })
+            Post.hasMany(models.BlockPost, {
+                foreignKey: 'post_id',
+                as: 'block_posts',
+            })
             Post.hasMany(models.Like, {
                 foreignKey: 'post_id',
                 as: 'likes',
@@ -29,7 +33,11 @@ module.exports = (sequelize, DataTypes) => {
         image: DataTypes.STRING,
         num_likes: DataTypes.INTEGER,
         num_comments: DataTypes.INTEGER,
-        acc_id: DataTypes.INTEGER
+        acc_id: DataTypes.STRING,
+        tag: DataTypes.STRING,
+        location: DataTypes.STRING,
+        privacy: DataTypes.BOOLEAN,
+        isComment: DataTypes.BOOLEAN,
     }, {
         sequelize,
         tableName: 'posts',

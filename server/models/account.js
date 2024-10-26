@@ -57,10 +57,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'sender_id',
         as: 'message_sender'
       });
-<<<<<<< HEAD
       
-=======
->>>>>>> 29fc6b1... update future Chat
       Account.hasMany(models.RoomMessage, {
         foreignKey: 'receiver_id',
         as: 'message_receiver'
@@ -70,9 +67,18 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'acc_id',
         as: 'notify_account',
       });
+
+      Account.hasMany(models.BlockPost, {
+        foreignKey: 'acc_id',
+        as: 'block_posts',
+      });
     }
   }
   Account.init({
+    id: {
+      type: DataTypes.STRING,
+      primaryKey: true,
+    },
     username: DataTypes.STRING,
     password: DataTypes.STRING,
     role: DataTypes.STRING,

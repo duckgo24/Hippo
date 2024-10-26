@@ -6,7 +6,7 @@ import styles from "./Input.module.scss";
 
 const cx = classNames.bind(styles);
 
-function Input({ leftIcon, rightIcon, placeholder, value, onChange, classNames, style }) {
+function Input({ leftIcon, rightIcon, placeholder, value, onChange, classNames, style, ...props }) {
 
 
     const classes = cx('input', {
@@ -22,6 +22,7 @@ function Input({ leftIcon, rightIcon, placeholder, value, onChange, classNames, 
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
+                {...props}
             />
            {rightIcon && <span className={cx('right-icon')}>{rightIcon}</span>}
 

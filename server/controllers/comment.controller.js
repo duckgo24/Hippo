@@ -22,6 +22,11 @@ class commentController {
                         model: db.Account,
                         as: 'accounts',
                         attributes: ['id', 'nickname', 'avatar', 'tick']
+                    },
+                    {
+                        model: db.Post,
+                        as: 'posts',
+                        attributes: ['id', 'num_comments']
                     }
                 ],
             });

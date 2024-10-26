@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, TextareaAutosize } from "@mui/material";
 import EmojiPicker from "emoji-picker-react";
@@ -9,12 +9,11 @@ import Loader from "../../Loader";
 import { EmojiIcon, SubmitIcon } from "../../SgvIcon";
 
 import { fetchCreateComment, fetchUpdateComment } from "../../../redux/slice/comment.slice";
-import { fetchUpdatePost } from "../../../redux/slice/post.slice";
+import { fetchCreatePost, fetchUpdatePost } from "../../../redux/slice/post.slice";
 import { fetchCreateReplyComment } from "../../../redux/slice/reply-comment.slide";
-<<<<<<< HEAD:client/src/components/comment_component/CommentList/index.js
 import RenderWithCondition from "../../RenderWithCondition";
-=======
->>>>>>> 29fc6b1... update future Chat:client/src/components/CommentList/index.js
+import Paragraph from "../../Paragraph";
+import { fetchUpdateVideo } from "../../../redux/slice/video.slice";
 
 
 
@@ -24,13 +23,13 @@ function CommentList({ post, video, comment_list }) {
     const [typeSend, setTypeSend] = useState("comment");
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [currentCommentReply, setCurrentCommentReply] = useState(null);
-
     const { my_account } = useSelector(state => state.account);
     const { status_comment } = useSelector(state => state.comment);
     const { status_reply } = useSelector(state => state.replyComment);
 
     const dispatch = useDispatch();
     const forbiddenWords = ["súc vật", "sủa", "đcm"];
+
 
     const handleChange = (e) => {
         let value = e.target.value;
@@ -50,6 +49,7 @@ function CommentList({ post, video, comment_list }) {
     const handleSendComment = () => {
         const tag = inputValue.split(' ').find(word => word.startsWith('@'))?.slice(1);
         if (inputValue.length > 0) {
+
             dispatch(fetchCreateComment({
                 content: inputValue,
                 tag: tag || null,
@@ -60,14 +60,42 @@ function CommentList({ post, video, comment_list }) {
                 acc_id: my_account.id,
             }));
 
-            dispatch(fetchUpdatePost({
-                id: post?.id,
-                num_comments: post.num_comments + 1,
-            }))
+            if (post) {
+                dispatch(fetchUpdatePost({
+                    id: post?.id,
+                    num_comments: post.num_comments + 1,
+                    acc_id: my_account?.id,
+                }));
+            }
+
+            if (video) {
+                dispatch(fetchUpdateVideo({
+                    id: video?.id,
+                    num_comments: video?.num_comments + 1,
+                    acc_id: my_account?.id,
+                }))
+            }
+
             setInputValue("");
         }
 
     };
+
+    const handleUpdatePostWhereDelete = (p) => {
+        if (p?.post_id) {
+            dispatch(fetchUpdatePost({
+                id: p?.post_id,
+                num_comments: p?.num_comments - 1,
+            }))
+        }
+
+        if (p?.video_id) {
+            dispatch(fetchUpdateVideo({
+                id: p?.video_id,
+                num_comments: p?.num_comments - 1,
+            }))
+        }
+    }
 
     const handleSendReplyComment = () => {
         if (inputValue.length > 0) {
@@ -77,19 +105,36 @@ function CommentList({ post, video, comment_list }) {
                 comment_id: currentCommentReply?.comment_id,
                 acc_id: my_account.id,
             }));
+
             dispatch(fetchUpdateComment({
                 comment_id: currentCommentReply?.comment_id,
                 num_replies: currentCommentReply?.num_replies + 1,
             }))
+
+            if(post) {
+                dispatch(fetchUpdatePost({
+                    id: post?.id,
+                    num_comments: post.num_comments + 1,
+                }))
+            }
+
+            if(video) {
+                dispatch(fetchUpdateVideo({
+                    id: video?.id,
+                    num_comments: video.num_comments + 1,
+                }))
+            }
+
+
             setInputValue("");
-            setCurrentCommentReply("comment");
+            setCurrentCommentReply(null);
         }
     };
 
     const handleReplyComment = (comment) => {
         setInputValue(`@${comment?.accounts?.nickname} `);
         setTypeSend("reply");
-        setCurrentCommentReply(comment);
+        setCurrentCommentReply(comment);  
     };
 
     const handleOnClickEmoji = (emoji) => {
@@ -98,7 +143,6 @@ function CommentList({ post, video, comment_list }) {
     };
 
     const handleShowEmojiPicker = () => setShowEmojiPicker(!showEmojiPicker);
-
     return (
         <Box>
             <Box
@@ -110,13 +154,24 @@ function CommentList({ post, video, comment_list }) {
                 width="100%"
                 overflow="auto"
             >
-                {comment_list && comment_list.length > 0 && comment_list.map(comment => (
-                    <Comment
-                        key={comment.comment_id}
-                        comment={comment}
-                        onReplyComment={() => handleReplyComment(comment)}
-                    />
-                ))}
+                <RenderWithCondition condition={post?.isComment || video?.isComment}>
+                    {comment_list && comment_list.length > 0 && comment_list.map(comment => (
+                        <Comment
+                            key={comment.comment_id}
+                            comment={comment}
+                            onReplyComment={() => handleReplyComment(comment)}
+                            onUpdatePostWhereDelete={() => handleUpdatePostWhereDelete(post)}
+                        />
+                    ))}
+                </RenderWithCondition>
+
+
+                <RenderWithCondition condition={!post?.isComment && !video?.isComment}>
+                    <Paragraph color="#000">
+                        Nhà sáng tạo đã tắt bình luận
+                    </Paragraph>
+                </RenderWithCondition>
+
             </Box>
             <Box
                 display="flex"
@@ -128,7 +183,7 @@ function CommentList({ post, video, comment_list }) {
                 borderRadius='20px'
                 position='relative'
             >
-                <CardUser avatar={post?.accounts?.avatar} size="26px" style={{ height: "40px" }} />
+                <CardUser avatar={post?.accounts?.avatar || video?.accounts?.avatar} size="26px" style={{ height: "40px" }} />
                 <div style={{ flex: 1, position: "relative" }}>
                     <TextareaAutosize
                         style={{
@@ -142,7 +197,8 @@ function CommentList({ post, video, comment_list }) {
                         value={inputValue}
                         onChange={handleChange}
                         disabled={status_comment === 'loading' ||
-                            status_reply === 'loading'
+                            status_reply === 'loading' ||
+                            !post?.isComment && !video?.isComment
                         }
                     />
                     <RenderWithCondition
@@ -161,21 +217,22 @@ function CommentList({ post, video, comment_list }) {
                         />
                     </RenderWithCondition>
                 </div>
-                <button onClick={handleShowEmojiPicker}>
+                <button onClick={handleShowEmojiPicker} disabled={!post?.isComment && !video?.isComment}>
                     <EmojiIcon />
                 </button>
-                {inputValue.length > 0 && (
+                <RenderWithCondition condition={inputValue.length > 0}>
                     <button onClick={typeSend === 'comment' ? handleSendComment : handleSendReplyComment}>
                         <SubmitIcon />
                     </button>
-                )}
+                </RenderWithCondition>
+
                 <EmojiPicker
                     style={{
                         position: 'absolute',
-                        top: '-200%',
-                        left: '100%',
+                        top: '100%',
+                        right: '0',
                         zIndex: 1000,
-                        width: '300px',
+                        width: '350px',
                         height: '250px',
                     }}
                     searchDisabled

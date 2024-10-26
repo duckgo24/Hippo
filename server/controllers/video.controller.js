@@ -102,6 +102,39 @@ class VideoController {
         }
     }
     
+    async deleteVideo(req, res, next) {
+        try {
+            const video = await db.Video.findByPk(req.params.id);
+
+            if (!video) {
+                return res.status(404).json({ message: 'Video not found' });
+            }
+
+            await video.destroy();
+
+            return res.status(200).json({ message: 'Video deleted successfully' });
+
+        } catch (error) {
+            res.status(501).json({ error });
+
+        }
+    }
+
+    async updateVideo(req, res, next) {
+        try {
+            const checkExitVideo = await db.Video.findByPk(req.params.id);
+            if (!checkExitVideo) {
+                return res.status(404).json({ message: 'Video not found' });
+            }
+            const video = await checkExitVideo.update(req.body);
+
+            if (video) {
+                return res.status(200).json(video);
+            }
+        } catch (error) {
+            return res.status(501).json({ error });
+        }
+    }
 
 }
 
