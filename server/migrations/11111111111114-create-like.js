@@ -5,15 +5,14 @@ module.exports = {
     await queryInterface.createTable('likes', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       post_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'posts',
-          key: 'id'
+          key: 'post_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'

@@ -6,7 +6,7 @@ const { authenMeByToken } = require('../middleware/authen.middleware');
 
 route.get('/get-posts', PostController.getAllPosts);
 route.get('/my-posts/:acc_id', PostController.getMyPosts);
-route.get('/:id', PostController.findPost);
+route.get('/get-by-id/:post_id', PostController.findPostById);
 route.get('/search/:q', PostController.searchPost);
 route.post('/create', authenMeByToken ,PostController.createPost);
 route.put('/update/:id',PostController.updatePost);

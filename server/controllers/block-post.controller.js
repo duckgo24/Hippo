@@ -1,6 +1,7 @@
 
 const { Op } = require('sequelize');
 const db = require('../models/index');
+const uuid = require('uuid');
 
 class blockPostController {
     async block(req, res, next) {
@@ -25,7 +26,10 @@ class blockPostController {
             });
 
             if (!checkExitBlockPost) {
-                const data = await db.BlockPost.create(req.body);
+                const data = await db.BlockPost.create({
+                    ...req.body,
+                    id: uuid.v4()
+                });
                 if (data) {
                     return res.status(201).json(data);
                 }

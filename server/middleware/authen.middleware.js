@@ -29,9 +29,10 @@ const authenMeByToken = async (req, res, next) => {
     } else if (req.query && req.query.acc_id) {
         acc_id = req.query.acc_id;
     }
+
+    
     try {
         verifyToken(req, res, () => {
-
             if (req.user?.id == acc_id) {
                 next();
             } else {

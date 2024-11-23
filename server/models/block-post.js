@@ -26,8 +26,13 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     BlockPost.init({
+        id: {
+            type: DataTypes.STRING,
+            primaryKey: true,
+            allowNull: false,
+        },
         acc_id: DataTypes.STRING,
-        post_id: DataTypes.INTEGER,
+        post_id: DataTypes.STRING,
         video_id: DataTypes.INTEGER,
     }, {
         sequelize,

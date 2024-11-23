@@ -6,14 +6,17 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@mui/material';
 import SocketService from '../../utils/SocketService';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCreateNotify } from '../../redux/slice/notify.slice';
+import { useSocket } from '../../providers/socket.provider';
 
 function Discover() {
 
     const { my_account } = useSelector(state => state.account);
-
+    const dispatch = useDispatch();
     const [amount, setAmount] = useState(0);
     const [orderId, setOrderId] = useState('');
+    const socket = useSocket();
 
     const handlePayment = async () => {
         try {
@@ -26,20 +29,21 @@ function Discover() {
 
 
 
-
         } catch (error) {
             console.error('Error during payment:', error);
         }
     };
 
     const handleTest = () => {
-        SocketService.emit('send-notify', {
+        socket.emit('send-notify', {
             senderId: my_account.id,
-            receiverId: '78b52ca3-4d8b-4335-9432-606001358258',
+            receiverId: 'ec96ee45-75f2-4cb6-83c7-7e61235a4fa6',
             data: {
                 message: 'Hello, this is a test notification',
             }
         });
+        
+
 
     }
 

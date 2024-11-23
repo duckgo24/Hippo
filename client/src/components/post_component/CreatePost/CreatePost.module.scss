@@ -23,6 +23,10 @@
     z-index: 9999;
 }
 
+.post {
+    mix-blend-mode: darken;
+}
+
 .post-preview {
     position: relative;
     filter: blur(3px);

@@ -73,6 +73,7 @@ const replyCommentSlice = createSlice({
             })
             .addCase(fetchGetAllReplyComment.rejected, (state) => {
                 state.status_reply = 'failed';
+                state.replyComments = [];
             })
 
             //
@@ -92,7 +93,7 @@ const replyCommentSlice = createSlice({
                 state.status_reply = 'loading';
             })
             .addCase(fetchDeleteReplyComment.fulfilled, (state, action) => {
-                state.replyComments = state.replyComments.filter(item => item.id!== action.payload.id);
+                state.replyComments = state.replyComments.filter(item => item.reply_id !== action.payload.reply_id);
                 state.status_reply = 'succeeded';
             })
             .addCase(fetchDeleteReplyComment.rejected, (state) => {

@@ -11,20 +11,30 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             Notify.belongsTo(models.Account, {
-                foreignKey: 'acc_id',
-                as: 'notify_account',
+                foreignKey: 'sender_id',
+                as: 'notify_sender_account',
+            });
+            Notify.belongsTo(models.Account, {
+                foreignKey: 'receiver_id',
+                as: 'notify_receiver_account',
             });
         }
     }
     Notify.init({
+        notify_id: {
+            type: DataTypes.STRING,
+            primaryKey: true,
+        },
         title: DataTypes.STRING,
-        context: DataTypes.STRING,
+        content: DataTypes.STRING,
         type: DataTypes.STRING,
-        status: DataTypes.BOOLEAN,
-        acc_id: DataTypes.STRING
+        isRead: DataTypes.BOOLEAN,
+        link: DataTypes.STRING,
+        sender_id: DataTypes.STRING,
+        receiver_id: DataTypes.STRING,
     }, {
         sequelize,
-        tableName: 'notifies',
+        tableName: 'notify',
         modelName: 'Notify',
     });
     return Notify;

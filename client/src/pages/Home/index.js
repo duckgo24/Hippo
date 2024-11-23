@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -16,14 +16,11 @@ import Post from "../../components/post_component/Post";
 import RenderWithCondition from "../../components/RenderWithCondition";
 import { fetchGetAllVideos } from "../../redux/slice/video.slice";
 
-import SocketService from "../../utils/SocketService";
 
 function Home() {
     const { my_account } = useSelector(state => state.account);
     const { status_post, posts } = useSelector(state => state.post);
     const { videos, status_video } = useSelector(state => state.video);
-    const { likePosts } = useSelector(state => state.like);
-    const { friends } = useSelector(state => state.friend);
     const [showCreatePost, setShowCreatePost] = useState(false);
     const [openPostId, setOpenPostId] = useState(null);
 
@@ -70,7 +67,7 @@ function Home() {
             acc_id: my_account?.id,
             isOnline: true,
             lastOnline: new Date()
-        }))
+        }));
     }, [dispatch]);
 
 
@@ -94,23 +91,8 @@ function Home() {
             }
         }
 
-        
-
         return arr;
     }, [videos, posts]);
-
-    useEffect(() => {
-        SocketService.emit('join-room-userId', my_account?.id);
-
-        SocketService.on('receive-notify', (notification) => {
-          console.log(notification);
-        });
-
-        return () => {
-            SocketService.off('receive-notify');
-        };
-        
-    }, [my_account?.id]);
 
 
 
@@ -119,7 +101,7 @@ function Home() {
         <Box
             display="flex"
             flexDirection="column"
-            width="600px"
+            width="800px"
             margin="auto"
             height="100%"
             padding="40px 0"
@@ -175,16 +157,23 @@ function Home() {
                             openComment={openPostId === post?.id}
                         />
                     ))} */}
-                {/* <RenderWithCondition condition={videoAndpost && videoAndpost.length > 0}>
-                    {videoAndpost.map((item) => (
-                        <Post
-                            key={item.id}
-                            post={item}
-                            onToggleComments={() => handleToggleComments(item?.id)}
-                            openComment={openPostId === item?.id}
-                        />
-                    ))}
-                </RenderWithCondition> */}
+                <RenderWithCondition condition={videoAndpost && videoAndpost.length > 0}>
+                    {videoAndpost.map((item,idx) => {
+                        if (item == null) {
+                            return null;
+                        }
+                        return (
+                            <Post
+                                key={idx}
+                                post={item}
+                                onToggleComments={() => handleToggleComments(item?.post_id)}
+                                openComment={openPostId === item?.post_id}
+                            />
+                        );
+                    }
+
+                    )}
+                </RenderWithCondition>
 
             </Box>
             <Modal

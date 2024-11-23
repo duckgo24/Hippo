@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const db = require('../models/index');
+const uuid = require('uuid');
 
 class PostController {
     async getAllPosts(req, res, next) {
@@ -37,8 +38,6 @@ class PostController {
     async getMyPosts(req, res, next) {
         try {
             const { acc_id } = req.params;
-            console.log(acc_id);
-            
             if (!acc_id) {
                 return res.status(400).json({ message: 'Missing account_id parameter' });
             }
@@ -64,7 +63,7 @@ class PostController {
                 ]
             });
 
-            if(posts) {
+            if (posts) {
                 return res.status(200).json(posts);
             }
         } catch (error) {
@@ -76,14 +75,14 @@ class PostController {
 
     async createPost(req, res, next) {
         try {
-            const post = await db.Post.create(req.body);
-
+            const post = await db.Post.create({
+                ...req.body,
+                post_id: uuid.v4(),
+            });
             if (post) {
-                console.log(post);
-                
                 const res_post = await db.Post.findOne({
                     where: {
-                        id: post?.id
+                        post_id: post.post_id
                     },
                     include: [
                         {
@@ -95,7 +94,7 @@ class PostController {
                 })
                 return res.status(201).json(res_post);
             }
-            
+
         } catch (error) {
             res.status(501).json({ error });
         }
@@ -124,7 +123,9 @@ class PostController {
             if (!checkExitPost) {
                 return res.status(404).json({ message: 'Post not found' });
             }
-            const post = await checkExitPost.update(req.body);
+            const post = await checkExitPost.update({
+                ...req.body,
+            });
 
             if (post) {
                 return res.status(200).json(post);
@@ -155,10 +156,23 @@ class PostController {
         }
     }
 
-    async findPost(req, res, next) {
-        try {
-            const post = await db.Post.findByPk(req.params.id);
+    async findPostById(req, res, next) {
+        const { post_id } = req.params;
 
+        try {
+            const post = await db.Post.findByPk(
+                post_id,
+                {
+                    include: [
+                        {
+                            model: db.Account,
+                            as: 'accounts',
+                            attributes: ['id', 'nickname', 'full_name', 'avatar', 'tick']
+                        },
+                       
+                    ]
+                }
+            );
             if (!post) {
                 return res.status(404).json({ message: 'Post not found' });
             }

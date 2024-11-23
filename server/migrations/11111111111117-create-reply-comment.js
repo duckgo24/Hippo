@@ -3,11 +3,10 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('reply_comment', {
-      id: {
+      reply_id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       content: {
         type: Sequelize.TEXT
@@ -16,7 +15,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       comment_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'comments',
           key: 'comment_id'

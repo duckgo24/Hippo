@@ -2,8 +2,9 @@
 const AccountRoute = require('./account.route');
 const AuthRoute = require('./auth.route');
 const PostRoute = require('./post.route');
-const VideoRoute = require('./video.route');
-const LikeRoute = require('./like.route');
+const videoRoute = require('./video.route');
+const likeRoute = require('./like.route');
+const notifyRoute = require('./notify.route');
 const blockPostRoute = require('./block-post.route');
 const commentRoute = require('./comment.route');
 const ReplyCommentRoute = require('./reply-comment.route');
@@ -18,8 +19,8 @@ function Routes(app) {
     app.use('/api/v1/accounts', AccountRoute)
     app.use('/api/v1/auth', AuthRoute)
     app.use('/api/v1/posts', PostRoute)
-    app.use('/api/v1/videos', VideoRoute)
-    app.use('/api/v1', LikeRoute)
+    app.use('/api/v1/videos', videoRoute)
+    app.use('/api/v1', likeRoute)
     app.use('/api/v1', blockPostRoute)
     app.use('/api/v1', commentRoute)
     app.use('/api/v1',  ReplyCommentRoute)
@@ -29,6 +30,7 @@ function Routes(app) {
     app.use('/api/v1/messages', RoomMessageRoute)
     app.use('/api/v1/upload', cloudinaryRoute)
     app.use('/api/v1/', vnpayRoute)
+    app.use('/api/v1/notify', notifyRoute)
 }
 
 module.exports = Routes;

@@ -79,6 +79,7 @@ const roomSlice = createSlice({
             })
             .addCase(fetchGetAllRoom.rejected, (state) => {
                 state.status_room = "failed";
+                state.rooms = [];
             })
 
             // Tao room moi

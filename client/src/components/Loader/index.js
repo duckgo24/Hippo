@@ -3,9 +3,9 @@ import styles from './Loader.module.scss';
 
 const cx = classNames.bind(styles);
 
-function Loader({ style, size }) {
+function Loader({ style, size, className }) {
   return (
-    <div style={style}>
+    <div style={style} className={className}>
       <div
         className={cx('loader')}
         style={{

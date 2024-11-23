@@ -15,7 +15,7 @@ class AuthController {
                     if (user) {
                         const account = await db.Account.findOne({
                             where: {
-                                id: user.id,
+                                id: user?.id,
                             }
                         });
 
@@ -32,7 +32,7 @@ class AuthController {
 
             }
         } catch (error) {
-            console.log(error);
+            return res.status(501).json({ error: error.message });
         }
     };
 

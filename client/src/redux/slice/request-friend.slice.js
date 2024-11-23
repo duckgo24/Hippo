@@ -121,6 +121,7 @@ const requestFriendSlice = createSlice({
             })
             .addCase(fetchGetAllRequestFriend.rejected, (state, action) => {
                 state.status_request_friend = 'failed';
+                state.requestFriends = [];
             })
 
             //Tao request

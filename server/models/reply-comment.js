@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     ReplyComment.init({
+        reply_id: {
+            type: DataTypes.STRING,
+            primaryKey: true,
+        },
         content: DataTypes.STRING,
         reply_user: DataTypes.STRING,
         acc_id: DataTypes.STRING,

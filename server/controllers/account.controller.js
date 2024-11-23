@@ -10,7 +10,12 @@ class AccountController {
     async getSuggestAccounts(req, res, next) {
         try {
             const accounts = await db.Account.findAll({
-                attributes: { exclude: ['password'] }
+                attributes: { exclude: ['password'] },
+                where: {
+                    id: {
+                        [Op.not]: "system",
+                    }
+                }
             });
             // let start = Math.floor(Math.random() * 8);
             // let end = start + 15;

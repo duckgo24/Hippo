@@ -1,28 +1,28 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import classNames from "classnames/bind";
-import {useDispatch, useSelector} from "react-redux";
-import {Avatar, Box} from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { Avatar, Box } from "@mui/material";
 import EmojiPicker from "emoji-picker-react";
-
-
-import SocketService from "../../../utils/SocketService";
+import { FaPhoneAlt } from "react-icons/fa";
+import { IoMdVideocam } from "react-icons/io";
 import Paragraph from "../../Paragraph";
 import RenderWithCondition from "../../RenderWithCondition";
 import MessageChat from "../MessageChat";
-import {EmojiIcon, GifIcon, ImageIcon, MoreIcon, SubmitIcon} from "../../SgvIcon";
+import { EmojiIcon, GifIcon, ImageIcon, MoreIcon, SubmitIcon } from "../../SgvIcon";
 import Loading from "../../Loading";
-import {fetchGetAllMessages, fetchCreateMessage} from "../../../redux/slice/room-message.slice";
+import { fetchGetAllMessages, fetchCreateMessage } from "../../../redux/slice/room-message.slice";
 
 import styles from "./ChatWithUser.module.scss";
 import GetLinkImage from "../../../utils/GetLinkImage";
+import { useSocket } from "../../../providers/socket.provider";
 
 const cx = classNames.bind(styles);
 
 
-function ChatWithUser({user_chat}) {
-    const {my_account} = useSelector(state => state.account);
-    const {room_messages, status_message} = useSelector(state => state.roomMessage);
-    const {user, room_id} = user_chat;
+function ChatWithUser({ user_chat }) {
+    const { my_account } = useSelector(state => state.account);
+    const { room_messages, status_message } = useSelector(state => state.roomMessage);
+    const { user, room_id } = user_chat;
     const [openEmoji, setOpenEmoji] = useState(false);
     const [myMessage, setMyMessage] = useState("");
     const [imageUrl, setImageUrl] = useState(null);
@@ -30,6 +30,7 @@ function ChatWithUser({user_chat}) {
     const prevUserChatRef = useRef(user_chat);
     const dispatch = useDispatch();
     const imageInputRef = useRef();
+    const socket = useSocket();
 
 
     const handleOnChangeMyMessage = (e) => {
@@ -60,7 +61,7 @@ function ChatWithUser({user_chat}) {
     const handleOnSendMessage = () => {
 
 
-        SocketService.emit("send-message", {
+        socket.emit("send-message", {
             sender: my_account,
             receiver: user,
             content: myMessage,
@@ -101,7 +102,7 @@ function ChatWithUser({user_chat}) {
     }, [user_chat]);
 
     useEffect(() => {
-        SocketService.on("receive-message", (data) => {
+        socket.on("receive-message", (data) => {
             console.log(data);
 
             setMessages(prev => ({
@@ -122,9 +123,9 @@ function ChatWithUser({user_chat}) {
         });
 
         return () => {
-            SocketService.off("receive-message");
+            socket.off("receive-message");
         };
-    }, []);
+    }, [socket]);
 
 
     useEffect(() => {
@@ -145,26 +146,33 @@ function ChatWithUser({user_chat}) {
             <Box display="flex" justifyContent="space-between" borderBottom="1px solid #ccc" padding="10px 0">
                 <Box display="flex" alignItems="center" gap="10px">
                     <Box position="relative">
-                        <Avatar src={user?.avatar} alt={user?.avatar}/>
-                        <div className={cx({online: !user?.isOnline})}></div>
+                        <Avatar src={user?.avatar} alt={user?.avatar} />
+                        <div className={cx({ online: !user?.isOnline })}></div>
                     </Box>
                     <Box>
-                        <Paragraph size={16} bold={700} style={{padding: '0'}}>
+                        <Paragraph size={16} bold={700} style={{ padding: '0' }}>
                             {user?.full_name}
                         </Paragraph>
                         {!user?.isOnline ? (
-                            <Paragraph size={14} style={{padding: '0'}}>
+                            <Paragraph size={14} style={{ padding: '0' }}>
                                 Đang hoạt động
                             </Paragraph>
                         ) : (
-                            <Paragraph size={14} style={{padding: '0', marginTop: '2px'}}>
+                            <Paragraph size={14} style={{ padding: '0', marginTop: '2px' }}>
                                 Hoạt động 12 phút trước
                             </Paragraph>
                         )}
                     </Box>
                 </Box>
-                <Box>
-                    <MoreIcon/>
+                <Box
+                    display="flex"
+                    alignItems="center"
+                    gap="15px"
+                    px="10px"
+                >
+                    <FaPhoneAlt size={23} />
+                    <IoMdVideocam size={27} />
+                    <MoreIcon size={25} />
                 </Box>
             </Box>
 
@@ -176,13 +184,13 @@ function ChatWithUser({user_chat}) {
                 flex={1}
             >
                 <RenderWithCondition condition={status_message === 'loading'}>
-                    <Loading/>
+                    <Loading />
                 </RenderWithCondition>
                 <RenderWithCondition condition={messages?.room_messages}>
                     {
                         messages?.room_messages
                         && messages?.room_messages.map((message, index) => (
-                            <MessageChat key={index} message={message} sender={message.message_sender}/>
+                            <MessageChat key={index} message={message} sender={message.message_sender} />
                         ))
                     }
                 </RenderWithCondition>
@@ -195,11 +203,11 @@ function ChatWithUser({user_chat}) {
                 mb={3}
             >
                 <button onClick={handleOnChooseImage}>
-                    <ImageIcon/>
-                    <input type="file" style={{display: 'none'}} ref={imageInputRef} onChange={getImageUrl}/>
+                    <ImageIcon />
+                    <input type="file" style={{ display: 'none' }} ref={imageInputRef} onChange={getImageUrl} />
                 </button>
                 <button>
-                    <GifIcon/>
+                    <GifIcon />
                 </button>
                 <input
                     placeholder="Aa"
@@ -216,7 +224,7 @@ function ChatWithUser({user_chat}) {
                     onChange={handleOnChangeMyMessage}
                 />
                 <button onClick={handleToggleEmoji}>
-                    <EmojiIcon/>
+                    <EmojiIcon />
                 </button>
 
                 <RenderWithCondition condition={openEmoji}>
@@ -236,7 +244,7 @@ function ChatWithUser({user_chat}) {
 
                 <RenderWithCondition condition={myMessage || imageUrl}>
                     <button onClick={handleOnSendMessage}>
-                        <SubmitIcon/>
+                        <SubmitIcon />
                     </button>
                 </RenderWithCondition>
 
@@ -257,7 +265,7 @@ function ChatWithUser({user_chat}) {
                             borderRadius: "50%",
                             width: "62px",
                             height: "60px"
-                        }}/>
+                        }} />
                         <button
                             style={{
                                 position: "absolute",

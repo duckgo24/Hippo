@@ -69,7 +69,7 @@ const fetchGetAllAccounts = createAsyncThunk('accounts/all', async (_, { rejectW
 
 const fetchSearchAccounts = createAsyncThunk('accounts/search', async (p, { rejectWithValue, dispatch }) => {
     try {
-        await delay(2000);
+        await delay(1000);
         const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/accounts/search?q=${encodeURIComponent(p)}`);
         dispatch(resetStatusIdle());
         return res.data;
@@ -81,7 +81,7 @@ const fetchSearchAccounts = createAsyncThunk('accounts/search', async (p, { reje
 
 const fetchSuggestAccounts = createAsyncThunk('accounts/suggest', async (_, { rejectWithValue, dispatch }) => {
     try {
-        await delay(2000);
+        // await delay(2000);
         const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/accounts/suggest`);
         return res.data;
     } catch (error) {
@@ -179,6 +179,7 @@ const accountSlice = createSlice({
             })
             .addCase(fetchGetAllAccounts.rejected, (state) => {
                 state.status_account = 'failed';
+                state.filter_accounts = [];
             })
 
             //Gợi ý account
@@ -191,6 +192,7 @@ const accountSlice = createSlice({
             })
             .addCase(fetchSuggestAccounts.rejected, (state) => {
                 state.status_account = 'failed';
+                state.filter_accounts = [];
             })
 
             //Tìm kiếm account
@@ -203,6 +205,7 @@ const accountSlice = createSlice({
             })
             .addCase(fetchSearchAccounts.rejected, (state) => {
                 state.status_account = 'failed';
+                state.filter_accounts = [];
             })
 
             //Cập nhật account

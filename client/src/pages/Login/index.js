@@ -1,28 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-
-import classNames from 'classnames/bind';
 import { Link, useNavigate } from 'react-router-dom';
+import { Divider, paperClasses } from '@mui/material';
 
-import Box from '@mui/material/Box';
-
-import logo from '../../images/logo.png';
-
-import styles from './Login.module.scss';
-
-import Paragraph from '../../components/Paragraph';
-import Button from '../../components/Button';
 import Loader from '../../components/Loader';
 import { fetchLogin } from '../../redux/slice/account.slice';
 import Alert from '../../components/Alert';
 import OAuthGoogle from '../../services/oauth/oauth.google';
+import { BsFacebook } from 'react-icons/bs';
 
 
-const cx = classNames.bind(styles);
 
 function Login() {
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState({
+        username: '',
+        password: ''
+    });
     const [message, setMessage] = useState();
     const { status_account, my_account } = useSelector(state => state.account);
     const dispatch = useDispatch();
@@ -57,95 +51,59 @@ function Login() {
     }, [dispatch, status_account, message, my_account]);
 
     return (
-        <Box
-            display='flex'
-            justifyContent='space-around'
-            alignItems='center'
-            height='80vh'
-            maxWidth='70%'
-            margin='auto'
-            textAlign='center'
-        >
-
-            <Box
-                width='50%'
-            >
-                <img src={logo} alt="Logo" />
-                <Paragraph size="24px" bold='500' color='black' >
-                    Chào mừng đến với Hippo
-                </Paragraph>
-                <Paragraph size="16px" color='gray' >
-                    Vui lòng đăng nhập để sử dụng
-                </Paragraph>
-            </Box>
-            <Box
-                display='flex'
-                flexDirection='column'
-                alignItems='center'
-                flex={1}
-                gap='10px'
-                sx={{
-                    padding: '25px',
-                    bgcolor: '#fff',
-                    boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px',
-                    borderRadius: '5px',
-                }}
-                maxWidth='400px'
-                minHeight='300px'
-
-            >
-
-                <input type="text" placeholder="Email" className={cx('input')} name='username' onChange={handleOnChange} />
-                <input type="password" placeholder="Mật khẩu" className={cx('input')} name='password' onChange={handleOnChange} />
-                <div style={{
-                    position: 'relative',
-                    width: '100%',
-                }}>
-                    <Button
-                        style={{
-                            padding: '10px 20px',
-                            fontSize: '16px',
-                        }}
-                        primary
-                        large
-                        onClick={handleLogin}
-                        disabled={status_account === 'loading'}
-                    >
-                        Đăng nhập
-                    </Button>
-                    <OAuthGoogle />
-                    {status_account === 'loading'
-                        &&
-                        <Loader style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                        }} />
-                    }
+        <div className='w-1/5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
+            <div className="fl flex-col items-center justify-center border border-solid border-black shadow-sm rounded-lg py-3 px-10">
+                <p className='font-serif text-7xl text-center pt-10 py-16'>Hippo</p>
+                <div className='flex flex-col gap-3'>
+                    <div className='flex flex-col gap-2'>
+                        <input
+                            type="text"
+                            name='username'
+                            value={formData?.username}
+                            onChange={handleOnChange}
+                            class="bg-gray-50 border border-black border-solid py-2 px-2 text-gray-900 text-sm rounded-lg"
+                            placeholder="Tên đăng nhập"
+                        />
+                        <input
+                            type="password"
+                            name='password'
+                            value={formData?.password}
+                            onChange={handleOnChange}
+                            class="bg-gray-50 border border-black border-solid py-2 px-2 text-gray-900 text-sm rounded-lg"
+                            placeholder="Mật khẩu"
+                        />
+                    </div>
+                    <div className='relative'>
+                        <button onClick={handleLogin} className={`w-full text-white bg-blue-700 hover:bg-blue-400  font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 ${status_account === 'loading' && 'opacity-50'}`}>Đăng nhập</button>
+                        {status_account === 'loading' && <Loader size={30} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
+                    </div>
+                </div>
+                <div className='flex items-center opacity-60 py-4'>
+                    <Divider className='flex-1 bg-black' />
+                    <p className='px-3'>OR</p>
+                    <Divider className='flex-1 bg-black' />
                 </div>
 
-                <Link
-                    to='/forget-password'
-                    style={{
-                        marginTop: '10px',
-                    }}  >
-                    Quên mật khẩu?
-                </Link>
+                <div className='flex items-center justify-center text-blue-700 gap-2 py-2'>
+                    <BsFacebook size={25} />
+                    <p className='font-bold'>Đăng nhập với facebook</p>
+                </div>
 
-                <div className={cx('sepate')}>Hoặc</div>
-
-
-                <Button to='/register' small style={{
-                    width: '140px',
-                    backgroundColor: 'rgba(0, 128, 0, 0.7)',
-                    color: '#fff',
-                }}>
-                    Tạo tài khoản
-                </Button>
-            </Box>
+                <Link className='text-center block' to='/forget-passwords'>Quên mật khẩu ?</Link>
+            </div>
+            <div className="flex gap-2 items-center justify-center mt-4 border border-solid border-black shadow-sm rounded-lg py-3 px-10">
+                <p>Bạn chưa có tài khoản ?</p>
+                <Link to='/register' className='text-blue-800 font-bold'>Tạo tài khoản</Link>
+            </div>
+            <div className='flex flex-col items-center justify-center py-4 gap-2'>
+                <p>Tải ứng dụng ngay.</p>
+                <div className='flex gap-2'>
+                    <img src="/image/app-store.png" alt="app-store" className='h-10 w-32' />
+                    <img src="/image/ch-play.png" alt="ch-play" className='h-10 w-32' />
+                </div>
+            </div>
             {message && <Alert type={message.type} title={message.title} message={message.message} />}
-        </Box>
+        </div>
     );
 }
 

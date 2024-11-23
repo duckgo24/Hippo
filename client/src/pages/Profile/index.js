@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Avatar, Box, Divider, Modal, Popper, Tab, Tabs, Link, } from "@mui/material";
+import { Avatar, Box, Modal, Popper, Tab, Tabs, Link, } from "@mui/material";
 import Paragraph from "../../components/Paragraph";
 import Button from "../../components/Button";
 import { fetchGetMyPosts } from "../../redux/slice/post.slice";
 import Alert from "../../components/Alert";
-import Input from "../../components/Input";
-import { PlusIcon, SmileFaceIcon, TickIcon } from "../../components/SgvIcon";
+import { TickIcon } from "../../components/SgvIcon";
 import { useLocation, useNavigate } from "react-router-dom";
 import { fetchAddFriend, fetchCheckFriend, fetchDeleteFriend, fetchGetAllFriend, } from "../../redux/slice/friend.slice";
 import { fetchCreateRequestFriend, fetchDeleteRequestFriend, fetchFindRequestFriendWithReceiver, fetchFindRequestFriendWithSender, fetchRefuseRequestFriend, } from "../../redux/slice/request-friend.slice";
@@ -16,7 +15,8 @@ import testImage from "../../images/test.jpg";
 import { fetchCreateRoom } from "../../redux/slice/room.slice";
 import Post from "../../components/post_component/Post";
 import BoxInfoUser from "../../components/BoxInfoUser";
-import { fetchAuthMe } from "../../redux/slice/account.slice";
+import { useSocket } from "../../providers/socket.provider";
+import { fetchCreateNotify } from "../../redux/slice/notify.slice";
 
 function TabPanel({ value, index, children }) {
     return (
@@ -35,6 +35,7 @@ function Profile() {
     const [openModalEditProfile, setOpenModalEditProfile] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const socket = useSocket();
 
     const { state } = useLocation();
 
@@ -65,6 +66,22 @@ function Profile() {
         dispatch(fetchCreateRequestFriend({
             acc_id: my_account?.id,
             receiver_id: currentAccount?.id
+        }))
+        socket.emit('send-notify', {
+            senderId: my_account?.id,
+            receiverId: currentAccount?.id,
+            data: {
+                message: `${my_account?.full_name} vừa gửi lời mời kết bạn`,
+            }
+        })
+        dispatch(fetchCreateNotify({
+            sender_id: my_account?.id,
+            receiver_id: currentAccount?.id,
+            title: 'Thông báo kết bạn',
+            content: `${my_account?.full_name} đã gửi lời mời kết bạn`,
+            link: `/profile/${currentAccount?.nickname}`,
+            type: 'request_friend',
+            isRead: false,
         }))
     }
 
@@ -149,7 +166,6 @@ function Profile() {
 
     useEffect(() => {
         if (my_account?.id !== currentAccount?.id) {
-
             dispatch(fetchCheckFriend({
                 acc_id: my_account?.id,
                 friend_id: currentAccount?.id
@@ -559,7 +575,7 @@ function Profile() {
                             <Paragraph>Chưa có bài viết nào</Paragraph>
                             :
                             filter_posts.map(post => (
-                                <Post post={post} key={post.id} style={{
+                                <Post post={post} key={post.post_id} style={{
                                     width: "100%",
                                     maxWidth: "100%",
                                 }} />

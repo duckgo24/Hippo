@@ -36,6 +36,7 @@ const blockPostSlice = createSlice({
             })
             .addCase(fetchBlockPost.rejected, (state, action) => {
                 state.error = action.payload;
+                state.blockPosts = [];
             });
     },
 });

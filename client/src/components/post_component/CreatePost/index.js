@@ -136,11 +136,11 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
     const getMyLocation = async () => {
         setLoadingLocation(true);
         const data = await getLocation();
-        if(data) {
+        if (data) {
             setLoadingLocation(false);
             setLocation(data);
         }
-        
+
     }
 
 
@@ -154,39 +154,24 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
 
 
     return (
-        <div
-            style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -45%)',
-                zIndex: 9999
-            }}
-        >
+        <div className="absolute top-1/2 left-1/2 z-50 transform -translate-x-1/2 -translate-y-1/2 bg-white shadow-lg rounded-lg flex flex-col" >
             <Box
-                bgcolor='#fff'
-                boxShadow='rgba(0, 0, 0, 0.35) 0px 5px 15px'
                 height={500}
-                width={750}
+                width={800}
                 borderRadius={4}
                 padding='15px 20px'
                 position='relative'
             >
 
-                <Box
-                    display="flex"
-                    justifyContent='space-between'
-                >
+                <div className="flex justify-between">
                     <Paragraph bold="500" size="16px" style={{
                         textDecoration: 'underline'
                     }} >
                         Tạo bài viết mới
                     </Paragraph>
-                    <Box
-                        display='flex'
-                        gap='10px'>
-                        <button onClick={handleOnSendPost}>
-                            <Paragraph className={cx('btn-share')} bold="500" size="14px" >
+                    <div className="flex gap-3">
+                        <button onClick={handleOnSendPost} disabled={!image && !video}>
+                            <Paragraph className={cx('btn-share')} bold="500" size="14px" color={image && video ? "#000" : 'rgba(0,0,0, 0.3)'}>
                                 Chia sẻ
                             </Paragraph>
                         </button>
@@ -195,7 +180,7 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                                 backgroundColor: 'rgba(255,0,0,0.7)',
                                 color: '#fff',
                                 border: 'none',
-                                padding: '6px 10px',
+                                padding: '4px 12px',
                                 cursor: 'pointer',
                                 borderRadius: '50%',
                             }}
@@ -203,35 +188,36 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                         >
                             X
                         </button>
-                    </Box>
-                </Box>
-                <Box
-                    display="flex"
-                    flexDirection="row"
-                    gap="10px"
-                >
+                    </div>
+                </div>
+                <div className="flex flex-row gap-3" >
                     <Box
                         display="flex"
                         flexDirection="column"
                         flexWrap="nowrap"
                         justifyContent="center"
                         alignItems="center"
-                        width="50%"
+                        width="55%"
                         position='relative'
                     >
                         <RenderWithCondition condition={!image && !video && !imagePreview && !videoPreview}>
                             <MediaIcon size={200} />
                         </RenderWithCondition>
                         <RenderWithCondition condition={image}>
-                            <img src={image} alt="image" height="350px" width="350px" />
-
+                            <img src={image} className={cx('post')} alt="image" style={{
+                                height: '100%',
+                            }} />
                         </RenderWithCondition>
                         <RenderWithCondition condition={video}>
-                            <video src={video} controls height="350px" width="350px" />
+                            <video src={video} controls style={{
+                                height: '100%',
+                            }} />
                         </RenderWithCondition>
 
                         <RenderWithCondition condition={imagePreview}>
-                            <img src={imagePreview} className={cx('post-preview')} alt="image" height="350px" width="350px" />
+                            <img src={imagePreview} className={cx('post-preview')} alt="image" style={{
+                                height: '100%',
+                            }} />
                             <Loader size={35} style={{
                                 position: 'absolute',
                                 top: '50%',
@@ -251,35 +237,11 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                                 zIndex: 9999
                             }} />
                         </RenderWithCondition>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            style={{ display: 'none' }}
-                            onChange={handleOnChangeImage}
-                        />
-                        <button
-                            style={{
-                                position: 'absolute',
-                                left: '50%',
-                                bottom: '-5%',
-                                transform: 'translate(-50%, 80%)',
-                                backgroundColor: '#007bff',
-                                color: '#fff',
-                                border: 'none',
-                                padding: '8px 20px',
-                                cursor: 'pointer',
-                                borderRadius: '12px',
-                                width: '200px',
-                                maxWidth: '250px'
-                            }}
-                            onClick={handleSubmit}
-                        >
-                            Ảnh/Video
-                        </button>
+
                     </Box>
                     <Box flex={1} position='relative'>
                         <CardUser avatar={my_account?.avatar} nickname={my_account?.nickname} tick={my_account?.tick} />
-                        <TextareaAutosize
+                        <textarea
                             style={{
                                 width: '100%',
                                 height: 170,
@@ -287,6 +249,7 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                                 border: 'none',
                                 outline: 'none',
                                 marginTop: '10px',
+                                
 
                             }}
                             value={text}
@@ -313,7 +276,7 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                                 right: '0px',
                                 zIndex: 1000,
                                 width: '300px',
-                                height: '250px'
+                                height: '350px'
                             }}
                             open={showEmoji}
                             searchDisabled={true}
@@ -389,15 +352,43 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                             > <MoreIcon /> </button>
                         </Box>
                     </Box>
-                </Box>
-                <RenderWithCondition condition={status_post === 'loading' || status_video === 'loading'}>
+                </div>
+                
+            </Box>
+
+            <div className="relative h-8">
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleOnChangeImage}
+                />
+                <button
+                    style={{
+                        position: 'absolute',
+                        top: '0%',
+                        left: '25%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 1000,
+                        backgroundColor: '#007bff',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 20px',
+                        cursor: 'pointer',
+                        borderRadius: '12px',
+                        width: '200px',
+                        maxWidth: '250px'
+                    }}
+                    onClick={handleSubmit}
+                >
+                    Ảnh/Video
+                </button>
+            </div>
+            <RenderWithCondition condition={status_post === 'loading' || status_video === 'loading'}>
                     <div className={cx('loading')}>
                         <Loader />
                     </div>
                 </RenderWithCondition>
-            </Box>
-
-
         </div>
     )
 });

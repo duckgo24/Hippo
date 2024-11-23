@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { Avatar, Box } from "@mui/material";
 
 import Paragraph from "../../Paragraph";
-import HandleTime from "../../../utils/handleTime";
+import handleTime from "../../../utils/handleTime";
 
 import Styles from "./CardChat.module.scss"
 import { useEffect } from "react";
@@ -61,12 +61,12 @@ function CardChat({ account, lastMessage, newMessage, room_id, selected, hasNewM
                                     ?
                                     <>
                                         <Paragraph>Bạn: {lastMessage?.content}</Paragraph>
-                                        <Paragraph> • {HandleTime(lastMessage?.createdAt)}</Paragraph>
+                                        <Paragraph> • {handleTime(lastMessage?.createdAt)}</Paragraph>
                                     </>
                                     :
                                     <>
                                         <Paragraph bold={"700"}>{lastMessage?.content}</Paragraph>
-                                        <Paragraph> • {HandleTime(lastMessage?.createdAt)}</Paragraph>
+                                        <Paragraph> • {handleTime(lastMessage?.createdAt)}</Paragraph>
                                     </>
                             }
                         </RenderWithCondition>
@@ -76,12 +76,12 @@ function CardChat({ account, lastMessage, newMessage, room_id, selected, hasNewM
                                     ?
                                     <>
                                         <Paragraph>Bạn: {newMessage?.content}</Paragraph>
-                                        <Paragraph> • {HandleTime(newMessage?.created_at)}</Paragraph>
+                                        <Paragraph> • {handleTime(newMessage?.created_at)}</Paragraph>
                                     </>
                                     :
                                     <>
                                         <Paragraph bold={"700"}>{newMessage?.content}</Paragraph>
-                                        <Paragraph> • {HandleTime(newMessage?.created_at)}</Paragraph>
+                                        <Paragraph> • {handleTime(newMessage?.created_at)}</Paragraph>
                                     </>
                             }
                         </RenderWithCondition>

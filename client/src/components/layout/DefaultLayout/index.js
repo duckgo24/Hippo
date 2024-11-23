@@ -1,6 +1,8 @@
 
-import { Box, Grid } from "@mui/material";
+import { Box } from "@mui/material";
 import Navigation from "../navigation";
+import Footer from "../footer";
+
 
 
 
@@ -20,11 +22,14 @@ function DefaultLayout({ children }) {
             </Box>
             <Box
                 display="flex"
+                flexDirection="column"
                 justifyItems="center"
                 flex={1}
             >
                 {children}
+                <Footer />
             </Box>
+           
         </Box>
     );
 }

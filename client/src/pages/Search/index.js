@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import classNames from "classnames/bind";
-
 import Paragraph from "../../components/Paragraph";
 import { Box, Divider } from "@mui/material";
 import Input from "../../components/Input";
 
-import styles from "./Search.module.scss";
 import { SearchIcon } from "../../components/SgvIcon";
 import { fetchSearchAccounts, fetchSuggestAccounts } from "../../redux/slice/account.slice";
 import Loading from "../../components/Loading";
@@ -14,9 +11,7 @@ import CardUser from "../../components/CardUser";
 import Button from "../../components/Button";
 import useDebounce from "../../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
-import Profile from "../Profile";
 
-const cx = classNames.bind(styles);
 
 function Search() {
     const { filter_accounts, status_account } = useSelector(state => state.account);
@@ -24,7 +19,7 @@ function Search() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const debounceValue = useDebounce(searchValue, 500);
+    const debounceValue = useDebounce(searchValue, 700);
 
 
     const HandleOnChangeInputSearch = (e) => {
@@ -108,6 +103,7 @@ function Search() {
                             ?
                             <Loading />
                             :
+                            filter_accounts && 
                             filter_accounts.length > 0
                                 ?
                                 filter_accounts.map((account) => (

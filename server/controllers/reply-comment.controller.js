@@ -1,7 +1,7 @@
 
 const { where } = require('sequelize');
 const db = require('../models');
-
+const uuid = require('uuid'); 
 
 class ReplyCommentController {
 
@@ -33,12 +33,15 @@ class ReplyCommentController {
     async createReplyComment(req, res) {
         try {
             if (req.body) {
-                const replyComment = await db.ReplyComment.create(req.body);
+                const replyComment = await db.ReplyComment.create({
+                    ...req.body,
+                    reply_id: uuid.v4()
+                });
                 if (replyComment) {
 
                     const resReplyComment = await db.ReplyComment.findOne({
                         where: {
-                            id: replyComment.id
+                            reply_id: replyComment.reply_id
                         },
                         include: [
                             {
@@ -54,26 +57,25 @@ class ReplyCommentController {
                 }
             }
         } catch (error) {
-            return res.status(500).json({ ...error.message });
+            return res.status(500).json({ error: error.message });
         }
     }
 
     async deleteReplyComment(req, res) {
-
         const { acc_id, id } = req.query;
-    
-
         try {
             const findComment = await db.ReplyComment.findOne({
                 where: {
                     acc_id,
-                    id
+                    reply_id: id,
                 }
             });
 
             if (findComment) {
                 const response = await findComment.destroy();
-                return res.status(200).json({ ...response.toJSON() });
+                if (response) {
+                    return res.status(200).json({ reply_id: id });
+                }
             }
         } catch (error) {
             return res.status(500).json({ ...error.message });

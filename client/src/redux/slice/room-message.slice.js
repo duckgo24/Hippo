@@ -54,7 +54,7 @@ const roomMessageSlice = createSlice({
             })
             .addCase(fetchGetAllMessages.rejected, (state, action) => {
                 state.status_message = 'failed';
-                state.error_message = action.payload;
+                state.room_messages = [];
             })
 
             //Them tin nhan

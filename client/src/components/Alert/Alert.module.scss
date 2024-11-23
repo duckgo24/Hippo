@@ -1,11 +1,10 @@
 .alert {
     position: fixed;
     top: 8%;
-    left: 50%;
+    left: 55%;
     transform: translate(-50%, -50%);
     z-index: 1000;
-    min-width: 400px;
-    max-width: 440px;
+    width: 600px;
     text-align: start;
     animation:  UptoDown 3s ease-in-out infinite;
     border-radius: 15px !important;

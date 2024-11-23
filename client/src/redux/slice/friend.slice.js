@@ -120,6 +120,7 @@ const friendSlice = createSlice({
         })
         .addCase(fetchGetAllFriend.rejected, (state, action) => {
             state.status_friend = 'failed';
+            state.friends = [];
         })
 
         //Thêm bạn bè

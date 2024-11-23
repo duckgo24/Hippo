@@ -5,7 +5,6 @@ class FriendController {
     async getFriends(req, res) {
         try {
             const { acc_id, limit } = req.query;
-            console.log(acc_id, limit);
             
             const friends = await db.Friend.findAll({
                 where: {

@@ -1,5 +1,6 @@
 
 const db = require('../models/');
+const uuid = require('uuid');
 
 class commentController {
 
@@ -26,9 +27,12 @@ class commentController {
                     {
                         model: db.Post,
                         as: 'posts',
-                        attributes: ['id', 'num_comments']
+                        attributes: ['post_id', 'title' ,'num_comments']
                     }
                 ],
+                order: [
+                    ['createdAt', 'DESC']
+                ]
             });
 
             if (comments.length > 0) {
@@ -40,11 +44,17 @@ class commentController {
         }
     }
 
+    async getCommentByPostIdAndCommentId(req, res, next) {
+        
+    }
 
     async createComment(req, res, next) {
         try {
             if (req.body) {
-                const comment = await db.Comment.create(req.body);
+                const comment = await db.Comment.create({
+                    ...req.body,
+                    comment_id: uuid.v4()
+                });
                 if (comment) {
                     const resComment = await db.Comment.findAll({
                         include: [
@@ -73,8 +83,6 @@ class commentController {
     async deleteComment(req, res, next) {
         try {
             const { comment_id } = req.query;
-            console.log("a" + comment_id);
-            
             const findComment = await db.Comment.findOne({
                 where: {
                     comment_id

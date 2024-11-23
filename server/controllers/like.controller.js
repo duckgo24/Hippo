@@ -1,6 +1,7 @@
 
 const { Op } = require('sequelize');
 const db = require('../models/index');
+const uuid = require('uuid'); 
 
 class LikeController {
     async getAllLikesPost(req, res, next) {
@@ -78,7 +79,10 @@ class LikeController {
             });
 
             if (!checkExitLike) {
-                const like = await db.Like.create(req.body);
+                const like = await db.Like.create({
+                    ...req.body,
+                    id: uuid.v4()
+                });
                 if (like) {
                     return res.status(201).json({
                         like
@@ -90,8 +94,6 @@ class LikeController {
         }
     }
     async dislike(req, res, next) {
-        console.log(req.query);
-
         try {
             const { post_id, video_id, acc_id } = req.query;
 

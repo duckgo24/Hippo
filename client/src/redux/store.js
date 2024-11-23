@@ -7,6 +7,7 @@ import accountReducer from './slice/account.slice';
 import postReducer from './slice/post.slice';
 import videoReducer from './slice/video.slice';
 import likeReducer from './slice/like.slice';
+import notifyReducer from './slice/notify.slice';
 import blockPostReducer from './slice/block-post.slice';
 import commentReducer from './slice/comment.slice';
 import replyCommentReducer from './slice/reply-comment.slide';
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
   requestFriend: requestFriendReducer,
   room: roomReducer,
   roomMessage: roomMessageReducer,
+  notify: notifyReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

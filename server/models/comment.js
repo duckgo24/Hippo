@@ -25,14 +25,14 @@ module.exports = (sequelize, DataTypes) => {
 
     Comment.init({
         comment_id: { 
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             autoIncrement: true,
             primaryKey: true
         },
         content: DataTypes.STRING,
         num_replies: DataTypes.INTEGER,
         num_likes: DataTypes.INTEGER,
-        post_id: DataTypes.INTEGER,
+        post_id: DataTypes.STRING,
         video_id: DataTypes.INTEGER,
         acc_id: DataTypes.STRING,
         tag: DataTypes.STRING,

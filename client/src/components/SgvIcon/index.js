@@ -452,6 +452,27 @@ const LocationIcon = ({ size = 22, color = '#000002', ...props }) => {
     )
 }
 
+const BellIcon = ({ size = 22, color = 'rgba(0, 0, 0, 0.54)', ...props }) => {
+    return (
+        <svg
+            viewBox="0 0 32 32" fill="#000000"
+            height={size}
+            width={size}
+        >
+            <g strokeWidth="0"></g>
+            <g strokeLinecap="round" strokeLinejoin="round"></g>
+            <g>
+                <g id="Rectangle_1" data-name="Rectangle 1" transform="translate(4)" fill="none" stroke="#040505" strokeMiterlimit="10" strokeWidth="4">
+                    <path d="M12,0h0A12,12,0,0,1,24,12V24a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0V12A12,12,0,0,1,12,0Z" stroke="none"></path>
+                    <path d="M12,2h0A10,10,0,0,1,22,12v8a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V12A10,10,0,0,1,12,2Z" fill="none"></path>
+                </g>
+                <rect id="Rectangle_2" data-name="Rectangle 2" width="32" height="4" rx="2" transform="translate(0 20)" fill="#040505"></rect>
+                <path id="Path_9" data-name="Path 9" d="M16,32h0a4,4,0,0,1-4-4V26h8v2A4,4,0,0,1,16,32Z" fill="#040505"></path>
+            </g>
+        </svg>
+    )
+}
+
 export {
     HomeIcon, SearchIcon, DiscoverIcon,
     ReelsIcon, MessageIcon, HealIcon,
@@ -464,6 +485,6 @@ export {
     SubmitIcon, MoreIcon, DeleteIcon,
     BlockIcon, SmileFaceIcon, ImageIcon,
     GifIcon, AudioIcon, ShareIcon,
-    LocationIcon
+    LocationIcon, BellIcon
 
 };

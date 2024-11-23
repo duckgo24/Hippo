@@ -29,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     Post.init({
+        post_id: {
+            type: DataTypes.STRING,
+            primaryKey: true,
+        },
         title: DataTypes.STRING,
         image: DataTypes.STRING,
         num_likes: DataTypes.INTEGER,

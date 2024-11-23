@@ -5,9 +5,8 @@ module.exports = {
     await queryInterface.createTable('comments', {
       comment_id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       content: {
         type: Sequelize.STRING
@@ -22,10 +21,10 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       post_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'posts',
-          key: 'id'
+          key: 'post_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'

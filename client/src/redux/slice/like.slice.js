@@ -25,8 +25,6 @@ const fetchLikePost = createAsyncThunk('like/fetchLikePost', async (data, { reje
 });
 
 const fetchDislikesPost = createAsyncThunk('/like/dislike', async (data, { rejectWithValue }) => {
-    console.log(data);
-
     try {
         const res = await axiosJWT.delete(`${process.env.REACT_APP_API_URL}/dislike`, {
             params: data

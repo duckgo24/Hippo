@@ -1,10 +1,10 @@
 import { Box, Divider, Popper, Typography } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 
 import CardUser from "../../CardUser";
-import { BlockIcon, CloseIcon, DeleteIcon, HealIcon, LocationIcon, MessageIcon, MoreIcon } from "../../SgvIcon";
+import { BlockIcon, CloseIcon, DeleteIcon, HealIcon, MessageIcon, MoreIcon, ShareIcon } from "../../SgvIcon";
 import Paragraph from "../../Paragraph";
 import CommentList from "../../comment_component/CommentList";
 import RenderWithCondition from "../../RenderWithCondition";
@@ -12,8 +12,12 @@ import RenderWithCondition from "../../RenderWithCondition";
 import { fetchLikePost, fetchDislikesPost } from "../../../redux/slice/like.slice";
 import { fetchUpdatePost } from "../../../redux/slice/post.slice";
 import { fetchGetAllComments } from "../../../redux/slice/comment.slice";
-import HandleTime from "../../../utils/handleTime";
+import handleTime from "../../../utils/handleTime";
 import { fetchBlockPost } from "../../../redux/slice/block-post.slice";
+import { fetchCreateNotify, fetchDeleteNotify } from "../../../redux/slice/notify.slice";
+import { useSocket } from "../../../providers/socket.provider";
+import { useNavigate } from "react-router-dom";
+import Alert from "../../Alert";
 
 
 function Post({ post, openComment, onToggleComments, style }) {
@@ -25,15 +29,29 @@ function Post({ post, openComment, onToggleComments, style }) {
     const [anchorElComment, setAnchorElComment] = useState(null);
     const [anchorElOptionPost, setAnchorElOptionPost] = useState(null);
     const [openOptionPost, setOpenOptionPost] = useState(false);
+    const [isShare, setIsShare] = useState(false);
 
+    const socket = useSocket();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const prevPost = useRef();
+    const handleClickPost = () => {
+        navigate(`/post/${post?.post_id}`, {
+            state: {
+                post_id: post?.post_id
+            }
+        });
+    }
 
     const handleToggleComments = (event) => {
         onToggleComments();
         setAnchorElComment(event.currentTarget);
     };
+
+    const handleClickSharePost = () => {
+        navigator.clipboard.writeText(`http://localhost:3000/post/${post?.post_id}`);
+        setIsShare(true);
+    }
 
     const toggleOptionPost = (e) => {
         setAnchorElOptionPost(anchorElOptionPost ? null : e.currentTarget);
@@ -45,30 +63,63 @@ function Post({ post, openComment, onToggleComments, style }) {
         if (!activeHealIcon) {
             dispatch(fetchLikePost({
                 acc_id: my_account.id,
-                post_id: post?.id,
+                post_id: post?.post_id,
                 is_like: true
             }));
 
             dispatch(fetchUpdatePost({
-                id: post?.id,
+                id: post?.post_id,
                 num_likes: post?.num_likes + 1,
             }));
+
+            if (post?.accounts?.id !== my_account?.id) {
+                dispatch(fetchCreateNotify({
+                    sender_id: my_account?.id,
+                    receiver_id: post?.accounts?.id,
+                    type: "like",
+                    isRead: false,
+                    link: `/post/${post?.post_id}`,
+                    title: "Thông báo",
+                    content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
+                }));
+                socket.emit('send-notify', {
+                    receiverId: post?.accounts?.id,
+                    data: {
+                        content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
+                        sender_id: my_account?.id,
+                        receiver_id: post?.accounts?.id,
+                    }
+                });
+            }
+
         } else {
             dispatch(fetchDislikesPost({
                 acc_id: my_account.id,
-                post_id: post?.id,
+                post_id: post?.post_id,
             }));
 
             dispatch(fetchUpdatePost({
-                id: post?.id,
+                id: post?.post_id,
                 num_likes: post?.num_likes - 1,
             }));
+            if (post?.accounts?.id !== my_account?.id) {
+                socket.emit('send-notify', {
+                    receiverId: post?.accounts?.id,
+                    data: {
+                        message: `${my_account?.full_name} đã bỏ thích bài viết ${post?.title}`,
+                        content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
+                        sender_id: my_account?.id,
+                        receiver_id: post?.accounts?.id,
+                        type: 'dislike',
+                    }
+                })
+            }
         }
     };
 
     const handleClickBlockPost = () => {
         dispatch(fetchBlockPost({
-            post_id: post?.id,
+            post_id: post?.post_id,
             acc_id: my_account?.id,
         }))
     }
@@ -76,7 +127,7 @@ function Post({ post, openComment, onToggleComments, style }) {
     useEffect(() => {
         if (openComment) {
             dispatch(fetchGetAllComments({
-                post_id: post?.id,
+                post_id: post?.post_id,
                 acc_id: my_account?.id,
             }));
         }
@@ -95,6 +146,14 @@ function Post({ post, openComment, onToggleComments, style }) {
             window.removeEventListener('scroll', handleScroll);
         };
     }, []);
+
+    useEffect(() => {
+        if (isShare) {
+            setTimeout(() => {
+                setIsShare(false);
+            }, 3000);
+        }
+    }, [isShare]);
 
     return (
         <Box
@@ -116,18 +175,13 @@ function Post({ post, openComment, onToggleComments, style }) {
                     cursor: "pointer"
                 },
             }}
+
         >
-            <Box
-                display="flex"
-                justifyContent="space-between"
-            >
-                <Box
-                    display="flex"
-                    gap="10px"
-                >
+            <div className="flex justify-between">
+                <div className="flex gap-3">
                     <CardUser nickname={post?.accounts?.nickname} tick={post?.accounts?.tick} avatar={post?.accounts?.avatar} />
-                 
-                </Box>
+
+                </div>
 
                 <button onClick={toggleOptionPost}>
                     <MoreIcon />
@@ -137,20 +191,12 @@ function Post({ post, openComment, onToggleComments, style }) {
                     anchorEl={anchorElOptionPost}
                     placement="bottom"
                 >
-                    <Box
-                        maxWidth="200px"
-                        minWidth="100px"
-                        border="1px solid #ccc"
-                        bgcolor="white"
-                        display='flex'
-                        flexDirection='column'
-                        borderRadius="5px"
-                    >
+                    <div className="max-w-52 min-w-28 border border-solid border-black bg-white flex flex-col rounded-lg" >
                         <button
-                        onClick={handleClickBlockPost}
-                         style={{
-                            padding: '5px 10px',
-                        }}>
+                            onClick={handleClickBlockPost}
+                            style={{
+                                padding: '5px 10px',
+                            }}>
                             <Paragraph color="#000">
                                 <BlockIcon size={18} />
                                 Chặn bài viết
@@ -168,47 +214,42 @@ function Post({ post, openComment, onToggleComments, style }) {
                                 </Paragraph>
                             </button>
                         </RenderWithCondition>
-                    </Box>
+                    </div>
                 </Popper>
-            </Box>
+            </div>
             <Typography variant="body2">
-                {HandleTime(post?.createdAt)}
+                {handleTime(post?.createdAt)}
             </Typography>
             <Typography variant="subtitle2">
                 {post?.title}
             </Typography>
 
-            <div style={{ overflow: 'hidden', borderRadius: '5px' }}>
+            <div
+                className="w-full"
+                style={{
+                    height: '500px'
+                }}
+                onClick={handleClickPost}
+            >
                 <RenderWithCondition condition={post?.image}>
-                    <img src={post?.image} alt={post?.title} height={290} loading="lazy" style={{
-                        display: 'block',
+                    <img src={post?.image} alt={post?.title} loading="lazy" style={{
+                        height: '100%',
                         width: '100%',
                         objectFit: 'cover',
                     }} />
                 </RenderWithCondition>
                 <RenderWithCondition condition={post?.video}>
-                    <video src={post?.video} controls height={290} style={{
-                        display: 'block',
+                    <video src={post?.video} controls style={{
+                        height: '100%',
                         width: '100%',
                         objectFit: 'cover',
                     }} />
                 </RenderWithCondition>
             </div>
 
-            <Box
-                display="flex"
-                gap="10px"
-            >
+            <div className="flex justify-between">
                 <button
-                    style={{
-
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '10px',
-                        fontSize: '16px'
-
-                    }}
+                    className="flex items-center text-slate-800 font-medium text-base gap-2 hover:opacity-50"
                     onClick={handleClickLike}
                 >
                     <HealIcon
@@ -219,21 +260,16 @@ function Post({ post, openComment, onToggleComments, style }) {
                         }}
                         active={activeHealIcon}
                     />
-                    {post?.num_likes}
+                    <p>{post?.num_likes} lượt thích</p>
                 </button>
                 <button
                     aria-describedby="open-comment"
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '10px',
-                        fontSize: '16px'
-                    }}
+                    className="flex items-center text-base gap-2 text-slate-800 font-medium hover:opacity-50"
                     onClick={handleToggleComments}
                 >
                     <MessageIcon size={23} />
-                    {post?.num_comments}
+                    <p> {post?.num_comments} Bình luận </p>
+
                 </button>
                 <Popper
                     id="open-comment"
@@ -277,7 +313,12 @@ function Post({ post, openComment, onToggleComments, style }) {
                         </RenderWithCondition>
                     </Box>
                 </Popper>
-            </Box>
+                <button onClick={handleClickSharePost} className="relative flex items-center gap-2 text-slate-800 font-medium hover:opacity-50">
+                    <ShareIcon />
+                    <p>Chia sẻ</p>
+                    {isShare && <Alert type="success" title="Thông báo" message="Sao chép liên kết thành công" />}
+                </button>
+            </div>
         </Box>
     );
 }

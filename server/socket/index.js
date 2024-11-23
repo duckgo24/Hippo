@@ -26,14 +26,12 @@ const initSocket = (server) => {
             }
 
             socket.join(user.room_id);
-            console.log(`User '${username}' joined room ${user.room_id}`);
         });
 
         socket.on('send-message', (data) => {
             const user = getUser(socket.id);
             if (user) {
                 io.to(user.room_id).emit('receive-message', data);
-                console.log(`Message sent in room ${user.room_id} by ${user.username}`);
             }
         });
 
@@ -41,7 +39,6 @@ const initSocket = (server) => {
             const { room_id } = data;
             if (room_id) {
                 io.to(room_id).emit('receive-group-message', data);
-                console.log(`Group message sent in room ${room_id}`);
             }
         });
 
@@ -50,7 +47,6 @@ const initSocket = (server) => {
             const _user = delUser(socket.id);
             if (_user) {
                 socket.leave(_user.room_id);
-                console.log(`User '${user?.username}' left room ${user?.room_id}`);
             }
         });
 
@@ -59,18 +55,18 @@ const initSocket = (server) => {
             const _user = delUser(socket.id);
             if (_user) {
                 socket.leave(user.room_id);
-                console.log(`User '${user?.username}' left room ${user?.room_id}`);
             }
         });
 
         socket.on('join-room-userId', (userId) => {
+            console.log('user join', userId);
+            
             socket.join(userId);
-            console.log(`User '${userId}' joined room ${userId}`);
         });
 
         socket.on('send-notify', ({ senderId, receiverId, data }) => {
             io.to(receiverId).emit('receive-notify', {
-                message: `${senderId} sent you a message`,
+                senderId,
                 data
             });
         });

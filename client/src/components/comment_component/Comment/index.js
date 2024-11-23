@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Avatar, Box } from "@mui/material";
@@ -7,20 +7,21 @@ import { Avatar, Box } from "@mui/material";
 import { fetchDeleteComment, fetchUpdateComment } from "../../../redux/slice/comment.slice";
 import { fetchDeleteReplyComment, fetchGetAllReplyComment } from "../../../redux/slice/reply-comment.slide";
 import Paragraph from "../../Paragraph";
-import HandleTime from "../../../utils/handleTime";
+import handleTime from "../../../utils/handleTime";
 import RenderWithCondition from "../../RenderWithCondition";
 import { HealIcon, TickIcon } from "../../SgvIcon";
-import Loader from "../../Loader";
 import { fetchUpdatePost } from "../../../redux/slice/post.slice";
 import { fetchUpdateVideo } from "../../../redux/slice/video.slice";
+import { useSocket } from "../../../providers/socket.provider";
 
 
 
 
-function Commemt({ comment, onReplyComment, onUpdatePostWhereDelete }) {
+function Commemt({ comment, post_owner, onReplyComment, onUpdatePostWhereDelete }) {
     const { my_account } = useSelector(state => state.account)
     const { status_reply, replyComments } = useSelector(state => state.replyComment)
     const [showReply, setShowReply] = useState(false);
+    const socket = useSocket();
     const [likeComment, setLikeComment] = useState(false);
     const dispatch = useDispatch();
 
@@ -28,49 +29,60 @@ function Commemt({ comment, onReplyComment, onUpdatePostWhereDelete }) {
         setLikeComment(!likeComment);
     }
 
-    
 
-    const handleDeleteComment = () => {
-        dispatch(fetchDeleteComment({
+    const handleDeleteComment = async () => {
+        await dispatch(fetchDeleteComment({
             comment_id: comment?.comment_id,
             acc_id: my_account?.id,
         }));
         onUpdatePostWhereDelete();
+
+        if (comment?.accounts?.id === my_account?.id) {
+
+            socket.emit('send-notify', {
+                receiverId: post_owner?.id,
+                data: {
+                    message: `${my_account?.full_name} xóa bình luận "${comment?.content}" bài viết ${comment?.posts?.title}`,
+                    content: `${my_account?.full_name} bình luận "${comment?.content}" bài viết ${comment?.posts?.title}`,
+                    sender_id: my_account?.id,
+                    receiver_id: post_owner?.id,
+                    type: 'del-comment',
+                }
+            })
+        }
+
+
     }
 
-    const handleShowReply = () => {
-        setShowReply(!showReply);
+    const handleShowReply = async () => {
+        setShowReply((prev) => !prev);
         if (!showReply) {
             if (comment.comment_id !== replyComments[0]?.comment_id)
-                dispatch(fetchGetAllReplyComment({
+                await dispatch(fetchGetAllReplyComment({
                     comment_id: comment.comment_id,
                 }));
         }
     };
 
 
-    const handleDeleteReplyComment = (replyComment) => {
-        dispatch(fetchDeleteReplyComment({
+    const handleDeleteReplyComment = async (replyComment) => {
+        await dispatch(fetchDeleteReplyComment({
             acc_id: replyComment?.accounts.id,
-            id: replyComment?.id
+            id: replyComment?.reply_id
         }))
 
-        dispatch(fetchUpdateComment({
+        await dispatch(fetchUpdateComment({
             comment_id: comment?.comment_id,
             num_replies: comment?.num_replies - 1,
             acc_id: my_account?.id
         }))
 
-        dispatch(fetchUpdatePost({
+        await dispatch(fetchUpdatePost({
             id: comment?.post_id,
-            num_comments: comment?.posts?.num_comments - 1,
+            num_comments: (comment?.posts?.num_comments - 1).toString(),
         }))
 
     }
-
-    useEffect(() => {
-        console.log(comment?.posts?.num_comments - 1)
-    }, [])
 
 
     return (
@@ -110,7 +122,7 @@ function Commemt({ comment, onReplyComment, onUpdatePostWhereDelete }) {
                                 {comment.accounts?.tick && <TickIcon />}
                             </Paragraph>
                             <Paragraph size='14px' color='#000'>
-                                {HandleTime(comment.createdAt)}
+                                {handleTime(comment.createdAt)}
                             </Paragraph>
                         </Box>
                         <Box>
@@ -148,17 +160,14 @@ function Commemt({ comment, onReplyComment, onUpdatePostWhereDelete }) {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '10px'
-
                                     }}
                                     onClick={handleShowReply}
                                 >
                                     <Paragraph size='13px' bold="500">
                                         {!showReply ? `── Xem tất cả ` : `── Ẩn tất cả `} {comment?.num_replies} phản hồi
                                     </Paragraph>
-                                    <RenderWithCondition condition={status_reply === 'loading' && replyComments.comment_id === comment?.comment_id}>
-                                        <Loader size={13} />
-                                    </RenderWithCondition>
                                 </button>
+
                                 <RenderWithCondition condition={showReply}>
                                     <Box
                                         display='flex'
@@ -166,23 +175,26 @@ function Commemt({ comment, onReplyComment, onUpdatePostWhereDelete }) {
                                         gap='10px'
                                         marginTop='10px'
                                     >
-                                        {
-                                            replyComments.map((reply) => {
-                                                if (reply.comment_id === comment.comment_id) {
-                                                    return <Box
-                                                        key={reply.id}
+                                        {replyComments.map((reply) => {
+                                            if (reply?.comment_id === comment?.comment_id) {
+                                                return (
+                                                    <Box
+                                                        key={reply?.reply_id}
                                                         display='flex'
                                                         flexDirection='row'
                                                         gap='10px'
                                                         justifyContent='space-around'
                                                     >
+                                                        <Avatar
+                                                            src={reply.accounts.avatar}
+                                                            alt={reply?.accounts?.nickname}
+                                                            style={{
+                                                                height: "32px",
+                                                                width: "32px",
+                                                            }}
+                                                        />
 
-                                                        <Avatar src={reply.accounts.avatar} alt={reply?.accounts?.nickname} style={{
-                                                            height: "32px",
-                                                            width: "32px",
-                                                        }} />
-
-                                                        <div style={{ flex: 1 }} >
+                                                        <div style={{ flex: 1 }}>
                                                             <Box
                                                                 display='flex'
                                                                 flexDirection='row'
@@ -202,7 +214,7 @@ function Commemt({ comment, onReplyComment, onUpdatePostWhereDelete }) {
                                                                     {reply?.accounts?.tick && <TickIcon />}
                                                                 </Paragraph>
                                                                 <Paragraph size='14px' color='#000'>
-                                                                    {HandleTime(reply?.createdAt)}
+                                                                    {handleTime(reply?.createdAt)}
                                                                 </Paragraph>
                                                             </Box>
                                                             <Paragraph size='14px' color='#000'>
@@ -210,6 +222,7 @@ function Commemt({ comment, onReplyComment, onUpdatePostWhereDelete }) {
                                                                 {reply?.content}
                                                             </Paragraph>
                                                         </div>
+
                                                         <RenderWithCondition condition={my_account?.id === reply?.acc_id}>
                                                             <button onClick={() => handleDeleteReplyComment(reply)}>
                                                                 <Paragraph size='14px' color='#000'>
@@ -218,12 +231,13 @@ function Commemt({ comment, onReplyComment, onUpdatePostWhereDelete }) {
                                                             </button>
                                                         </RenderWithCondition>
                                                     </Box>
-                                                }
-                                            })
-                                        }
+                                                );
+                                            }
+                                        })}
                                     </Box>
                                 </RenderWithCondition>
                             </RenderWithCondition>
+
                         </Box>
                     </Box>
                 </div>

@@ -1,29 +1,27 @@
 
 import { useEffect, useState } from 'react';
-import classNames from 'classnames/bind';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-
-
-import Box from '@mui/material/Box';
-import logo from '../../images/logo.png';
-import styles from './Register.module.scss';
-import Paragraph from '../../components/Paragraph';
-import Button from '../../components/Button';
 import { fetchRegister } from '../../redux/slice/account.slice';
 import Loader from '../../components/Loader';
 
 import avatarWhite from '../../images/white-avatar.jpg'
 import Alert from '../../components/Alert';
+import { fetchCreateNotify } from '../../redux/slice/notify.slice';
 
-const cx = classNames.bind(styles);
+
 
 function Register() {
 
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+        password_confirm: '',
+    });
     const [message, setMessage] = useState();
-    const { status_account } = useSelector(state => state.account);
+    const { status_account, my_account } = useSelector(state => state.account);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleOnChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,7 +30,11 @@ function Register() {
     const handleRegister = async () => {
         const { username, password, password_confirm } = formData;
         if (password !== password_confirm) {
-            alert('Mật khẩu không khớp');
+            setMessage({
+                type: 'error',
+                title: 'Đăng ký thất bại',
+                message: 'Mật khẩu xác nhận không khớp'
+            });
             return;
         }
 
@@ -53,13 +55,12 @@ function Register() {
     }
 
     useEffect(() => {
-
         if (status_account === 'failed') {
             setMessage({
                 type: 'error',
                 title: 'Đăng ký thất bại',
                 message: 'Có lỗi xảy ra, vui lòng thử lại sau'
-            })
+            });
         }
 
         if (status_account === 'succeeded') {
@@ -67,102 +68,77 @@ function Register() {
                 type: 'success',
                 title: 'Đăng ký thành công',
                 message: 'Bạn đã đăng ký thành công, vui lòng đăng nhập'
-            })
+            });
+
+            dispatch(fetchCreateNotify({
+                sender_id: 'system',
+                receiver_id: my_account?.id,
+                title: 'Thông báo hệ thống',
+                content: 'Chào mừng đến với ứng dụng mạng Hippo, khám phá ngay thôi!',
+                type: 'infomation',
+                isRead: false,
+            }));
+            
+            navigate('/login');
+
+
         }
 
         if (status_account === 'idle') {
             setMessage(null);
         }
 
-    }, [dispatch, status_account, message])
+        
+
+    }, [status_account]);
+
+    useEffect(() => {
+        let timerId = setTimeout(() => {
+            setMessage(null)
+        }, [3000])
+
+        return () => clearInterval(timerId);
+    }, [message])
 
 
     return (
-        <Box
-            display='flex'
-            justifyContent='space-around'
-            alignItems='center'
-            height='80vh'
-            maxWidth='70%'
-            margin='auto'
-            textAlign='center'
-        >
-            <Box
-                width='50%'
-            >
-                <img src={logo} alt="Logo" />
-                <Paragraph size="24px" bold='500' color='black' >
-                    Chào mừng đến với Hippo
-                </Paragraph>
-                <Paragraph size="16px" color='gray' >
-                    Tạo tài khoản để sử dụng ứng dụng
-                </Paragraph>
-            </Box>
-            <Box
-                display='flex'
-                flexDirection='column'
-                alignItems='center'
-                flex={1}
-                gap='10px'
-                sx={{
-                    padding: '25px',
-                    bgcolor: '#fff',
-                    boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px',
-                    borderRadius: '5px',
-                }}
-                maxWidth='400px'
-                minHeight='300px'
-
-            >
-
-                <input type="text" placeholder="Email" className={cx('input')} name='username' onChange={handleOnChange} />
-                <input type="password" placeholder="Mật khẩu" className={cx('input')} name='password' onChange={handleOnChange} />
-                <input type="password" placeholder="Nhập lại mật khẩu" className={cx('input')} name='password_confirm' onChange={handleOnChange} />
-                <div style={{
-                    position: 'relative',
-                    width: '100%',
-                }}>
-                    <Button
-                        style={{
-                            padding: '10px 20px',
-                            fontSize: '16px',
-                        }}
-                        primary
-                        large
-                        onClick={handleRegister}
-                        disabled={status_account === 'loading'}
-                    >
-                        Đăng ký
-                    </Button>
-                    {status_account === 'loading'
-                        &&
-                        <Loader style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                        }} />
-                    }
+        <div className='w-1/5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
+            <div className="fl flex-col items-center justify-center border border-solid border-black shadow-sm rounded-lg py-3 px-10">
+                <p className='font-serif text-7xl text-center pt-10 py-16'>Hippo</p>
+                <div className='flex flex-col gap-3'>
+                    <div className='flex flex-col gap-2'>
+                        <input type="text" name='username' value={formData?.username} onChange={handleOnChange} class="bg-gray-50 border border-black border-solid py-2 px-2 text-gray-900 text-sm rounded-lg" placeholder="Tên đăng nhập" />
+                        <input type="password" name='password' value={formData?.password} onChange={handleOnChange} class="bg-gray-50 border border-black border-solid py-2 px-2 text-gray-900 text-sm rounded-lg" placeholder="Mật khẩu" />
+                        <input type="password" name='password_confirm' value={formData.password_confirm} onChange={handleOnChange} class="bg-gray-50 border border-black border-solid py-2 px-2 text-gray-900 text-sm rounded-lg" placeholder="Nhập lại mật khẩu" />
+                    </div>
+                    <div className='relative'>
+                        <button onClick={handleRegister} className={`w-full text-white bg-blue-700 hover:bg-blue-400  font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 ${status_account === 'loading' && 'opacity-50'}`}>Đăng kí</button>
+                        {status_account === 'loading' && <Loader size={30} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
+                    </div>
                 </div>
-                <div className={cx('sepate')}>Hoặc</div>
 
+                <div className='text-center text-sm opacity-70'>
+                    <p className='py-2'>Những người sử dụng dịch vụ của chúng tôi có thể đã tải thông tin của bạn lên Hippo. </p>
+                    <p>Bằng cách đăng ký, bạn đồng ý với Điều khoản, Chính sách quyền riêng tư và Chính sách cookie của chúng tôi.</p>
+                </div>
+            </div>
 
-                <Box
-                    display='flex'
-                    justifyContent='center'
-                    alignItems='center'
-                    gap='10px'
-                    marginTop='14px'
-                >
-                    <Paragraph>
-                        Bạn đã có tài khoản
-                        <Link to='/login'>Đăng nhập ngay</Link>
-                    </Paragraph>
+            <div className="flex gap-2 items-center justify-center mt-4 border border-solid border-black shadow-sm rounded-lg py-3 px-10">
+                <p>Bạn đã có tài khoản ?</p>
+                <Link to='/login' className='text-blue-800 font-bold'>Đăng nhập</Link>
+            </div>
 
-                </Box>
-            </Box>
+            <div className='flex flex-col items-center justify-center py-4 gap-2'>
+                <p>Tải ứng dụng ngay.</p>
+                <div className='flex gap-2'>
+                    <img src="/image/app-store.png" alt="app-store" className='h-10 w-32' />
+                    <img src="/image/ch-play.png" alt="ch-play" className='h-10 w-32' />
+                </div>
+            </div>
             {message && <Alert type={message.type} title={message.title} message={message.message} />}
-        </Box>
+
+        </div>
+
     );
 }
 

@@ -10,7 +10,7 @@ const fetchGetAllComments = createAsyncThunk('comment/get-comments', async (data
     try {
         const { post_id, video_id, acc_id } = data;
         console.log(acc_id);
-        
+
         let params = post_id ? { post_id } : { video_id };
 
         const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/get-all-comment`, {
@@ -77,9 +77,17 @@ const commentSlice = createSlice({
         comments: [],
         status_comment: "idle"
     },
+    reducers: {
+        setSortCommentIncreaseDay: (state, payload) => {
+            state.comments = state.comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        },
+        setSortCommentDecreaseDay: (state, payload) => {
+            state.comments = state.comments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+        }
+    },
     extraReducers: builder => {
         builder
-            //Lấy tất cả comment
+            
             .addCase(fetchGetAllComments.pending, state => {
                 state.status_comment = "loading";
             })
@@ -89,6 +97,7 @@ const commentSlice = createSlice({
             })
             .addCase(fetchGetAllComments.rejected, state => {
                 state.status_comment = "failed";
+                state.comments = [];
             })
 
             //Tạo comment
@@ -132,6 +141,7 @@ const commentSlice = createSlice({
     }
 });
 
+export const { setSortCommentIncreaseDay, setSortCommentDecreaseDay } = commentSlice.actions;
 export default commentSlice.reducer;
 
 export { fetchGetAllComments, fetchCreateComment, fetchDeleteComment, fetchUpdateComment };

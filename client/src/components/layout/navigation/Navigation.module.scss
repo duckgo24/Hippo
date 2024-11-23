@@ -1,4 +1,35 @@
-.item {
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+@media screen and (max-width: 768px) {
+    .navbar {
+        width: 80px !important;
+    }
+}
+
+.navbar-active-popper {
+    width: 80px;
+    transition: width .3s ease-in-out;
+}
+
+.navbar-inactive-popper {
+    width: 250px;
+    transition: width .3s ease-in-out;
+}
+
+.navbar-btn--active {
+    background-color: rgba($color: #000000, $alpha: 0.2) !important;
+}
+
+
+
+
+.navbar-btn {
     padding: 12px 24px !important;
     border-radius: 15px !important;
     margin-top: 4px;
@@ -11,6 +42,7 @@
         align-items: center;
     }
 }
+
 
 
 
@@ -44,7 +76,7 @@
     color: rgba($color: #000000, $alpha: 0.54);
 
     &:hover {
-        background-color: transparent;  
+        background-color: transparent;
     }
 
 }

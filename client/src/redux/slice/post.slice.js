@@ -16,6 +16,20 @@ const fetchGetAllPosts = createAsyncThunk('posts/get-posts', async (data, { reje
     }
 });
 
+const fetchGetPostById = createAsyncThunk('posts/get-post-by-id', async (data, { rejectWithValue, dispatch }) => {
+    try {
+        const { post_id } = data;
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/posts/get-by-id/${post_id}`, {
+            params: data
+        });
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response ? error.response.data.message : error.message);
+    } finally {
+        dispatch(resetStatusIdle());
+    }
+})
+
 const fetchGetMyPosts = createAsyncThunk('posts/my-posts', async (data, { rejectWithValue, dispatch }) => {
     try {
         const { acc_id } = data;
@@ -68,11 +82,12 @@ const postSlice = createSlice({
     initialState: {
         filter_posts: [],
         posts: [],
+        post: {},
         status_post: 'idle'
     },
     extraReducers: builder =>
         builder
-            //Lấy tất cả bài viết
+    
             .addCase(fetchGetAllPosts.pending, state => {
                 state.status_post = 'loading';
             })
@@ -81,9 +96,21 @@ const postSlice = createSlice({
             })
             .addCase(fetchGetAllPosts.rejected, state => {
                 state.status_post = 'failed';
+                state.posts = [];
             })
 
-            //Lấy tất cả bài viết của tôi
+            .addCase(fetchGetPostById.pending, state => {
+                state.status_post = 'loading';
+            })
+            .addCase(fetchGetPostById.fulfilled, (state, action) => {
+                state.status_post = 'succeeded';
+                state.post = action.payload;
+            })
+            .addCase(fetchGetPostById.rejected, state => {
+                state.status_post = 'failed';
+                state.post = {};
+            })
+        
             .addCase(fetchGetMyPosts.pending, state => {
                 state.status_post = 'loading';
             })
@@ -92,10 +119,11 @@ const postSlice = createSlice({
             })
             .addCase(fetchGetMyPosts.rejected, state => {
                 state.status_post = 'failed';
+                state.filter_posts = [];
             })
 
 
-            //Tạo bài viết
+     
             .addCase(fetchCreatePost.pending, state => {
                 state.status_post = 'loading';
             })
@@ -107,16 +135,14 @@ const postSlice = createSlice({
                 state.status_post = 'failed';
             })
 
-            //Sửa bài viết
             .addCase(fetchUpdatePost.pending, state => {
                 state.status_post = 'loading';
             })
             .addCase(fetchUpdatePost.fulfilled, (state, action) => {
                 const updatedPost = action.payload;
                 state.posts = state.posts.map(post =>
-                    post.id === updatedPost.id ? { ...post, ...updatedPost } : post
+                    post.post_id === updatedPost.post_id ? { ...post, ...updatedPost } : post
                 );
-
             })
             .addCase(fetchUpdatePost.rejected, state => {
                 state.status_post = 'failed';
@@ -133,7 +159,8 @@ export default postSlice.reducer;
 
 export {
     fetchGetAllPosts,
-    fetchGetMyPosts, 
+    fetchGetPostById,
+    fetchGetMyPosts,
     fetchCreatePost,
     fetchUpdatePost
 }

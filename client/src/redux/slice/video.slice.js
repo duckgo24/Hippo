@@ -63,6 +63,7 @@ const videoSlice = createSlice({
             })
             .addCase(fetchGetAllVideos.rejected, state => {
                 state.status_video = 'failed';
+                state.videos = [];
             })
 
             //

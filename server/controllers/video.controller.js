@@ -24,7 +24,7 @@ class VideoController {
 
 
             if (!videos || videos.length === 0) {
-                return res.status(404).json({ message: "No video found" });
+                return res.status(404).json([]);
             }
 
             return res.status(200).json(videos);
@@ -37,8 +37,6 @@ class VideoController {
     async getMyVideos(req, res, next) {
         try {
             const { acc_id } = req.params;
-            console.log(acc_id);
-            
             if (!acc_id) {
                 return res.status(400).json({ message: 'Missing account_id parameter' });
             }
@@ -75,7 +73,6 @@ class VideoController {
 
 
     async createVideo(req, res, next) {
-        console.log(req.body);
         
         try {
             const video = await db.Video.create(req.body);

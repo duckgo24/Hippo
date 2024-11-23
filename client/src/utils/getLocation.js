@@ -25,9 +25,11 @@ function reverseGeocode(latitude, longitude) {
   return new Promise(async (resolve, reject) => {
     await axios.get(url)
       .then((response) => {
-        const { county, state } = response.data.results[0].components;
+        const { county, state, suburb, town } = response.data.results[0].components;
 
-        resolve({ district: county, province: state });
+        console.log(response.data.results[0].components);
+        
+        resolve({ district: county || suburb || town, province: state });
       })
       .catch((error) => {
         reject({ error: error.message });

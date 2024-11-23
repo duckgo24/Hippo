@@ -5,7 +5,6 @@ import { Box } from '@mui/material';
 
 
 import Paragraph from '../../components/Paragraph';
-import SocketService from '../../utils/SocketService';
 import CardUser from '../../components/CardUser';
 import { MoreIcon, SearchIcon } from '../../components/SgvIcon';
 import Input from '../../components/Input';
@@ -13,12 +12,14 @@ import CardChat from '../../components/chat_component/CardChat';
 import ChatWithUser from '../../components/chat_component/ChatWithUser';
 
 import { fetchGetAllRoom } from '../../redux/slice/room.slice';
+import { useSocket } from '../../providers/socket.provider';
 
 
 function Chat() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const locationState = useLocation().state;
+    const socket = useSocket()
 
     const { my_account } = useSelector((state) => state.account);
     const { rooms } = useSelector((state) => state.room);
@@ -48,10 +49,10 @@ function Chat() {
             });
         };
 
-        SocketService.on('receive-message', handleReceiveMessage);
+        socket.on('receive-message', handleReceiveMessage);
 
-        return () => SocketService.off('receive-message', handleReceiveMessage);
-    }, []);
+        return () => socket.off('receive-message', handleReceiveMessage);
+    }, [socket]);
 
 
     useEffect(() => {
@@ -69,10 +70,10 @@ function Chat() {
         const prevUser = prevUserRef.current?.user;
 
         if (prevUser?.id !== user?.id) {
-            SocketService.emit('left-room', { username: prevUser?.nickname, room_id: prevUserRef.current?.room_id });
+            socket.emit('left-room', { username: prevUser?.nickname, room_id: prevUserRef.current?.room_id });
         }
 
-        SocketService.emit('join-room', { room_id, username: my_account?.nickname });
+        socket.emit('join-room', { room_id, username: my_account?.nickname });
         setCurrentUser({ user, room_id });
         navigate(`/chat/${user?.nickname}`);
 
@@ -113,7 +114,7 @@ function Chat() {
                             room_id={card?.room_id}
                             account={card?.participants?.receiver}
                             newMessage={lastMessage?.room_id === card?.room_id ? lastMessage : null}
-                            lastMessage={card?.lastMessage[0]}
+                            lastMessage={card.lastMessage ? card?.lastMessage[0] : null}
                             selected={currentUser?.user?.id === card?.participants?.receiver?.id}
                             hasNewMessage={card?.hasNewMessage}
                             onClick={() => handleOnClickCardChat(card?.participants?.receiver, card?.room_id)}

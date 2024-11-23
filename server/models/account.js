@@ -64,8 +64,12 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       Account.hasMany(models.Notify, {
-        foreignKey: 'acc_id',
-        as: 'notify_account',
+        foreignKey: 'sender_id',
+        as: 'notify_sender_account',
+      });
+      Account.hasMany(models.Notify, {
+        foreignKey: 'receiver_id',
+        as: 'notify_receiver_account',
       });
 
       Account.hasMany(models.BlockPost, {
