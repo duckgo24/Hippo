@@ -1,22 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Avatar, Box, Modal, Popper, Tab, Tabs, Link, } from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import Paragraph from "../../components/Paragraph";
 import Button from "../../components/Button";
-import { fetchGetMyPosts } from "../../redux/slice/post.slice";
 import Alert from "../../components/Alert";
 import { TickIcon } from "../../components/SgvIcon";
-import { useLocation, useNavigate } from "react-router-dom";
-import { fetchAddFriend, fetchCheckFriend, fetchDeleteFriend, fetchGetAllFriend, } from "../../redux/slice/friend.slice";
-import { fetchCreateRequestFriend, fetchDeleteRequestFriend, fetchFindRequestFriendWithReceiver, fetchFindRequestFriendWithSender, fetchRefuseRequestFriend, } from "../../redux/slice/request-friend.slice";
+import { setAddFriend, setGetFriend, setListFriend, } from "../../redux/slice/friend.slice";
+import { setGetRequestFriendReceiver, setGetRequestFriendSender, } from "../../redux/slice/request-friend.slice";
 import RenderWithCondition from "../../components/RenderWithCondition";
 import CardUser from "../../components/CardUser";
 import testImage from "../../images/test.jpg";
-import { fetchCreateRoom } from "../../redux/slice/room.slice";
 import Post from "../../components/post_component/Post";
 import BoxInfoUser from "../../components/BoxInfoUser";
 import { useSocket } from "../../providers/socket.provider";
-import { fetchCreateNotify } from "../../redux/slice/notify.slice";
+import { accountService } from "../../services/AccountService";
+import { postService } from "../../services/PostService";
+import { requestFriendService } from "../../services/RequestFriend";
+import { friendService } from "../../services/FriendService";
+import { videoService } from "../../services/VideoService";
+import useHookMutation from "../../hooks/useHookMutation";
+import { notifyService } from "../../services/NotifyService";
+import { setMyAccount } from "../../redux/slice/account.slice";
+import { fetchCreateNotify, fetchDeleteNotify2 } from "../../redux/slice/notify.slice";
+import { fetchCreateRoom } from "../../redux/slice/room.slice";
 
 function TabPanel({ value, index, children }) {
     return (
@@ -27,108 +35,246 @@ function TabPanel({ value, index, children }) {
 }
 
 function Profile() {
-    const { my_account, status_account } = useSelector(state => state.account);
-    const { filter_posts } = useSelector(state => state.post);
+    const { my_account } = useSelector(state => state.account);
     const { get_friend, friends } = useSelector(state => state.friend);
     const { get_request_friend_sender, get_request_friend_receiver } = useSelector(state => state.requestFriend);
     const [currentTab, setCurrentTab] = useState(0);
     const [openModalEditProfile, setOpenModalEditProfile] = useState(false);
+    const [message, setMessage] = useState();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const socket = useSocket();
 
-    const { state } = useLocation();
+    const { nickname } = useParams();
 
-    const [anchorElOptionFriend, setAnchorElOptionFriend] = useState(null);
-    const [openOptionFriend, setOpenOptionFriend] = useState(false);
+    const { data: accountByNickName, isLoading: isAccountLoading, isSuccess } = useQuery({
+        queryKey: ['get-by-nickname', nickname],
+        queryFn: () => accountService.getAccountByNickName(nickname),
+        enabled: !!nickname,
+    });
 
-    const toggleOptionFriend = (e) => {
-        setOpenOptionFriend(prev => !prev)
-        setAnchorElOptionFriend(e.currentTarget);
+
+
+    const { data: postDataByAccId } = useQuery({
+        queryKey: ['get-post-by-acc-id', accountByNickName?.acc_id],
+        queryFn: () => postService.getPostByAccId(accountByNickName?.acc_id),
+        enabled: !!accountByNickName?.acc_id && currentTab === 0,
+    });
+
+
+    const { data: videoDataByAccId } = useQuery({
+        queryKey: ['get-video-by-acc-id', accountByNickName?.acc_id],
+        queryFn: () => videoService.getVideoByAccId(accountByNickName?.acc_id),
+        enabled: !!accountByNickName?.acc_id && currentTab === 1,
+    });
+
+
+
+    const { data: friendData, isSuccess: isFetchSomeFriends } = useQuery({
+        queryKey: ['get-some-friends', accountByNickName?.acc_id],
+        queryFn: () => friendService.getFriendWithLimitByAccId(accountByNickName?.acc_id, 3),
+        enabled: !!accountByNickName?.acc_id && !isAccountLoading,
+    });
+
+    useEffect(() => {
+        if (isFetchSomeFriends) {
+            dispatch(setListFriend(friendData));
+        }
+    }, [isFetchSomeFriends])
+
+
+    const { data: checkFriendData, isSuccess: isFetchSuccessCheckFriend } = useQuery({
+        queryKey: ['check-friend', accountByNickName?.acc_id],
+        queryFn: () => friendService.checkIsFriend(my_account?.acc_id, accountByNickName?.acc_id),
+        enabled: !!accountByNickName?.acc_id && !isAccountLoading,
+    });
+
+    useEffect(() => {
+        if (isFetchSuccessCheckFriend) {
+            dispatch(setGetFriend(checkFriendData))
+        }
+    }, [isFetchSuccessCheckFriend])
+
+
+
+
+    const { data: checkRequestFriendDataByRoleSender, isSuccess: isSuccess1 } = useQuery({
+        queryKey: ['check-request-friend-by-role-sender', my_account?.acc_id, accountByNickName?.acc_id],
+        queryFn: () => requestFriendService.checkRequestFriendByRoleSender(my_account?.acc_id, accountByNickName?.acc_id),
+        enabled: !!accountByNickName?.acc_id && !isAccountLoading,
+    });
+
+    useEffect(() => {
+        if (isSuccess1) {
+            dispatch(setGetRequestFriendSender(checkRequestFriendDataByRoleSender));
+        }
+    }, [isSuccess1])
+
+
+    const { data: checkRequestFriendDataByRoleReceiver, isSuccess: isSuccess2 } = useQuery({
+        queryKey: ['check-request-friend-by-role-receiver', my_account?.acc_id, accountByNickName?.acc_id],
+        queryFn: () => requestFriendService.checkRequestFriendByRoleReceiver(accountByNickName?.acc_id, my_account?.acc_id),
+        enabled: !!accountByNickName?.acc_id && !isAccountLoading,
+    });
+
+    useEffect(() => {
+        if (isSuccess2) {
+            dispatch(setGetRequestFriendReceiver(checkRequestFriendDataByRoleReceiver));
+        }
+    }, [isSuccess2])
+
+
+
+    const sendRequestFriendMutaion = useHookMutation((data) => {
+        const { sender_id, receiver_id } = data;
+        return requestFriendService.createRequestAddFriend(sender_id, receiver_id)
+    });
+
+    const handleSendRequestFriend = () => {
+        sendRequestFriendMutaion.mutate({ sender_id: my_account?.acc_id, receiver_id: accountByNickName?.acc_id },
+            {
+                onSuccess: (data) => {
+                    socket.emit('send-notify', {
+                        senderId: my_account?.acc_id,
+                        receiverId: accountByNickName?.acc_id,
+                        data: {
+                            message: `${my_account?.full_name} vừa gửi lời mời kết bạn`,
+                        }
+                    });
+                    dispatch(fetchCreateNotify({
+                        sender_id: my_account?.acc_id,
+                        receiver_id: accountByNickName?.acc_id,
+                        type: "request_friend",
+                        isRead: false,
+                        link: `/profile/${my_account?.nickname}`,
+                        title: "Thông báo kết bạn",
+                        content: `${my_account?.full_name} vừa gửi lời mời kết bạn`,
+                    }))
+                    // notifyService.createNotify({
+
+                    // });
+                    dispatch(setGetRequestFriendSender(data));
+                }
+            });
     }
 
+    const deleteRequestFriendMutation = useHookMutation((data) => {
+        const { sender_id, receiver_id } = data;
+        return requestFriendService.deleteRequestFriend(sender_id, receiver_id);
+    });
 
-    const currentAccount = useMemo(() => {
-        return state?.account ? state?.account : my_account;
-    }, [state?.account, my_account]);
+    const handleDeleteRequestFriend = () => {
+        deleteRequestFriendMutation.mutate(
+            { sender_id: my_account?.acc_id, receiver_id: accountByNickName?.acc_id },
+            {
+                onSuccess: async (data) => {
+                    await notifyService.deleteNotify2({
+                        sender_id: my_account?.acc_id,
+                        receiver_id: accountByNickName?.acc_id,
+                        title: "Thông báo kết bạn",
+                        content: `${my_account?.full_name} vừa gửi lời mời kết bạn`,
+                    });
+                    dispatch(setGetRequestFriendSender({
+                        success: false,
+                        message: "Delete request friend success",
+                    }));
+                }
+            }
+        )
+    };
 
-    const handleChangeTab = (e, tab) => {
-        setCurrentTab(tab);
+    const handleRefuseRequestFriend = () => {
+        deleteRequestFriendMutation.mutate(
+            { sender_id: accountByNickName?.acc_id, receiver_id: my_account?.acc_id },
+            {
+                onSuccess: () => {
+                    setGetRequestFriendSender({
+                        success: false,
+                        message: "Delete request friend success",
+                    });
+                    notifyService.deleteNotify2({
+                        sender_id: accountByNickName?.acc_id,
+                        receiver_id: my_account?.acc_id,
+                        title: "Thông báo kết bạn",
+                        content: `${accountByNickName?.full_name} vừa gửi lời mời kết bạn`,
+                    });
+                    dispatch(setGetRequestFriendReceiver({
+                        success: false,
+                        message: "Delete request friend success",
+                    }));
+                }
+            }
+        )
     };
 
 
+    const deleteFriendMutation = useHookMutation((data) => {
+        const { acc_id, friend_id } = data;
+        return friendService.deleteFriend(acc_id, friend_id);
+    });
+    const createFriendMutation = useHookMutation(({ acc_id, friend_id }) => {
+        return friendService.createFriend(acc_id, friend_id);
+    });
 
-    const handleToggleModalExitProfile = () => {
-        setOpenModalEditProfile(!openModalEditProfile);
-    }
+    const handleConfirmAddFriend = () => {
+        createFriendMutation.mutate(
+            { acc_id: my_account?.acc_id, friend_id: accountByNickName?.acc_id },
+            {
+                onSuccess: (data) => {
+                    handleRefuseRequestFriend();
+                    socket.emit('send-notify', {
+                        senderId: my_account?.acc_id,
+                        receiverId: accountByNickName?.acc_id,
+                        data: {
+                            message: `${accountByNickName?.full_name} và ${my_account?.full_name} đã trở thành bạn bè của nhau`,
+                        }
+                    });
+                    dispatch(fetchCreateNotify({
+                        sender_id: "system",
+                        receiver_id: accountByNickName?.acc_id,
+                        type: "friend",
+                        isRead: false,
+                        link: `/profile/${my_account?.nickname}`,
+                        title: "Thông báo hệ thống",
+                        content: `${accountByNickName?.full_name} và ${my_account?.full_name} đã trở thành bạn bè của nhau`,
+                    }));
+                    // notifyService.createNotify({
 
-    const handleSendRequestFriend = () => {
-        dispatch(fetchCreateRequestFriend({
-            acc_id: my_account?.id,
-            receiver_id: currentAccount?.id
-        }))
-        socket.emit('send-notify', {
-            senderId: my_account?.id,
-            receiverId: currentAccount?.id,
-            data: {
-                message: `${my_account?.full_name} vừa gửi lời mời kết bạn`,
+                    // });
+                    dispatch(fetchCreateRoom({
+                        acc_id: my_account?.acc_id,
+                        friend_id: accountByNickName?.acc_id,
+                        room_id: `${my_account?.acc_id}-${accountByNickName?.acc_id}`
+                    }));
+
+                    dispatch(setGetFriend(data));
+                    dispatch(setAddFriend(data));
+                }
             }
-        })
-        dispatch(fetchCreateNotify({
-            sender_id: my_account?.id,
-            receiver_id: currentAccount?.id,
-            title: 'Thông báo kết bạn',
-            content: `${my_account?.full_name} đã gửi lời mời kết bạn`,
-            link: `/profile/${currentAccount?.nickname}`,
-            type: 'request_friend',
-            isRead: false,
-        }))
+        );
     }
 
     const handleDeleteFriend = () => {
-        dispatch(fetchDeleteFriend({
-            acc_id: my_account?.id,
-            friend_id: currentAccount?.id
-        }))
+        deleteFriendMutation.mutate({ acc_id: my_account?.acc_id, friend_id: accountByNickName?.acc_id }, {
+            onSuccess: async (data) => {
+                dispatch(fetchDeleteNotify2({
+                    sender_id: "system",
+                    receiver_id: accountByNickName?.acc_id,
+                    title: "Thông báo hệ thống",
+                    content: `${accountByNickName?.full_name} và ${my_account?.full_name} đã trở thành bạn bè của nhau`,
+                }))
+                dispatch(setGetFriend(null));
+                setOpenOptionFriend(false);
+            }
+        });
     }
 
-    const handleConfirmAddFriend = () => {
-        dispatch(fetchAddFriend({
-            acc_id: my_account?.id,
-            friend_id: currentAccount?.id,
-            status: 'friend'
-        }))
 
-        dispatch(fetchDeleteRequestFriend({
-            acc_id: currentAccount?.id,
-            receiver_id: my_account?.id
-        }))
-
-        dispatch(fetchCreateRoom({
-            room_id: `${my_account?.id}-${currentAccount?.id}`,
-            acc_id: my_account?.id,
-            friend_id: currentAccount?.id
-        }))
-    }
-
-    const handleDeleteRequestFriend = () => {
-        dispatch(fetchDeleteRequestFriend({
-            acc_id: my_account?.id,
-            receiver_id: currentAccount?.id
-        }))
-    }
-
-    const handleRefuseRequestFriend = () => {
-        dispatch(fetchRefuseRequestFriend({
-            sender_id: currentAccount?.id,
-            receiver_id: my_account?.id
-        }))
-    }
 
     const handleSendBlockUser = () => {
         navigate('/chat', {
             state: {
-                account: currentAccount
+                account: accountByNickName
             }
         })
     }
@@ -136,82 +282,53 @@ function Profile() {
     const handleOnChatFriend = () => {
         navigate('/chat', {
             state: {
-                account: currentAccount
+                account: accountByNickName
             }
         })
     }
 
 
     const handleClickFriendCard = (friend) => {
-        navigate(`/profile/${friend?.nickname}`, {
-            state: {
-                account: friend
-            }
+        navigate(`/profile/${friend?.nickname}`)
+    }
+
+
+    const [anchorElOptionFriend, setAnchorElOptionFriend] = useState(null);
+    const [openOptionFriend, setOpenOptionFriend] = useState(false);
+    const toggleOptionFriend = (e) => {
+        setOpenOptionFriend(prev => !prev)
+        setAnchorElOptionFriend(e.currentTarget);
+    }
+
+
+    const handleChangeTab = (e, tab) => {
+        setCurrentTab(tab);
+    };
+
+    const handleToggleModalExitProfile = () => {
+        setOpenModalEditProfile(!openModalEditProfile);
+    }
+
+    const handleChangeInfoSuccess = (data) => {
+        setMessage({
+            type: 'success',
+            title: 'Thông báo',
+            message: 'Cập nhật thông tin thành công',
         })
+        dispatch(setMyAccount(data));
+        setOpenModalEditProfile(false)
+
+        setTimeout(() => {
+            setMessage(null);
+        }, 3000);
     }
 
 
 
-    useEffect(() => {
-        if (currentAccount) {
-            if (currentTab === 0) {
-                if (currentAccount?.id !== filter_posts[0]?.accounts?.id) {
-                    dispatch(fetchGetMyPosts({
-                        acc_id: currentAccount?.id
-                    }));
-                }
-            }
-        }
-    }, [currentTab]);
-
-    useEffect(() => {
-        if (my_account?.id !== currentAccount?.id) {
-            dispatch(fetchCheckFriend({
-                acc_id: my_account?.id,
-                friend_id: currentAccount?.id
-            }))
-
-            if (!get_friend?.friend_id) {
-                dispatch(fetchFindRequestFriendWithSender({
-                    sender_id: my_account?.id,
-                    receiver_id: currentAccount?.id
-                }))
-
-                dispatch(fetchFindRequestFriendWithReceiver({
-                    sender_id: currentAccount?.id,
-                    receiver_id: my_account?.id
-                }))
-            }
-        }
-    }, [])
-
-    useEffect(() => {
-        dispatch(fetchGetAllFriend({
-            acc_id: currentAccount?.id,
-            limit: 9
-        }))
-    }, [currentAccount])
 
     return (
-        <Box
-            display="flex"
-            flexDirection="column"
-            width="60%"
-            minHeight="100%"
-            margin="auto"
-            padding="40px 0 0 0"
-            gap="20px"
-            position="relative"
-        >
-            <Paragraph
-                size="16px"
-                bold="700"
-                style={{
-                    textAlign: "center",
-                }}
-            >
-                Trang cá nhân
-            </Paragraph>
+        <div className="flex flex-col gap-5 mx-auto pt-10 w-3/6 relative">
+            <p className="text-center text-xl font-bold opacity-70">Trang cá nhân</p>
             <Box
                 sx={{
                     display: "flex",
@@ -224,23 +341,17 @@ function Profile() {
                     borderRadius: "10px",
                     padding: "25px",
                 }}
+                className="bg-white"
             >
                 <Box>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            padding: "10px",
-                        }}
-                    >
-                        <Box flex={1}>
+                    <div className="flex justify-between items-center p-2" >
+                        <div className="flex-1">
                             <Paragraph size="26px" bold="700" color="#000">
-                                {currentAccount?.full_name}
+                                {accountByNickName?.full_name}
                             </Paragraph>
                             <Paragraph color="rgba(0, 0, 0, 0.8)">
-                                {currentAccount?.nickname}
-                                {currentAccount?.tick && <TickIcon />}
+                                {accountByNickName?.nickname}
+                                {accountByNickName?.tick && <TickIcon />}
                             </Paragraph>
                             <Paragraph
                                 color="rgba(0, 0, 0, 0.8)"
@@ -248,23 +359,23 @@ function Profile() {
                                     padding: "15px 0",
                                 }}
                             >
-                                {currentAccount?.bio}
+                                {accountByNickName?.bio}
                             </Paragraph>
                             <Paragraph size="14px" color="rgba(0, 0, 0, 0.8)">
                                 81.4K người theo dõi
                             </Paragraph>
-                        </Box>
+                        </div>
                         <Avatar
-                            src={currentAccount?.avatar}
-                            alt={currentAccount?.nickname}
+                            src={accountByNickName?.avatar}
+                            alt={accountByNickName?.nickname}
                             sx={{
                                 width: "100px",
                                 height: "100px",
                                 objectFit: "cover",
                             }}
                         />
-                    </Box>
-                    {currentAccount?.id === my_account?.id && (
+                    </div>
+                    {accountByNickName?.acc_id === my_account?.acc_id && (
                         <>
                             <Box
                                 display="flex"
@@ -300,23 +411,19 @@ function Profile() {
                             <Modal
                                 open={openModalEditProfile}
                                 onClose={() => setOpenModalEditProfile(false)}
-                                sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
+                                className="flex items-center justify-between"
                             >
-                                <BoxInfoUser account={my_account} onChangeInfo={() => setOpenModalEditProfile(false)} />
+                                <BoxInfoUser onChangeSuccess={handleChangeInfoSuccess} />
                             </Modal>
                         </>
                     )}
-                    {currentAccount?.id !== my_account?.id && (
+                    {accountByNickName?.acc_id !== my_account?.acc_id && (
                         <Box display="flex" justifyContent="space-between" gap="20px">
                             <RenderWithCondition
                                 condition={
-                                    !get_request_friend_sender?.sender_id && !get_request_friend_receiver?.receiver_id
-                                    &&
-                                    !get_friend?.friend_id
+                                    !get_request_friend_sender?.success
+                                    && !get_request_friend_receiver?.success
+                                    && !get_friend
                                 }
                             >
                                 <Button
@@ -338,7 +445,7 @@ function Profile() {
 
                             <RenderWithCondition
                                 condition={
-                                    get_request_friend_receiver?.sender_id === currentAccount?.id
+                                    get_request_friend_receiver?.sender_id === accountByNickName?.acc_id
                                     && get_request_friend_receiver?.status === 'pending'
                                 }
                             >
@@ -360,7 +467,7 @@ function Profile() {
                             </RenderWithCondition>
                             <RenderWithCondition
                                 condition={
-                                    get_request_friend_receiver?.sender_id === currentAccount?.id
+                                    get_request_friend_receiver?.sender_id === accountByNickName?.acc_id
                                     && get_request_friend_receiver?.status === 'pending'
                                 }
                             >
@@ -383,7 +490,7 @@ function Profile() {
 
                             <RenderWithCondition
                                 condition={
-                                    get_request_friend_sender?.sender_id === my_account?.id &&
+                                    get_request_friend_sender?.sender_id === my_account?.acc_id &&
                                     get_request_friend_sender?.status === 'pending'
                                 }
                             >
@@ -463,9 +570,6 @@ function Profile() {
                                 </Popper>
                             </RenderWithCondition>
 
-
-
-
                             <Button
                                 onClick={handleSendBlockUser}
                                 large
@@ -491,11 +595,7 @@ function Profile() {
                     marginTop="10px"
                 >
                     <Paragraph bold="700">Bạn bè</Paragraph>
-                    <Box
-                        display="grid"
-                        gridTemplateColumns="repeat(3, 1fr)"
-                        marginTop="10px"
-                    >
+                    <div className="grid grid-cols-3 mt-2 gap-3">
                         {friends && friends.map(friend => (
                             <CardUser
                                 onClick={() => handleClickFriendCard(friend.friend)}
@@ -510,9 +610,9 @@ function Profile() {
                                 />
                             ))
                         }
-                    </Box>
+                    </div>
                     <Link
-                        href={`/${currentAccount?.nickname}/friends`}
+                        href={`/${accountByNickName?.nickname}/friends`}
                         sx={{
                             fontSize: "14px",
                             textDecoration: "none",
@@ -570,11 +670,11 @@ function Profile() {
                     value={currentTab} index={0}
                 >
                     {
-                        !filter_posts
+                        !postDataByAccId || postDataByAccId.length === 0
                             ?
                             <Paragraph>Chưa có bài viết nào</Paragraph>
                             :
-                            filter_posts.map(post => (
+                            postDataByAccId.map(post => (
                                 <Post post={post} key={post.post_id} style={{
                                     width: "100%",
                                     maxWidth: "100%",
@@ -583,20 +683,29 @@ function Profile() {
                     }
                 </TabPanel>
                 <TabPanel value={currentTab} index={1}>
-                    Video
+                    {
+                        !videoDataByAccId || videoDataByAccId.length === 0
+                            ?
+                            <Paragraph>Chưa có bài viết nào</Paragraph>
+                            :
+                            videoDataByAccId.map(video => (
+                                <Post post={video} key={video.video_id} style={{
+                                    width: "100%",
+                                    maxWidth: "100%",
+                                }} />
+                            ))
+                    }
                 </TabPanel>
                 <TabPanel value={currentTab} index={2}>
                     Đã thích
                 </TabPanel>
             </Box>
 
-            <RenderWithCondition condition={status_account === 'succeeded' && !openModalEditProfile}>
-                <Alert type={'success'} message={"Cap nhat tai khoan thanh cong"} title={"Thong bao"} />
-            </RenderWithCondition>
+            {message && <Alert type={message.type} title={message.title} message={message.message} />}
 
 
 
-        </Box>
+        </div>
     );
 }
 

@@ -28,7 +28,7 @@ class blockPostController {
             if (!checkExitBlockPost) {
                 const data = await db.BlockPost.create({
                     ...req.body,
-                    id: uuid.v4()
+                    block_post_id: uuid.v4()
                 });
                 if (data) {
                     return res.status(201).json(data);

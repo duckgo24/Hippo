@@ -2,8 +2,7 @@ import { Box, Popper } from "@mui/material";
 import { AudioIcon, CloseIcon, HealIcon, LocationIcon, MessageIcon, MoreIcon, ShareIcon } from "../SgvIcon";
 
 
-import styles from './Reel.module.scss';
-import classNames from "classnames/bind";
+
 import CardUser from "../CardUser";
 import Button from "../Button";
 import Paragraph from "../Paragraph";
@@ -11,7 +10,9 @@ import { useEffect, useRef, useState } from "react";
 import CommentList from "../comment_component/CommentList";
 import RenderWithCondition from "../RenderWithCondition";
 import { useSelector } from "react-redux";
-const cx = classNames.bind(styles);
+import handleTime from "../../utils/handleTime";
+import { FaLocationDot } from "react-icons/fa6";
+
 
 
 function Reel({ reel, onReelInView, currentOpenReel, onToggleComments }) {
@@ -53,83 +54,64 @@ function Reel({ reel, onReelInView, currentOpenReel, onToggleComments }) {
 
 
     return (
-        <Box
-            display="flex"
-            alignItems="center"
-            gap="10px"
-            height="90vh"
-        
-        >
+        <div className="reel h-screen flex items-center justify-center" >
             <Box
-                boxShadow="rgba(99, 99, 99, 0.2) 0px 2px 8px 0px"
                 padding="10px"
                 borderRadius="10px"
-                position="relative"
+                height="80%"
+                width="900px"
+                className="relative"
             >
                 <video
-                    style={{
-                        marginTop: "40px"
-                    }}
                     src={reel?.video}
                     controls
-                    width="550px" height="550px"
                     ref={reelRef}
                     autoPlay
                     muted
+                    className="h-full w-full object-cover"
                 />
-                <Box
-                    display="flex"
-                    alignItems="center"
-                    gap="10px"
-                >
-                    <CardUser nickname={reel?.accounts?.nickname} avatar={reel?.accounts?.avatar} tick={reel?.accounts?.tick} />
+                <div className="absolute bottom-40 left-6">
                     <RenderWithCondition condition={reel?.location}>
-                        <Paragraph size="14px" color="#000">  <LocationIcon color="#000" /> {reel?.location}</Paragraph>
+                        <p className="text-sm text-white bg-black-03 rounded-md flex items-center gap-1 p-1" style={{
+                            
+                        }}>
+                            <FaLocationDot color="rgba(147, 250, 165, 1)" />
+                            {reel?.location}
+                        </p>
                     </RenderWithCondition>
-                </Box>
-                <Paragraph size="14px" color="#000">{reel?.title}</Paragraph>
-                <Box
-                    position="relative"
-                    bgcolor="rgba(0, 0, 0, 0.1)"
-                    borderRadius="10px"
-                    overflow="hidden"
-                    padding="7px 8px"
-                    height="40px"
-                    sx={{
-                        "&:hover": {
-                            backgroundColor: "rgba(0, 0, 0, 0.15)",
-                            cursor: "pointer"
-                        }
-                    }}
-                >
-                    <Paragraph className={cx('audio')} >  <AudioIcon size={14} /> {reel?.accounts?.nickname} • Âm thanh gốc</Paragraph>
-                </Box>
-
+                    </div>
+                <div className="absolute bottom-20 left-6">
+                    
+                    <div className="flex flex-col gap-1">
+                        <div className="flex gap-2">
+                            <p className="text-white text-base font-bold">{reel?.accounts?.nickname} </p>
+                            <p className="text-white text-base">• {handleTime(reel.createdAt)} </p>
+                        </div>
+                        <p className="text-white text-base">{reel?.title}</p>
+                      
+                    </div>
+                    <p className="text-white flex items-center gap-3">  <AudioIcon size={14} /> {reel?.accounts?.nickname} • Âm thanh gốc</p>
+                </div>
             </Box>
-            <Box
-                display="flex"
-                flexDirection="column"
-                gap="10px"
-            >
-                <Box
-                    display="flex"
-                    flexDirection="column"
-                    alignItems="center"
-                >
+
+
+
+            <div className="flex flex-col gap-3 items-end flex-1 " >
+                <div>
+                    <CardUser avatar={reel?.accounts?.avatar} />
+                </div>
+                <div className="flex flex-col items-center" >
                     <Button>
                         <HealIcon color="#000" />
                     </Button>
-                    <Paragraph color="#000" size="14px">{reel?.num_likes} </Paragraph>
-                </Box>
-                <Box
-                    display="flex"
-                    flexDirection="column"
-                    alignItems="center"
-                >
+                    <p className="text-black text-base">{reel?.num_likes}</p>
+                </div>
+                <div className="flex flex-col items-center" >
                     <Button onClick={handleToggleComments}>
                         <MessageIcon color="#000" />
                     </Button>
-                    <Paragraph color="#000" size="14px">{reel?.num_comments} </Paragraph>
+                    <p className="text-black text-base">{reel?.num_comments} </p>
+
                     <Popper
                         id="open-comment"
                         open={isCommentOpen}
@@ -172,16 +154,16 @@ function Reel({ reel, onReelInView, currentOpenReel, onToggleComments }) {
 
                         </Box>
                     </Popper>
-                </Box>
+                </div>
                 <Button>
                     <ShareIcon />
                 </Button>
                 <Button>
                     <MoreIcon />
                 </Button>
-            </Box>
+            </div>
 
-        </Box>
+        </div>
 
     );
 }

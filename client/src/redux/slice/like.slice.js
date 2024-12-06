@@ -6,7 +6,7 @@ import axios from "axios";
 const fetchGetAllPostsLiked = createAsyncThunk('/like/posts-like', async (data, { rejectWithValue }) => {
     try {
         const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/posts-liked`, {
-            params : data
+            params: data
         });
         return res.data;
     } catch (error) {
@@ -40,41 +40,45 @@ const fetchDislikesPost = createAsyncThunk('/like/dislike', async (data, { rejec
 const likeSlice = createSlice({
     name: 'like',
     initialState: {
-        likePosts: [],
-        likeVideos: [],
+        likes_post: [],
+        like_videos: [],
     },
     reducers: {
-    },
-    extraReducers: builder => {
-        builder
-            .addCase(fetchGetAllPostsLiked.fulfilled, (state, action) => {
-                state.likePosts = action.payload;
-            })
+        setLikesPost: (state, action) => {
+            state.likes_post = action.payload;
+        },
+        setLikePost: (state, action) => {
+            console.log(action.payload);
             
-            .addCase(fetchLikePost.fulfilled, (state, action) => {
-                if (action.payload.post_id) {
-                    state.likePosts.push(action.payload);
-                } else {
-                    state.likeVideos.push(action.payload);
-                }
-            })
+            state.likes_post.unshift(action.payload);
 
-            .addCase(fetchDislikesPost.fulfilled, (state, action) => {
-                if (action.payload.post_id) {
-                    const index = state.likePosts.findIndex(post => post.id === action.payload.id);
-                    if (index !== -1) {
-                        state.likePosts.splice(index, 1);
-                    }
-                } else {
-                    const index = state.likeVideos.findIndex(video => video.id === action.payload.id);
-                    if (index !== -1) {
-                        state.likeVideos.splice(index, 1);
-                    }
-                }
-            })
-    },
+        },
+        setDisLikePost: (state, action) => {
+            const index = state.likes_post.findIndex(like => like?.id === action.payload?.id);
+            if (index !== -1) {
+                state.likes_post.splice(index, 1);
+            }
+        },
+
+        setLikesVideo: (state, action) => {
+            state.like_videos = action;
+        },
+        setLikeVideo: (state, action) => {
+            state.like_videos.push(action.payload);
+        },
+        setDisLikeVideo: (state, action) => {
+            const index = state.like_videos.findIndex(like => like.id === action.payload.id);
+            if (index !== -1) {
+                state.like_videos.splice(index, 1);
+            }
+        }
+
+    }
 });
 
-export default likeSlice.reducer;
+export const {
+    setLikesPost, setLikePost, setDisLikePost,
+    setLikesVideo, setLikeVideo, setDisLikeVideo
+} = likeSlice.actions;
 
-export { fetchGetAllPostsLiked, fetchLikePost, fetchDislikesPost };
+export default likeSlice.reducer;

@@ -16,7 +16,7 @@ class NotifyController {
                     {
                         model: db.Account,
                         as: 'notify_sender_account',
-                        attributes: ['id', 'nickname', 'avatar', 'tick']
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                     }
                 ],
                 order: [
@@ -32,22 +32,30 @@ class NotifyController {
             return res.status(500).json({ error: error.message });
         }
     }
+
     async createNotify(req, res, next) {
         try {
-            const notify = db.Notify.create({
+            const notify = await db.Notify.create({
                 ...req.body,
                 notify_id: uuid.v4(),
             });
 
-            return res.status(200).json(notify);
+            if (notify) {
+                const res_notify = await db.Notify.findOne({
+                    where: {
+                        notify_id: notify.notify_id
+                    },
+                });
+                return res.status(201).json(res_notify);
+            }
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
     }
 
+
     async delNotify(req, res, next) {
         const { notify_id } = req.params;
-        
         try {
             const findNotify = db.Notify.findOne({
                 where: {
@@ -64,7 +72,7 @@ class NotifyController {
                     notify_id
                 }
             });
-            
+
             return res.status(200).json({
                 notify_id
             });
@@ -72,6 +80,41 @@ class NotifyController {
             return res.status(500).json({ error: error.message });
 
         }
+    }
+    async delNotifyByMultiData(req, res, next) {
+        const { sender_id, receiver_id, title, content } = req.body;
+        try {
+            const findNotify = await db.Notify.findOne({
+                where: {
+                    sender_id,
+                    receiver_id,
+                    title,
+                    content
+                },
+            })
+
+            if (!findNotify) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Notify not found'
+                });
+            }
+
+            await db.Notify.destroy({
+                where: {
+                    sender_id,
+                    receiver_id,
+                    title,
+                    content
+                }
+            });
+
+            return res.status(200).json({
+                notify_id: findNotify.dataValues.notify_id
+            });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        };
     }
 }
 

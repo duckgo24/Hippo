@@ -8,29 +8,15 @@ import Footer from "../footer";
 
 function DefaultLayout({ children }) {
     return (
-        <Box sx={{
-            flex: 1,
-            display: 'flex',
-            height: '100%',
-            backgroundColor: '#f9f9f9'
-        }}>
-            <Box
-                minWidth={250}
-                height="100vh"
-            >
+        <div className="flex flex-row bg-slate-100 overflow-hidden h-screen">
+            <div className="max-w-56">
                 <Navigation />
-            </Box>
-            <Box
-                display="flex"
-                flexDirection="column"
-                justifyItems="center"
-                flex={1}
-            >
+            </div>
+
+            <div className="overflow-y-auto flex-1">
                 {children}
-                <Footer />
-            </Box>
-           
-        </Box>
+            </div>
+        </div>
     );
 }
 

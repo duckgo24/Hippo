@@ -15,7 +15,7 @@ function App() {
 
   return (
     <Router>
-      <NotificationListener userId={my_account?.id} />
+      <NotificationListener userId={my_account?.acc_id} />
       <Routes>
         {myRoutes.map((route, index) => {
           const Page = route.component;

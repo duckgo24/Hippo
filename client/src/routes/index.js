@@ -9,6 +9,8 @@ import Reels from "../pages/Reels";
 import Search from "../pages/Search";
 import PostDetail from "../pages/PostDetail";
 import Test from "../pages/Test/test";
+import VideoDetail from "../pages/VideoDetail";
+import CallScreen from "../pages/Call";
 
 
 
@@ -59,6 +61,11 @@ export const myRoutes = [
         isShowNavigate: false,
     },
     {
+        path: '/chat/:nickname',
+        component: Chat,
+        isShowNavigate: false,
+    },
+    {
         path: '/discover',
         component: Discover,
         isShowNavigate: true,
@@ -69,8 +76,28 @@ export const myRoutes = [
         isShowNavigate: true,
     },
     {
+        path: '/video/:video_id',
+        component: VideoDetail,
+        isShowNavigate: true,
+    },
+    {
+        path: '/post/post_id=:post_id&comment_id=:comment_id',
+        component: PostDetail,
+        isShowNavigate: true,
+    },
+    {
+        path: '/video/:video_id&comment_id=:comment_id',
+        component: VideoDetail,
+        isShowNavigate: true,
+    },
+    {
         path: '/test',
         component: Test,
+        isShowNavigate: false
+    },
+    {
+        path: 'call/:nickname',
+        component: CallScreen,
         isShowNavigate: false
     }
 ]

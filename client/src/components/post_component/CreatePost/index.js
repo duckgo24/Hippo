@@ -1,33 +1,36 @@
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import classNames from "classnames/bind";
-
-import { Box, Switch, TextareaAutosize } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { Box, Switch } from "@mui/material";
 import EmojiPicker from 'emoji-picker-react';
 
-import { useDispatch, useSelector } from "react-redux";
+
 import GetLinkImage from "../../../utils/GetLinkImage";
 import Paragraph from "../../Paragraph";
 import CardUser from "../../CardUser";
 import { CloseIcon, EmojiIcon, LocationIcon, MediaIcon, MoreIcon } from "../../SgvIcon";
-import { fetchCreatePost } from "../../../redux/slice/post.slice";
-
-
+import { setCreatePost } from "../../../redux/slice/post.slice";
 import styles from "./CreatePost.module.scss";
 import Loader from "../../Loader";
 import GetLinkVideo from "../../../utils/GetLinkVideo";
 import RenderWithCondition from "../../RenderWithCondition";
-import { fetchCreateVideo } from "../../../redux/slice/video.slice";
+import { setCreateVideo } from "../../../redux/slice/video.slice";
 import { getLocation } from "../../../utils/getLocation";
+import useHookMutation from "../../../hooks/useHookMutation";
+import { postService } from "../../../services/PostService";
+import { videoService } from "../../../services/VideoService";
+import { useSocket } from "../../../providers/socket.provider";
+import { notifyService } from "../../../services/NotifyService";
+import { fetchCreateNotify } from "../../../redux/slice/notify.slice";
 
 
 
 const cx = classNames.bind(styles)
 
-const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
+const CreatePost = React.forwardRef(({ onCloseForm, onCreateSuccess }, ref) => {
     const { my_account } = useSelector(state => state.account)
-    const { status_post } = useSelector(state => state.post);
-    const { status_video } = useSelector(state => state.video);
+    const { friends } = useSelector(state => state.friend)
     const [typeSend, setTypeSend] = useState("post");
     const [text, setText] = useState("");
     const [numText, setNumText] = useState(0);
@@ -47,11 +50,14 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
 
     const fileInputRef = useRef();
     const dispatch = useDispatch();
+    const socket = useSocket();
 
 
 
-    const handleOnChangeImage = async (e) => {
+    const handleChangeImage = async (e) => {
         const file = e.target.files[0];
+        setImage(null);
+        setVideo(null);
         if (file.type.includes('image')) {
             setTypeSend('image');
             setImagePreview(URL.createObjectURL(file));
@@ -100,10 +106,22 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
         onCloseForm();
     }
 
-    const handleOnSendPost = () => {
+    const createPostMutation = useHookMutation((data) => {
+        return postService.createPost(data);
+    });
+    const { isPending: isFetchCreatePostLoading } = createPostMutation;
+
+
+
+    const createVideoMutation = useHookMutation((data) => {
+        return videoService.createVideo(data)
+    })
+    const { isPending: isFetchCreateVideoLoading } = createVideoMutation;
+
+    const handleCreatePost = () => {
         if (typeSend === 'image') {
-            dispatch(fetchCreatePost({
-                acc_id: my_account.id,
+            createPostMutation.mutate({
+                acc_id: my_account?.acc_id,
                 title: text,
                 num_likes: 0,
                 num_comments: 0,
@@ -112,12 +130,38 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                 privacy: isPrivate,
                 isComment: isComment,
                 tag: tag || null,
-            }));
+            }, {
+                onSuccess: (data) => {
+                    dispatch(setCreatePost(data));
+                    onCreateSuccess();
+                    friends.forEach(friend => {
+                        socket.emit('send-notify', {
+                            senderId: my_account?.acc_id,
+                            receiverId: friend?.friend_id,
+                            data: {
+                                message: `${my_account?.full_name} đã đăng bài viết với nội dung : ${data?.title}`,
+                            }
+                        });
+                        dispatch(fetchCreateNotify({
+                            sender_id: my_account?.acc_id,
+                            receiver_id: friend?.friend_id,
+                            type: "post",
+                            isRead: false,
+                            link: `/post/${data?.post_id}`,
+                            title: "Thông báo",
+                            content: `${my_account?.full_name} đã đăng bài viết với nội dung : ${data?.title}`,
+                        }))
+                        // notifyService.createNotify({
+                            
+                        // });
+                    })
+                }
+            })
         }
 
         if (typeSend === 'video') {
-            dispatch(fetchCreateVideo({
-                acc_id: my_account.id,
+            createVideoMutation.mutate({
+                acc_id: my_account?.acc_id,
                 title: text,
                 num_likes: 0,
                 num_comments: 0,
@@ -126,11 +170,35 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                 privacy: isPrivate,
                 isComment: isComment,
                 tag: tag || null,
-            }))
+            }, {
+                onSuccess: (data) => {
+                    dispatch(setCreateVideo(data));
+                    onCreateSuccess();
+                    friends.forEach(friend => {
+                        socket.emit('send-notify', {
+                            senderId: my_account?.acc_id,
+                            receiverId: friend?.friend_id,
+                            data: {
+                                message: `${my_account?.full_name} đã đăng video với nội dung : ${data?.title}`,
+                            }
+                        });
+                        dispatch(fetchCreateNotify({
+                            sender_id: my_account?.acc_id,
+                            receiver_id: friend?.friend_id,
+                            type: "video",
+                            isRead: false,
+                            link: `/video/${data?.video_id}`,
+                            title: "Thông báo",
+                            content: `${my_account?.full_name} đã đăng video với nội dung : ${data?.title}`,
+                        }))
+                        // notifyService.createNotify({
+                            
+                        // });
+                    })
+                }
+            })
         }
     }
-
-
 
 
     const getMyLocation = async () => {
@@ -143,14 +211,6 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
 
     }
 
-
-    useEffect(() => {
-        if (status_post === "succeeded" || status_video === "succeeded") {
-            console.log(status_video);
-
-            onCloseForm();
-        }
-    }, [status_post, status_video])
 
 
     return (
@@ -170,7 +230,7 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                         Tạo bài viết mới
                     </Paragraph>
                     <div className="flex gap-3">
-                        <button onClick={handleOnSendPost} disabled={!image && !video}>
+                        <button onClick={handleCreatePost} disabled={!image && !video}>
                             <Paragraph className={cx('btn-share')} bold="500" size="14px" color={image && video ? "#000" : 'rgba(0,0,0, 0.3)'}>
                                 Chia sẻ
                             </Paragraph>
@@ -205,18 +265,18 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                         </RenderWithCondition>
                         <RenderWithCondition condition={image}>
                             <img src={image} className={cx('post')} alt="image" style={{
-                                height: '100%',
-                            }} />
-                        </RenderWithCondition>
-                        <RenderWithCondition condition={video}>
-                            <video src={video} controls style={{
-                                height: '100%',
+                                height: '400px',
+                                width: '400px',
+                                objectFit: 'cover'
                             }} />
                         </RenderWithCondition>
 
+
                         <RenderWithCondition condition={imagePreview}>
                             <img src={imagePreview} className={cx('post-preview')} alt="image" style={{
-                                height: '100%',
+                                height: '400px',
+                                width: '400px',
+                                objectFit: 'cover'
                             }} />
                             <Loader size={35} style={{
                                 position: 'absolute',
@@ -227,8 +287,21 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                             }} />
                         </RenderWithCondition>
 
+
+                        <RenderWithCondition condition={video}>
+                            <video src={video} controls style={{
+                                height: '400px',
+                                width: '400px',
+                                objectFit: 'cover'
+                            }} />
+                        </RenderWithCondition>
+
                         <RenderWithCondition condition={videoPreview}>
-                            <video src={videoPreview} className={cx('post-preview')} controls height="350px" width="350px" />
+                            <video src={videoPreview} className={cx('post-preview')} controls style={{
+                                height: '400px',
+                                width: '400px',
+                                objectFit: 'cover'
+                            }} />
                             <Loader size={35} style={{
                                 position: 'absolute',
                                 top: '50%',
@@ -239,7 +312,7 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                         </RenderWithCondition>
 
                     </Box>
-                    <Box flex={1} position='relative'>
+                    <div className="flex-1 relative">
                         <CardUser avatar={my_account?.avatar} nickname={my_account?.nickname} tick={my_account?.tick} />
                         <textarea
                             style={{
@@ -249,7 +322,7 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                                 border: 'none',
                                 outline: 'none',
                                 marginTop: '10px',
-                                
+
 
                             }}
                             value={text}
@@ -285,75 +358,45 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                             lazyLoadEmojis={true}
                         />
 
-                        <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            mt={2}
-                        >
+                        <div className="flex justify-between mt-2">
                             <RenderWithCondition condition={!location}>
                                 <Paragraph> Thêm vị trí </Paragraph>
                             </RenderWithCondition>
 
                             <RenderWithCondition condition={location}>
                                 <Paragraph bold={700}> {`${location?.district}, ${location?.province}`} </Paragraph>
-                                <button
-                                    style={{
-                                        display: 'block',
-                                        padding: '0 14px 0 0',
-                                    }}
-                                    onClick={() => setLocation(null)}
-                                >
+                                <button className="block pr-3" onClick={() => setLocation(null)}>
                                     <CloseIcon />
                                 </button>
 
                             </RenderWithCondition>
                             <RenderWithCondition condition={!location}>
-                                <button
-                                    style={{
-                                        display: 'flex',
-                                        padding: '0 14px 0 0',
-                                        gap: '10px',
-                                    }}
-                                    onClick={getMyLocation}
-                                >
+                                <button className="flex pr-3 gap-3" onClick={getMyLocation}>
                                     <RenderWithCondition condition={loadingLocation}>
                                         <Loader size={20} />
                                     </RenderWithCondition>
-
                                     <LocationIcon />
                                 </button>
 
                             </RenderWithCondition>
-                        </Box>
-                        <Box
-                            display="flex"
-                            justifyContent="space-between"
-                        >
+                        </div>
+                        <div className="flex justify-between">
                             <Paragraph> Riêng tư </Paragraph>
                             <Switch checked={isPrivate} onChange={() => setIsPrivate(!isPrivate)} />
-                        </Box>
-                        <Box
-                            display="flex"
-                            justifyContent="space-between"
-                        >
+                        </div>
+                        <div className="flex justify-between">
                             <Paragraph>Bật bình luận</Paragraph>
                             <Switch checked={isComment} onChange={() => setIsComment(!isComment)} />
-                        </Box>
-                        <Box
-                            display="flex"
-                            justifyContent="space-between"
-                        >
+                        </div>
+                        <div className="flex justify-between">
                             <Paragraph>Nhiều hơn</Paragraph>
-                            <button
-                                style={{
-                                    display: 'block',
-                                    padding: '0 14px 0 0',
-                                }}
-                            > <MoreIcon /> </button>
-                        </Box>
-                    </Box>
+                            <button className="block pr-3" >
+                                <MoreIcon />
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                
+
             </Box>
 
             <div className="relative h-8">
@@ -361,7 +404,7 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                     type="file"
                     ref={fileInputRef}
                     style={{ display: 'none' }}
-                    onChange={handleOnChangeImage}
+                    onChange={handleChangeImage}
                 />
                 <button
                     style={{
@@ -384,11 +427,11 @@ const CreatePost = React.forwardRef(({ onCloseForm }, ref) => {
                     Ảnh/Video
                 </button>
             </div>
-            <RenderWithCondition condition={status_post === 'loading' || status_video === 'loading'}>
-                    <div className={cx('loading')}>
-                        <Loader />
-                    </div>
-                </RenderWithCondition>
+            <RenderWithCondition condition={isFetchCreatePostLoading || isFetchCreateVideoLoading}>
+                <div className={cx('loading')}>
+                    <Loader />
+                </div>
+            </RenderWithCondition>
         </div>
     )
 });

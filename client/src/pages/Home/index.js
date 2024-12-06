@@ -1,28 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Cookies from 'js-cookie'
 
 import { Avatar, Box, Modal } from "@mui/material";
-import { fetchAuthMe, fetchUpdateAccount } from "../../redux/slice/account.slice";
+import { fetchAuthMe, fetchUpdateAccount, setAuthMe, setUpdateMyAccount } from "../../redux/slice/account.slice";
 import { EmojiIcon, ImageIcon, MessageIcon } from "../../components/SgvIcon";
 import Alert from "../../components/Alert";
 import Button from "../../components/Button";
-import { fetchGetAllPosts } from "../../redux/slice/post.slice";
-import { fetchGetAllFriend } from "../../redux/slice/friend.slice";
+import { setPosts } from "../../redux/slice/post.slice";
 import CreatePost from "../../components/post_component/CreatePost";
 import Post from "../../components/post_component/Post";
 import RenderWithCondition from "../../components/RenderWithCondition";
-import { fetchGetAllVideos } from "../../redux/slice/video.slice";
+import { setVideos } from "../../redux/slice/video.slice";
+import { useQuery } from "@tanstack/react-query";
+import { identityService } from "../../services/IdentityService";
+import { postService } from "../../services/PostService";
+import { videoService } from "../../services/VideoService";
+import useHookMutation from "../../hooks/useHookMutation";
+import { accountService } from "../../services/AccountService";
+import { friendService } from "../../services/FriendService";
+import { setListFriend } from "../../redux/slice/friend.slice";
+import { fetchGetAllNotify } from "../../redux/slice/notify.slice";
 
 
 function Home() {
     const { my_account } = useSelector(state => state.account);
-    const { status_post, posts } = useSelector(state => state.post);
-    const { videos, status_video } = useSelector(state => state.video);
+    const { posts } = useSelector(state => state.post);
+    const { videos } = useSelector(state => state.video);
     const [showCreatePost, setShowCreatePost] = useState(false);
     const [openPostId, setOpenPostId] = useState(null);
+    const [message, setMessage] = useState();
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -32,7 +40,6 @@ function Home() {
         setShowCreatePost(!showCreatePost);
     }
 
-
     const handleToggleComments = (postId) => {
         if (openPostId === postId) {
             setOpenPostId(null);
@@ -41,34 +48,91 @@ function Home() {
         }
     };
 
+    const { data: authData, isSuccess: isFetchAuthSuccess, isError: isAuthError } = useQuery({
+        queryKey: ['auth-me'],
+        queryFn: identityService.authMe,
+        enabled: !!Cookies.get('access_token'),
+    });
+
+    const { data: listPostData, isSuccess: isFetchGetPostsSuccess, isError: isFetchGetPostsError } = useQuery({
+        queryKey: ['get-all-post'],
+        queryFn: postService.getAllPosts,
+    });
+
+
+    const { data: listVideoData, isSuccess: isFetchGetVideosSuccess, isError: isFetchGetVideosError } = useQuery({
+        queryKey: ['get-all-video'],
+        queryFn: videoService.getAllVideos,
+    });
+
+    const { data: listFriendData, isSuccess: isFetchGetFriendsSuccess } = useQuery({
+        queryKey: ['get-all-friend', my_account?.acc_id],
+        queryFn: () => friendService.getFriendWithLimitByAccId(my_account?.acc_id, 1000),
+        enabled: !!my_account?.acc_id
+    })
+
+    const updateAccountMutation = useHookMutation(({ acc_id, data }) => {
+        return accountService.UpdateAccount(acc_id, data);
+    })
+
+
     useEffect(() => {
         if (!Cookies.get('access_token')) {
-            if (!Cookies.get('refresh_token')) {
-                navigate('/login')
-            } else {
-                async function a() {
-                    const res = await axios.get(`${process.env.REACT_APP_API_URL}/auth/refresh`, {
-                        headers: {
-                            refresh_cookie: Cookies.get('refresh_token'),
-                        },
-                        withCredentials: true,
-                    })
-                    Cookies.set('access_token', res.data.access_token);
-                }
-                a();
-            }
+            navigate('/login')
         }
 
-        dispatch(fetchGetAllFriend({ acc_id: my_account?.id }));
-        dispatch(fetchAuthMe());
-        dispatch(fetchGetAllPosts());
-        dispatch(fetchGetAllVideos());
-        dispatch(fetchUpdateAccount({
-            acc_id: my_account?.id,
-            isOnline: true,
-            lastOnline: new Date()
-        }));
-    }, [dispatch]);
+        if (isFetchAuthSuccess) {
+
+            if(authData?.isBan) {
+                Cookies.remove('access_token');
+                Cookies.remove('refresh_token');
+                navigate('/login');
+                return;
+            }
+
+
+            dispatch(setAuthMe(authData));
+            updateAccountMutation.mutate({ acc_id: my_account?.acc_id, data: { isOnline: true } },
+                {
+                    onSuccess: (data) => {
+                        dispatch(setUpdateMyAccount(data));
+                    }
+                }
+            );
+        }
+
+        if (isFetchGetPostsSuccess) {
+            dispatch(setPosts(listPostData));
+        }
+
+        if(isFetchGetPostsError) {
+            dispatch(setPosts([]));
+        }
+
+
+        if (isFetchGetVideosSuccess) {
+            dispatch(setVideos(listVideoData));
+        }
+
+        if(isFetchGetVideosError) {
+            dispatch(setVideos([]));
+        }
+
+      
+        if (isFetchGetFriendsSuccess) {
+            dispatch(setListFriend(listFriendData));
+        }
+
+        if (isAuthError) {
+            navigate('/login')
+        }
+
+
+    }, [isFetchAuthSuccess, isFetchGetPostsSuccess, isFetchGetVideosSuccess, isFetchGetFriendsSuccess, isAuthError]);
+
+    useEffect(() => {
+        dispatch(fetchGetAllNotify({ acc_id: my_account?.acc_id }));
+    }, [my_account?.acc_id]);
 
 
     const videoAndpost = useMemo(() => {
@@ -96,25 +160,16 @@ function Home() {
 
 
 
-    return (
 
-        <Box
-            display="flex"
-            flexDirection="column"
-            width="800px"
-            margin="auto"
-            height="100%"
-            padding="40px 0"
-        >
+    return (
+        <div className="flex flex-col mx-auto py-10 h-full w-1/2">
             <Box
                 border="1px solid rgba(0, 0, 0, 0.1)"
                 padding="18px 24px 10px 24px"
                 borderRadius="10px"
+                className="bg-white"
             >
-                <Box
-                    display="flex"
-                    gap="10px"
-                >
+                <div className="flex gap-2">
                     <Avatar src={my_account?.avatar}></Avatar>
                     <input onClick={handleShowCreatePost} placeholder={`${my_account?.full_name} ơi, Hãy chia sẻ khoảng khắc thú vị nào ?`} style={{
                         flex: 1,
@@ -123,12 +178,8 @@ function Home() {
                         fontSize: '14px',
                         padding: '10px',
                     }} />
-                </Box>
-                <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    mt="10px"
-                >
+                </div>
+                <div className="flex items-center justify-between mt-2">
                     <Button leftIcon={<ImageIcon size={20} />}>
                         Ảnh/Video
                     </Button>
@@ -138,27 +189,13 @@ function Home() {
                     <Button to='/chat' leftIcon={<MessageIcon size={20} />}>
                         Bạn bè
                     </Button>
-                </Box>
+                </div>
 
             </Box>
 
-            <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                flexDirection="column"
-                mt={2}
-            >
-                {/* {(displayPosts === 'all' ? posts : likePosts)?.map(post => (
-                        <Post
-                            key={post?.id}
-                            post={post}
-                            onToggleComments={() => handleToggleComments(post?.id)}
-                            openComment={openPostId === post?.id}
-                        />
-                    ))} */}
+            <div className="flex flex-col items-center justify-center mt-2">
                 <RenderWithCondition condition={videoAndpost && videoAndpost.length > 0}>
-                    {videoAndpost.map((item,idx) => {
+                    {videoAndpost.map((item, idx) => {
                         if (item == null) {
                             return null;
                         }
@@ -171,26 +208,29 @@ function Home() {
                             />
                         );
                     }
-
-                    )}
+                    )};
                 </RenderWithCondition>
-
-            </Box>
+            </div>
             <Modal
                 open={showCreatePost}
                 onClose={() => setShowCreatePost(false)}
             >
-                <CreatePost onCloseForm={() => setShowCreatePost(false)} />
+                <CreatePost
+                    onCloseForm={() => setShowCreatePost(false)}
+                    onCreateSuccess={() => {
+                        setMessage({ type: 'success', title: 'Thông báo', message: 'Đăng bài thành công' });
+                        setTimeout(() => {
+                            setMessage(null);
+                        }, 3000);
+                        setShowCreatePost(false);
+                    }}
+                />
             </Modal>
-            <RenderWithCondition condition={status_post === 'succeeded'}>
-                <Alert type='success' title='Thông báo' message='Đăng bài thành công' />
-            </RenderWithCondition>
+            {message && (
+                <Alert type={message?.type} title={message?.title} message={message?.message} />
+            )}
 
-            <RenderWithCondition condition={status_video === 'succeeded'}>
-                <Alert type='success' title='Thông báo' message='Đăng video thành công' />
-            </RenderWithCondition>
-        </Box>
-
+        </div>
     );
 }
 

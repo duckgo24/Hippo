@@ -1,11 +1,10 @@
 
 
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom'
-import { fetchGetPostById } from '../../redux/slice/post.slice';
-import Post from '../../components/post_component/Post';
+import { useNavigate, useParams } from 'react-router-dom'
+import { setPost } from '../../redux/slice/post.slice';
 import { HealIcon, MessageIcon, ShareIcon } from '../../components/SgvIcon';
 import RenderWithCondition from '../../components/RenderWithCondition';
 import { Avatar, Box, Divider } from '@mui/material';
@@ -14,15 +13,22 @@ import Button from '../../components/Button';
 
 import { BsFillBookmarkPlusFill } from "react-icons/bs";
 import CommentList from '../../components/comment_component/CommentList';
-import { fetchGetAllComments, setSortCommentDecreaseDay, setSortCommentIncreaseDay } from '../../redux/slice/comment.slice';
+import { setComment, setSortCommentDecreaseDay, setSortCommentIncreaseDay } from '../../redux/slice/comment.slice';
+import { useQuery } from '@tanstack/react-query';
+import { postService } from '../../services/PostService';
+import { commentService } from '../../services/CommentService';
+import Loader from '../../components/Loader';
+import Loading from '../../components/Loading';
 
 
 export default function PostDetail() {
     const { post } = useSelector(state => state.post);
     const { comments } = useSelector(state => state.comment);
     const { post_id, comment_id } = useParams();
+
     const dispatch = useDispatch();
 
+    const navigate = useNavigate();
 
     const handleSortComment = (e) => {
         if (e.target.value === 'newest') {
@@ -36,39 +42,41 @@ export default function PostDetail() {
         }
     }
 
-    useEffect(() => {
-        async function a() {
-            if (post_id) {
-                dispatch(fetchGetPostById({
-                    post_id
-                }));
-                dispatch(fetchGetAllComments({
-                    post_id
-                }));
-            }
-        }
-        a();
-    }, [post_id, comment_id])
-    return (
-        <Box
-            className="flex gap-2"
-            mt={10}
-            py={2}
-            px={3}
-            maxHeight="650px"
-            border="1px solid #ccc"
-            borderRadius="5px"
-            boxShadow="0 2px 5px rgba(0, 0, 0, 0.1)"
-            backgroundColor="white"
-            color="black"
-            mx={"auto"}
-            sx={{
-                '&:hover': {
-                    cursor: "pointer"
-                },
-            }}
+    const { data: postData, isSuccess: isFetchPostSuccess, isError: isFetchPostError } = useQuery({
+        queryKey: ['get-post', post_id],
+        queryFn: () => postService.getPostById(post_id),
+        enabled: !!post_id
+    });
 
-        >
+
+
+    const { data: commentData, isSuccess: isFetchCommentSuccess, isLoading: isFetchCommentLoading, isError: isFetchCommentError } = useQuery({
+        queryKey: ['get-all-comment', post_id],
+        queryFn: () => commentService.getCommentByPostId(post_id),
+        enabled: !!post_id
+    });
+
+    useEffect(() => {
+        if (isFetchPostSuccess) {
+            dispatch(setPost(postData));
+        }
+
+        if (isFetchPostError) {
+            navigate('/');
+        }
+
+        if (isFetchCommentSuccess) {
+            dispatch(setComment(commentData));
+        }
+
+        if (isFetchCommentError) {
+            dispatch(setComment([]));
+        }
+
+
+    }, [isFetchPostSuccess, isFetchCommentSuccess, isFetchCommentError, isFetchPostError])
+    return (
+        <div className="flex gap-4 mt-10 p-6 w-4/6 border-1 border-solid border-gray-300 rounded-5px shadow-0-2-5-rgba(0, 0, 0, 0.1) bg-white text-black mx-auto">
             <div
                 className='flex flex-col gap-3'
                 style={{
@@ -88,17 +96,9 @@ export default function PostDetail() {
                             objectFit: 'cover',
                         }} />
                     </RenderWithCondition>
-                    <RenderWithCondition condition={post?.video}>
-                        <video src={post?.video} controls style={{
-                            height: '100%',
-                            width: '100%',
-                            objectFit: 'cover',
-                        }} />
-                    </RenderWithCondition>
 
                 </div>
                 <div className='flex gap-3 font-bold uppercase items-center'>
-                    <span className="text-black">|</span>
                     <p>{post?.title}</p>
                 </div>
 
@@ -112,8 +112,7 @@ export default function PostDetail() {
                     </button>
                     <button className="flex items-center text-base gap-2 text-slate-800 font-medium hover:opacity-50">
                         <MessageIcon size={23} />
-                        <p> {post?.num_comments} Bình luận </p>
-
+                        <p>{post?.num_comments} bình luận</p>
                     </button>
                     <button className="relative flex items-center gap-2 text-slate-800 font-medium hover:opacity-50">
                         <ShareIcon />
@@ -139,24 +138,31 @@ export default function PostDetail() {
                     </Button>
                 </div>
                 <Divider />
-                {post?.isComment &&
+                <RenderWithCondition condition={post?.isComment}>
                     <div className='flex'>
                         <select onChange={handleSortComment} className='outline-none bg-transparent'>
                             <option value="normal">Phù hợp nhất</option>
                             <option value="newest">Mới nhất</option>
                             <option value="oldest">Lâu nhất</option>
                         </select>
-                    </div>}
-                <CommentList
-                    comment_list={comments}
-                    post={post}
-                    className="flex-1"
-                    style={{
-                        minHeight: '445px',
-                        maxHeight: '445px',
-                    }} />
+                    </div>
+                </RenderWithCondition>
 
+                <RenderWithCondition condition={isFetchCommentLoading}>
+                    <Loading />
+                </RenderWithCondition>
+
+                <RenderWithCondition condition={!isFetchCommentLoading}>
+                    <CommentList
+                        comment_list={comments}
+                        post={post}
+                        className="flex-1"
+                        style={{
+                            minHeight: '445px',
+                            maxHeight: '445px',
+                        }} />
+                </RenderWithCondition>
             </div>
-        </Box>
+        </div>
     )
 }

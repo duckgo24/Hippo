@@ -2,12 +2,11 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('room_messages', {
-      id: {
+    await queryInterface.createTable('messages', {
+      message_id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       content: {
         type: Sequelize.TEXT
@@ -22,7 +21,7 @@ module.exports = {
         type: Sequelize.STRING,
         references: {
           model: 'accounts',
-          key: 'id'
+          key: 'acc_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
@@ -31,12 +30,19 @@ module.exports = {
         type: Sequelize.STRING,
         references: {
           model: 'accounts',
-          key: 'id'
+          key: 'acc_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
       seen: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      mood: {
+        type: Sequelize.STRING
+      },
+      is_deleted: {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
@@ -60,6 +66,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('room_messages');
+    await queryInterface.dropTable('messages');
   }
 }; 

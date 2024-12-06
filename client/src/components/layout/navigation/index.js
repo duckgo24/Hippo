@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import classNames from 'classnames/bind';
 
 import Divider from '@mui/material/Divider';
@@ -18,19 +18,13 @@ import {
     HomeIcon, LightIcon, MenuIcon,
     MessageIcon, PlusIcon, ReelsIcon,
     SaveIcon, SearchIcon, SettingIcon,
-    UserIcon, ReportIcon,
-    ChangeIcon,
-    LogOutIcon
+    ReportIcon, ChangeIcon, LogOutIcon
 } from '../../SgvIcon';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchDeleteNotify, fetchGetAllNotify } from '../../../redux/slice/notify.slice';
+import { useSelector } from 'react-redux';
 import ListNotify from '../../notify_component/ListNotify';
-import logo from '../../../images/logo.png';
-import { useSocket } from '../../../providers/socket.provider';
+import Cookie from 'js-cookie';
 
 const cx = classNames.bind(styles);
-
-
 
 
 function Navigation() {
@@ -41,19 +35,13 @@ function Navigation() {
     const [navActive, setNavActive] = useState(0);
     const { my_account } = useSelector(state => state.account);
     const { notifies } = useSelector(state => state.notify);
-    const [numNotifies, setNumNotifies] = useState(notifies?.length || 0);
-    const socket = useSocket();
-    const dispatch = useDispatch();
     const navigate = useNavigate();
+
 
     const handleToggleNotify = (e) => {
         setAnchorElPopper(e.currentTarget);
         setOpenPopperNotify(prev => !prev);
-
-
     };
-
-
 
     const handleItemMoreActionClick = (e) => {
         setAnchorElMoreAction(e.currentTarget);
@@ -104,7 +92,7 @@ function Navigation() {
             icon: <HealIcon />,
             isActive: false,
             onClick: (e) => handleToggleNotify(e),
-            popper: <ListNotify listNotify={notifies} />,
+            popper: <ListNotify open={openPopperNotify} />,
         },
 
         {
@@ -115,7 +103,7 @@ function Navigation() {
         },
         {
             name: 'Trang cá nhân',
-            icon: <img src={my_account?.avatar} style={{ height: 35, width: 35 }} />,
+            icon: <img src={my_account?.avatar} className="rounded-full w-8 h-8" />,
             isActive: false,
             onClick: () => navigate(`/profile/${my_account?.nickname}`, {
                 state: {
@@ -159,81 +147,59 @@ function Navigation() {
             isDivider: true,
         },
         {
-            path: '/logout',
             name: 'Đăng xuất',
             icon: <LogOutIcon />,
+            onClick: () => {
+                Cookie.remove('access_token');
+                Cookie.remove('refresh_token');
+                localStorage.clear();
+                navigate('/login');
+
+            },
             isDivider: true,
         },
     ];
 
-    useEffect(() => {
-        socket.on('receive-notify', async (response) => {
-            const notifyData = response.data;
-            setNumNotifies(prev => prev + 1);
-            
-            if (notifyData?.type === 'dislike' || notifyData?.type === 'del-comment') {
-                console.log('notifyData', notifyData);
-                
-                const matchingNotifies = notifies.filter(notify => 
-                    notify.content === notifyData.content &&
-                    notify.sender_id === notifyData.sender_id &&
-                    notify.receiver_id === notifyData.receiver_id
-                );
-    
-                if (matchingNotifies.length > 0) {
-                    for (const notify of matchingNotifies) {
-                        await dispatch(fetchDeleteNotify({ notify_id: notify.notify_id }));
-                        setNumNotifies(prev => prev - 1);
-                    }
-                    await dispatch(fetchGetAllNotify({ acc_id: my_account?.id }));
-                }
-            } else {
-                await dispatch(fetchGetAllNotify({ acc_id: my_account?.id }));
-            }
-        });
-    
-        return () => {
-            socket.off('receive-notify');
-        };
-    }, [socket, notifies, dispatch, my_account]);
-    
-
-    useEffect(() => {
-        if (openPopperNotify) {
-            dispatch(fetchGetAllNotify({
-                acc_id: my_account?.id,
-            }))
-        }
-    }, [openPopperNotify]);
-
-
-
-
 
 
     return (
-        <Paper className={cx('navbar', {
-            // 'navbar-active-popper': openPopperNotify,
-            'navbar-inactive-popper': !openPopperNotify,
-        })}>
+        <Paper
+            className="fix top-0 left-0 z-50"
+            sx={{
+                height: '100vh',
+                width: {
+                    xs: '80px',
+                    md: '80px',
+                    lg: openPopperNotify ? '80px' : '224px',
+                }
+            }}>
             <MenuList>
                 <MenuItem className={cx('navbar-btn')} style={{ height: '150px' }}>
-                    <RenderWithCondition condition={!openPopperNotify}>
-                        <Paragraph
-                            style={{
-                                fontFamily: "Edu AU VIC WA NT Hand",
-                                fontStyle: "italic",
-                                padding: '0 0 20px 0',
-                            }}
-                            size={40}
-                            bold={800}
-                        >
-                            Hippo
-                        </Paragraph>
-                    </RenderWithCondition>
-                    <RenderWithCondition condition={openPopperNotify}>
-                        <img src={logo} style={{ height: 50, width: 50, borderRadius: '50%', marginLeft: '-8px' }} />
-                    </RenderWithCondition>
+                    <Box
+                        sx={{
+                            display: {
+                                xs: 'none',
+                                md: 'none',
+                                lg: openPopperNotify ? 'none' : 'block',
+                            }
+                        }}
+                    >
+                        <p className="pb-5 text-4xl font-extrabold ml-5" style={{
+                            fontFamily: "Edu AU VIC WA NT Hand",
+                        }}>Hippo</p>
+                    </Box>
+
+                    <Box
+                        sx={{
+                            display: {
+                                xs: 'block',
+                                md: 'block',
+                                lg: openPopperNotify ? 'block' : 'none',
+                            }
+                        }}
+                    >
+                        <img src="../image/logo.png" alt='logo' className='w-24 h-14' />
+                    </Box>
                 </MenuItem>
                 {ListNavigation.map((nav, index) => (
                     <MenuItem
@@ -248,37 +214,32 @@ function Navigation() {
                         component={nav.path ? Link : 'div'}
                         to={nav.path || ''}
                     >
-                        <ListItemIcon>{nav.icon}</ListItemIcon>
+                        <ListItemIcon className='relative'>
+                            {nav.icon}
+                            <RenderWithCondition condition={nav?.name === 'Thông báo' && notifies.length > 0}>
+                                <div className="absolute bottom-1/3 left-4 h-6 w-6 rounded-full bg-zinc-500 flex items-center justify-center text-white text-sm">
+                                    {notifies.length > 99 ? '99+' : notifies.length !== 0 && notifies.length}
+                                </div>
+                            </RenderWithCondition>
+                        </ListItemIcon>
                         <RenderWithCondition condition={!openPopperNotify}>
-                            <ListItemText style={{
-                                position: 'relative',
-                            }}>
+                            <ListItemText
+                                sx={{
+                                    display: {
+                                        xs: 'none',
+                                        md: 'none',
+                                        lg: 'block'
+                                    }
+                                }}>
                                 {nav.name}
 
-                                <RenderWithCondition condition={nav?.name === 'Thông báo' && numNotifies > 0}>
-                                    <Box
-                                        position='absolute'
-                                        bottom='35%'
-                                        left='-18px'
-                                        height='25px'
-                                        width='25px'
-                                        borderRadius='50%'
-                                        backgroundColor='#DFF2EB'
-                                        display='flex'
-                                        justifyContent='center'
-                                        alignItems='center'
-                                        fontSize='14px'
-                                    >
-                                        {numNotifies > 99 ? '99+' : numNotifies !== 0 && numNotifies}
-                                    </Box>
-                                </RenderWithCondition>
                             </ListItemText>
 
                         </RenderWithCondition>
                         <RenderWithCondition condition={nav.popper}>
                             <Popper open={openPopperNotify} anchorEl={anchorElPopper} transition placement='right'>
                                 {({ TransitionProps }) => (
-                                    <Fade {...TransitionProps} timeout={500}>
+                                    <Fade {...TransitionProps} timeout={0}>
                                         <MenuList
                                             sx={{
                                                 boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px',
@@ -306,14 +267,19 @@ function Navigation() {
             </MenuList>
 
             <Divider sx={{ marginTop: '10px' }} />
+
             <MenuItem
+                sx={{
+                    width: {
+                        lg: '224px'
+                    }
+                }}
                 style={{
                     position: 'absolute',
                     bottom: '10px',
                     left: '0px',
                     display: 'flex',
                     alignItems: 'center',
-                    width: '250px',
                 }}
                 onClick={handleItemMoreActionClick}
                 className={cx('navbar-btn')}
@@ -321,9 +287,16 @@ function Navigation() {
                 <ListItemIcon>
                     <MenuIcon />
                 </ListItemIcon>
-                <RenderWithCondition condition={!openPopperNotify}>
-                    <ListItemText>Xem thêm</ListItemText>
-                </RenderWithCondition>
+                <ListItemText
+                    sx={{
+                        display: {
+                            xs: 'none',
+                            md: 'none',
+                            lg: 'block'
+                        }
+                    }}>
+                    Xem thêm
+                </ListItemText>
 
                 <Popper open={openMoreAction} anchorEl={anchorElMoreAction} transition placement='top-end'>
                     {({ TransitionProps }) => (
@@ -342,10 +315,10 @@ function Navigation() {
                                     <React.Fragment key={action.name}>
                                         {action.isDivider && <Divider />}
                                         <MenuItem
-
                                             className={cx('navbar-btn')}
                                             component={Link}
                                             to={action.path}
+                                            onClick={action?.onClick}
                                         >
                                             <ListItemIcon>{action.icon}</ListItemIcon>
                                             <ListItemText>{action.name}</ListItemText>
@@ -357,7 +330,7 @@ function Navigation() {
                     )}
                 </Popper>
             </MenuItem>
-        </Paper>
+        </Paper >
     );
 }
 

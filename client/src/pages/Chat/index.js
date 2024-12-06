@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Box } from '@mui/material';
-
+import { Link, useNavigate } from "react-router-dom";
+import { Divider, Modal } from '@mui/material';
 
 import Paragraph from '../../components/Paragraph';
 import CardUser from '../../components/CardUser';
@@ -13,136 +12,183 @@ import ChatWithUser from '../../components/chat_component/ChatWithUser';
 
 import { fetchGetAllRoom } from '../../redux/slice/room.slice';
 import { useSocket } from '../../providers/socket.provider';
-
+import Loading from '../../components/Loading';
+import RenderWithCondition from '../../components/RenderWithCondition';
+import { setCreateMessage } from '../../redux/slice/room-message.slice';
+import CallScreen from '../../components/call_component/CallScreen';
+import CallScreenWait from '../../components/call_component/CallScreenWait';
 
 function Chat() {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const locationState = useLocation().state;
-    const socket = useSocket()
-
     const { my_account } = useSelector((state) => state.account);
     const { rooms } = useSelector((state) => state.room);
+    const [active, setActive] = useState(0);
+    const [currentUserChat, setCurrentUserChat] = useState(null);
+    const [isReceiveCall, setIsReceiveCall] = useState(false);
+    const [userCall, setUserCall] = useState(null);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const socket = useSocket();
 
-    const [currentUser, setCurrentUser] = useState({
-        user: locationState?.account || null,
-        room_id: locationState?.room_id || null,
-    });
-    const [lastMessage, setLastMessage] = useState(null);
-    const [cardChats, setCardChats] = useState(rooms);
+    const handleClickRoomChat = () => setActive(0);
+    const handleClickRoomGroup = () => setActive(1);
 
-    const prevUserRef = useRef();
+    const handleOnClickCardChat = (user_chat, room_id) => {
+        navigate(`/chat/${user_chat?.nickname}`);
+        setCurrentUserChat({ room_id, user: user_chat });
+        socket.emit('join-room', { room_id, acc_id: my_account?.acc_id });
+    };
 
-
-    useEffect(() => {
-        const handleReceiveMessage = (data) => {
-            setLastMessage(data);
-
-            setCardChats((prev) => {
-                const updatedChats = prev.map((chat) => {
-                    if (chat?.participants?.receiver?.id === data?.receiver?.id && chat?.room_id === data?.room_id) {
-                        return { ...chat, content: data.content, created_at: data.created_at, hasNewMessage: true };
-                    }
-                    return chat;
-                });
-                return updatedChats.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            });
-        };
-
-        socket.on('receive-message', handleReceiveMessage);
-
-        return () => socket.off('receive-message', handleReceiveMessage);
-    }, [socket]);
-
-
-    useEffect(() => {
-        if (my_account?.id) {
-            dispatch(fetchGetAllRoom({ acc_id: my_account.id }));
-        }
-    }, [dispatch, my_account]);
-
-
-    useEffect(() => {
-        prevUserRef.current = currentUser;
-    }, [currentUser]);
-
-    const handleOnClickCardChat = useCallback((user, room_id) => {
-        const prevUser = prevUserRef.current?.user;
-
-        if (prevUser?.id !== user?.id) {
-            socket.emit('left-room', { username: prevUser?.nickname, room_id: prevUserRef.current?.room_id });
-        }
-
-        socket.emit('join-room', { room_id, username: my_account?.nickname });
-        setCurrentUser({ user, room_id });
-        navigate(`/chat/${user?.nickname}`);
-
-        setCardChats((prev) =>
-            prev.map((chat) => chat?.participants?.receiver?.id === user?.id ? { ...chat, hasNewMessage: false } : chat)
+    const handleCallUser = () => {
+        const width = 700;
+        const height = 500;
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        const left = (screenWidth - width) / 2;
+        const top = (screenHeight - height) / 2;
+        window.open(
+            `/call/${currentUserChat?.user?.nickname}`,
+            '_blank',
+            `width=${width},height=${height},top=${top},left=${left},resizable=no,scrollbars=no`
         );
-    }, [my_account?.nickname, navigate]);
+    };
 
+
+    const handleCancelCall = () => {
+
+    };
+
+    const handleAcceptCall = () => {
+       
+        socket.emit('accept-call', { sender: userCall, receiver: my_account });
+
+
+        const width = 700;
+        const height = 500;
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        const left = (screenWidth - width) / 2;
+        const top = (screenHeight - height) / 2;
+        window.open(
+            `/call/${userCall?.nickname}`,
+            '_blank',
+            `width=${width},height=${height},top=${top},left=${left},resizable=no,scrollbars=no`
+        );
+
+        setIsReceiveCall(false);
+        setUserCall(null);
+
+    };
+
+    const handleRefuseCall = () => {
+
+
+    };
+
+    const handleCloseCall = () => {
+
+
+    };
+
+    useEffect(() => {
+        socket.on("receive-message", (data) => dispatch(setCreateMessage(data)));
+
+        socket.on("receive-call", (data) => {
+            setIsReceiveCall(true);
+            setUserCall(data?.sender);
+        });
+
+        socket.on("receive-cancel-call", (data) => {
+            setUserCall(null);
+            setIsReceiveCall(false);
+        });
+
+
+
+        socket.on("receive-refuse-call", (data) => {
+            console.log(data);
+
+        });
+
+        return () => {
+            socket.off("receive-message");
+            socket.off("receive-call");
+            socket.off("receive-cancel-call");
+            socket.off("receive-accept-call");
+            socket.off("receive-refuse-call");
+        };
+    }, [socket, dispatch]);
+
+    useEffect(() => {
+        if (my_account?.acc_id) {
+            dispatch(fetchGetAllRoom(my_account.acc_id));
+        }
+    }, [dispatch, my_account?.acc_id]);
 
     return (
-        <Box display="flex" flexDirection="row" height="100vh" overflow="hidden">
-            <Box
-                height="100%"
-                width="25%"
-                display="flex"
-                flexDirection="column"
-                boxShadow="rgba(0, 0, 0, 0.16) 0px 1px 4px"
-                gap="10px"
-            >
-                <Box display="flex" justifyContent="space-between" alignItems="center" padding="20px 20px 0 20px">
+        <div className="flex flex-row h-screen overflow-hidden">
+            <div className="flex flex-col gap-3 h-full w-96 shadow-md">
+                <div className='flex justify-between items-center px-5 pt-5'>
                     <CardUser nickname={my_account?.full_name} tick={my_account?.tick} avatar={my_account?.avatar} />
-                    <Box>
-                        <Link to="/">
-                            <MoreIcon />
-                        </Link>
-                    </Box>
-                </Box>
-                <Box padding="0 20px">
+                    <Link to="/">
+                        <MoreIcon />
+                    </Link>
+                </div>
+                <Divider />
+                <div className='px-5'>
                     <Input placeholder="Tìm kiếm đoạn chat người dùng" leftIcon={<SearchIcon />} />
-                    <Paragraph style={{ padding: "5px 10px", border: "1px solid #ccc", borderRadius: "10px", width: "80px", marginTop: "10px" }}>
-                        Hộp thư
-                    </Paragraph>
-                </Box>
-                <Box display="flex" flexDirection="column" gap="5px" sx={{ overflowY: "auto", paddingLeft: "20px" }}>
-                    {cardChats.map((card, index) => (
+                    <div className='flex flex-row gap-5'>
+                        <button onClick={handleClickRoomChat} className={`max-w-fit px-7 py-2 mt-3 rounded-xl font-bold hover:bg-gray-100 cursor-pointer ${active === 0 && 'bg-slate-200'}`}>Hộp thư</button>
+                        <button onClick={handleClickRoomGroup} className={`max-w-fit px-7 py-2 mt-3 rounded-xl font-bold hover:bg-gray-100 cursor-pointer ${active === 1 && 'bg-slate-200'}`}>Nhóm</button>
+                    </div>
+                </div>
+                <RenderWithCondition>
+                    <div className='px-5'>
+                        <Loading />
+                    </div>
+                </RenderWithCondition>
+                <div className='flex flex-col gap-2 overflow-y-auto pl-5'>
+                    {rooms.map((room) => (
                         <CardChat
-                            key={index}
-                            room_id={card?.room_id}
-                            account={card?.participants?.receiver}
-                            newMessage={lastMessage?.room_id === card?.room_id ? lastMessage : null}
-                            lastMessage={card.lastMessage ? card?.lastMessage[0] : null}
-                            selected={currentUser?.user?.id === card?.participants?.receiver?.id}
-                            hasNewMessage={card?.hasNewMessage}
-                            onClick={() => handleOnClickCardChat(card?.participants?.receiver, card?.room_id)}
+                            key={room.room_id}
+                            room_id={room.room_id}
+                            account={room.participants?.receiver}
+                            newMessage={room.lastMessage?.[0]}
+                            lastMessage={room.lastMessage}
+                            selected={my_account?.acc_id === room?.participants?.receiver?.acc_id}
+                            onClick={() => handleOnClickCardChat(room?.participants?.receiver, room.room_id)}
                         />
                     ))}
-                </Box>
-            </Box>
-            <Box
-                height="100%"
-                flex={1}
-                display="flex"
-                flexDirection="column"
-                boxShadow="rgba(0, 0, 0, 0.16) 0px 1px 4px"
-                gap="10px"
-                padding="20px"
-            >
-                {currentUser?.user && currentUser?.room_id ? (
-                    <ChatWithUser user_chat={currentUser} />
+                </div>
+            </div>
+            <div className="flex flex-col gap-3 flex-1 shadow-md p-5 h-full">
+                {currentUserChat ? (
+                    <ChatWithUser user_chat={currentUserChat} onCallUser={handleCallUser} />
                 ) : (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <div className='flex items-center justify-center h-full'>
                         <Paragraph>
                             Nhắn tin với
-                            <Link to={`/profile/${my_account?.nickname}`}>Bạn bè</Link>
+                            <Link className='underline text-blue-600' to={`/profile/${my_account?.nickname}`}> Bạn bè</Link>
                         </Paragraph>
-                    </Box>
+                    </div>
                 )}
-            </Box>
-        </Box>
+            </div>
+
+
+            <Modal
+                open={isReceiveCall}
+            >
+                <div tabIndex="-1">
+                    <CallScreenWait
+                        sender={userCall}
+                        receiver={my_account}
+                        onAcceptCall={handleAcceptCall}
+                        onRefuseCall={handleRefuseCall}
+                    />
+                </div>
+
+            </Modal>
+
+        </div>
     );
 }
 

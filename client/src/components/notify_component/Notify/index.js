@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from "@mui/material";
+import { Avatar, Box } from "@mui/material";
 import logo from '../../../images/logo.png';
 import Paragraph from '../../Paragraph';
 import RenderWithCondition from '../../RenderWithCondition';
@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 function Notify({ notify }) {
     return (
         <RenderWithCondition condition={notify}>
-            <Link className='flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100' to={`${notify?.link}`}
+            <Link className='flex-1 flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 pr-4' to={`${notify?.link}`}
                 sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -26,7 +26,7 @@ function Notify({ notify }) {
                 onClick={() => {
 
                 }}
-        
+
             >
                 <Box
                     sx={{
@@ -37,28 +37,29 @@ function Notify({ notify }) {
                     }}
                 >
                     <RenderWithCondition condition={notify?.sender_id === 'system'}>
-                        <img src={logo} style={{ height: 40, width: 40 }} alt='system-image' />
+                        <Avatar src={logo} style={{ height: 40, width: 40 }} alt='system-image' />
                     </RenderWithCondition>
                     <RenderWithCondition condition={notify?.sender_id !== 'system'}>
-                        <img src={notify?.notify_sender_account?.avatar} style={{ height: 40, width: 40 }} alt='system-image' />
+                        <Avatar src={notify?.notify_sender_account?.avatar} style={{ height: 40, width: 40 }} alt='system-image' />
                     </RenderWithCondition>
                 </Box>
-                <Box
-                    display='flex'
-                    flexDirection='column'
-                >
-                    <Paragraph bold={600} size={17}>
-                        {notify?.title} - {handleTime(notify?.createdAt)}
-                    </Paragraph>
-                    <p bold={600} size={17} style={{
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        maxWidth: '300px'
-                    }}>
+                <div className='flex flex-col flex-1'>
+                    <p className='font-bold'>
+                        {notify?.title} • {handleTime(notify?.createdAt)}
+                    </p>
+                    <p className='text-sm overflow-hidden text-ellipsis  max-w-80 pr-5'
+                        size={17}
+                        style={{
+                            lineHeight: '17px', 
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2, 
+                            WebkitBoxOrient: 'vertical',
+                        }}
+                    >
                         {notify?.content}
                     </p>
-                </Box>
+
+                </div>
                 <Box>
 
                 </Box>

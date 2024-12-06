@@ -33,7 +33,7 @@ module.exports = function cloudinarService(type) {
 
 
     const upload = multer({ storage: storage });
-
+    
     return upload;
 
 }

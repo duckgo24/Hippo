@@ -2,95 +2,62 @@ import classNames from "classnames/bind";
 import { useSelector } from "react-redux";
 import { Avatar, Box } from "@mui/material";
 
-import Paragraph from "../../Paragraph";
 import handleTime from "../../../utils/handleTime";
 
-import Styles from "./CardChat.module.scss"
 import { useEffect } from "react";
 import RenderWithCondition from "../../RenderWithCondition";
-const cx = classNames.bind(Styles);
 
 function CardChat({ account, lastMessage, newMessage, room_id, selected, hasNewMessage, className, onClick }) {
 
     const { my_account } = useSelector(state => state.account);
-    const classes = cx('card-chat', {
-        selected: selected,
-        [className]: className,
-    })
-
 
 
     return (
-        <Box
-            className={classes}
-            sx={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '4px 10px',
-                borderRadius: '10px',
-                '&:hover': {
-                    backgroundColor: '#f1f1f1',
-                    cursor: 'pointer'
-                }
-            }}
-            onClick={onClick}
-        >
-            <Box
-                position="relative"
-            >
+        <div className={`${selected && 'bg-black-03'} flex flex-row items-center gap-2 px-2 py-1 rounded-xl cursor-pointer hover:bg-gray-300 h-16`} onClick={onClick}>
+            <div className="relative">
                 <Avatar src={account?.avatar} alt={account?.avatar} />
-                <div className={cx({ online: account?.status === 'online' })}></div>
-            </Box>
-            <Box
-                flex={1}
-            >
-                <Paragraph bold="700">{account?.full_name}</Paragraph>
-               
-                    <Box
-                        display="flex"
-                        gap="10px"
-                        flexDirection="row"
-                        flexWrap="nowrap"
-                    >
+                {account?.isOnline && <div className="absolute bottom-0 right-1 h-3 w-3 bg-green-600 rounded-full"></div>}
+            </div>
+            <div className="flex-1">
+                <p className="font-bold">{account?.full_name}</p>
+                <div className="flex flex-row flex-nowrap gap-3">
 
-                        <RenderWithCondition condition={lastMessage && !newMessage}>
-                            {
-                                lastMessage?.sender_id == my_account?.id
-                                    ?
-                                    <>
-                                        <Paragraph>Bạn: {lastMessage?.content}</Paragraph>
-                                        <Paragraph> • {handleTime(lastMessage?.createdAt)}</Paragraph>
-                                    </>
-                                    :
-                                    <>
-                                        <Paragraph bold={"700"}>{lastMessage?.content}</Paragraph>
-                                        <Paragraph> • {handleTime(lastMessage?.createdAt)}</Paragraph>
-                                    </>
-                            }
-                        </RenderWithCondition>
-                        <RenderWithCondition condition={newMessage}>
-                            {
-                                newMessage?.sender?.id === my_account?.id && newMessage?.room_id === room_id
-                                    ?
-                                    <>
-                                        <Paragraph>Bạn: {newMessage?.content}</Paragraph>
-                                        <Paragraph> • {handleTime(newMessage?.created_at)}</Paragraph>
-                                    </>
-                                    :
-                                    <>
-                                        <Paragraph bold={"700"}>{newMessage?.content}</Paragraph>
-                                        <Paragraph> • {handleTime(newMessage?.created_at)}</Paragraph>
-                                    </>
-                            }
-                        </RenderWithCondition>
+                    <RenderWithCondition condition={lastMessage && !newMessage}>
+                        {
+                            lastMessage?.sender_id == my_account?.acc_id
+                                ?
+                                <>
+                                    <p>Bạn: {lastMessage?.content}</p>
+                                    <p> • {handleTime(lastMessage?.createdAt)}</p>
+                                </>
+                                :
+                                <>
+                                    <p>{lastMessage?.content}</p>
+                                    <p> • {handleTime(lastMessage?.createdAt)}</p>
+                                </>
+                        }
+                    </RenderWithCondition>
+                    <RenderWithCondition condition={newMessage}>
+                        {
+                            newMessage?.sender?.acc_id === my_account?.acc_id && newMessage?.room_id === room_id
+                                ?
+                                <>
+                                    <p>Bạn: {newMessage?.content}</p>
+                                    <p> • {handleTime(newMessage?.created_at)}</p>
+                                </>
+                                :
+                                <>
+                                    <p>{newMessage?.content}</p>
+                                    <p> • {handleTime(newMessage?.created_at)}</p>
+                                </>
+                        }
+                    </RenderWithCondition>
 
-                    </Box>
-                
-            </Box>
+                </div>
 
-        </Box>
+            </div>
+
+        </div>
     );
 }
 

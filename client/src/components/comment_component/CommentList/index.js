@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, TextareaAutosize } from "@mui/material";
+import { Box, Popper, TextareaAutosize } from "@mui/material";
 import EmojiPicker from "emoji-picker-react";
 
 import Comment from "../Comment";
@@ -8,14 +8,20 @@ import CardUser from "../../CardUser";
 import Loader from "../../Loader";
 import { EmojiIcon, SubmitIcon } from "../../SgvIcon";
 
-import { fetchCreateComment, fetchGetAllComments, fetchUpdateComment } from "../../../redux/slice/comment.slice";
-import { fetchCreatePost, fetchUpdatePost } from "../../../redux/slice/post.slice";
-import { fetchCreateReplyComment } from "../../../redux/slice/reply-comment.slide";
+import { setCreateComment, setUpdateComment } from "../../../redux/slice/comment.slice";
+import { setCreateReplyComment } from "../../../redux/slice/reply-comment.slide";
 import RenderWithCondition from "../../RenderWithCondition";
 import Paragraph from "../../Paragraph";
-import { fetchUpdateVideo } from "../../../redux/slice/video.slice";
-import { fetchCreateNotify } from "../../../redux/slice/notify.slice";
+import { setUpdateVideo } from "../../../redux/slice/video.slice";
 import { useSocket } from "../../../providers/socket.provider";
+import useHookMutation from "../../../hooks/useHookMutation";
+import { postService } from "../../../services/PostService";
+import { commentService } from "../../../services/CommentService";
+import { setUpdatePost } from "../../../redux/slice/post.slice";
+import { videoService } from "../../../services/VideoService";
+import { notifyService } from "../../../services/NotifyService";
+import { replyCommentService } from "../../../services/ReplyCommentService";
+import { fetchCreateNotify } from "../../../redux/slice/notify.slice";
 
 
 
@@ -25,15 +31,21 @@ function CommentList({ post, video, comment_list, className, style }) {
     const [typeSend, setTypeSend] = useState("comment");
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [currentCommentReply, setCurrentCommentReply] = useState(null);
+
     const { my_account } = useSelector(state => state.account);
-    const { status_comment } = useSelector(state => state.comment);
-    const { status_reply } = useSelector(state => state.replyComment);
     const socket = useSocket();
     const dispatch = useDispatch();
-    const forbiddenWords = ["súc vật", "sủa", "đcm"];
+    const forbiddenWords = ["đéo", "méo",];
+
+    const [archerEmojiPicker, setArcherEmojiPicker] = useState(null);
+
+    const handleShowEmojiPicker = (e) => {
+        setShowEmojiPicker(prev => !prev);
+        setArcherEmojiPicker(e.currentTarget);
+    };
 
 
-    const handleChange = (e) => {
+    const handleChangeCommentInput = (e) => {
         let value = e.target.value;
         if (value.length > 100) return;
 
@@ -47,162 +59,216 @@ function CommentList({ post, video, comment_list, className, style }) {
         if (!value) setTypeSend("comment");
     };
 
+    const updatePostMutation = useHookMutation(({ post_id, data }) => {
+        return postService.updatePost(post_id, data);
+    });
+
+    const updateVideoMutation = useHookMutation(({ video_id, data }) => {
+        return videoService.updateVideo(video_id, data);
+    });
+
+    const createCommentMutation = useHookMutation((data) => {
+        return commentService.createComment(data);
+    });
+
+    const { isPending: isFetchCreateCommentLoading } = createCommentMutation;
+
 
 
     const handleSendComment = async () => {
         const tag = inputValue.split(' ').find(word => word.startsWith('@'))?.slice(1);
         if (inputValue.length > 0) {
-
-            await dispatch(fetchCreateComment({
+            createCommentMutation.mutate({
                 content: inputValue,
                 tag: tag || null,
                 num_replies: 0,
                 num_likes: 0,
                 post_id: post?.post_id,
-                video_id: video?.id,
-                acc_id: my_account.id,
-            }));
+                video_id: video?.video_id,
+                acc_id: my_account?.acc_id,
+            },
+                {
+                    onSuccess: (data) => {
+                        if (data?.post_id) {
+                            updatePostMutation.mutate({
+                                post_id: post?.post_id,
+                                data: {
+                                    num_comments: post.num_comments + 1,
+                                }
+                            }, {
+                                onSuccess: (data) => {
+                                    dispatch(setUpdatePost(data));
+                                }
+                            });
 
 
-            if (post) {
-                await dispatch(fetchUpdatePost({
-                    id: post?.post_id,
-                    num_comments: post.num_comments + 1,
-                    acc_id: my_account?.id,
-                }));
-                await dispatch(fetchGetAllComments({
-                    post_id: post?.post_id,
-                    acc_id: my_account?.id
-                }));
+                            dispatch(fetchCreateNotify({
+                                sender_id: my_account?.acc_id,
+                                receiver_id: post?.accounts?.acc_id,
+                                type: "comment",
+                                isRead: false,
+                                link: `/post/${post?.post_id}`,
+                                title: "Thông báo",
+                                content: `${my_account?.full_name} bình luận ${inputValue} bài viết ${post?.title}`,
+                            }));
 
-
-                if (post?.accounts?.id !== my_account?.id) {
-                    await dispatch(fetchCreateNotify({
-                        sender_id: my_account?.id,
-                        receiver_id: post?.accounts?.id,
-                        type: "like",
-                        isRead: false,
-                        link: `/post/${post?.post_id}`,
-                        title: "Thông báo",
-                        content: `${my_account?.full_name} bình luận "${inputValue}" bài viết ${post?.title}`,
-                    }));
-                    socket.emit('send-notify', {
-                        receiverId: post?.accounts?.id,
-                        data: {
-                            content: `${my_account?.full_name} bình luận "${inputValue}" bài viết ${post?.title}`,
-                            sender_id: my_account?.id,
-                            receiver_id: post?.accounts?.id,
-                            type: "comment",
-                            post_id: post?.post_id,
+                            socket.emit('send-notify', {
+                                receiverId: post?.accounts?.acc_id,
+                                data: {
+                                    content: `${my_account?.full_name} bình luận ${inputValue} bài viết ${post?.title}`,
+                                    sender_id: my_account?.acc_id,
+                                    receiver_id: post?.accounts?.acc_id,
+                                    type: "comment",
+                                    post_id: post?.post_id,
+                                }
+                            });
                         }
-                    });
-                }
-            }
 
-            if (video) {
-                await dispatch(fetchUpdateVideo({
-                    id: video?.id,
-                    num_comments: video?.num_comments + 1,
-                    acc_id: my_account?.id,
-                }))
+                        if (data?.video_id) {
+                            updateVideoMutation.mutate({
+                                video_id: video?.video_id,
+                                data: {
+                                    num_comments: video.num_comments + 1,
+                                }
+                            })
+                            dispatch(fetchCreateNotify({
+                                sender_id: my_account?.acc_id,
+                                receiver_id: video?.accounts?.acc_id,
+                                type: "comment",
+                                isRead: false,
+                                link: `/video/${video?.id}`,
+                                title: "Thông báo",
+                                content: `${my_account?.full_name} bình luận ${inputValue} video ${video?.title}`,
+                            }))
+                            // notifyService.createNotify({
 
-                if (video?.accounts?.id !== my_account?.id) {
-                    await dispatch(fetchCreateNotify({
-                        sender_id: my_account?.id,
-                        receiver_id: video?.accounts?.id,
-                        type: "like",
-                        isRead: false,
-                        link: `/video/${video?.id}`,
-                        title: "Thông báo",
-                        content: `${my_account?.full_name} bình luận "${inputValue}" video ${video?.title}}`,
-                    }));
-                    socket.emit('send-notify', {
-                        receiverId: video?.accounts?.id,
-                        data: {
-                            content: `${my_account?.full_name} bình luận "${inputValue}" video ${video?.title}}`,
-                            sender_id: my_account?.id,
-                            receiver_id: video?.accounts?.id,
-                            type: "comment",
-                            video: video?.id
+                            // });
+                            socket.emit('send-notify', {
+                                receiverId: video?.accounts?.acc_id,
+                                data: {
+                                    content: `${my_account?.full_name} bình luận ${inputValue} video ${video?.title}`,
+                                    sender_id: my_account?.acc_id,
+                                    receiver_id: video?.accounts?.acc_id,
+                                    type: "comment",
+                                    video: video?.video_id
+                                }
+                            });
                         }
-                    });
-                }
-            }
+                        dispatch(setCreateComment(data));
+                    }
+                });
 
             setInputValue("");
         }
 
     };
 
-    const handleUpdatePostWhereDelete = async (p) => {
+    const handleUpdatePostWhereDeleteComment = async (p) => {
         if (p?.post_id) {
-            await dispatch(fetchUpdatePost({
-                id: p?.post_id,
-                num_comments: p?.num_comments - 1,
-            }))
+            updatePostMutation.mutate({
+                post_id: p?.post_id,
+                data: {
+                    num_comments: p?.num_comments - 1,
+                }
+            }, {
+                onSuccess: (data) => {
+                    dispatch(setUpdatePost(data));
+                }
+            })
         }
 
         if (p?.video_id) {
-            await dispatch(fetchUpdateVideo({
-                id: p?.video_id,
-                num_comments: p?.num_comments - 1,
-            }))
+            updateVideoMutation.mutate(
+                {
+                    video_id: p?.video_id,
+                    data: {
+                        num_comments: p?.num_comments - 1,
+                    }
+                }, {
+                onSuccess: (data) => {
+                    dispatch(setUpdateVideo(data));
+                }
+            })
         }
     }
 
+    const updateCommentMutation = useHookMutation(({ comment_id, data }) => {
+        return commentService.updateComment(comment_id, data);
+    })
+
+    const createReplyCommentMutation = useHookMutation((data) => {
+        return replyCommentService.createReplyComment(data);
+    })
+
+    const { isPending: isFetchCreateReplyCommentLoading } = createCommentMutation;
+
     const handleSendReplyComment = async () => {
         if (inputValue.length > 0) {
-            await dispatch(fetchCreateReplyComment({
+            createReplyCommentMutation.mutate({
                 content: inputValue.split(' ').slice(1).join(' '),
                 reply_user: currentCommentReply?.accounts?.nickname,
                 comment_id: currentCommentReply?.comment_id,
-                acc_id: my_account.id,
-            }));
+                acc_id: my_account?.acc_id,
+            }, {
+                onSuccess: (data) => {
+                    setCreateReplyComment(data);
+                    if (currentCommentReply?.accounts?.acc_id !== my_account?.acc_id) {
+                        dispatch(fetchCreateNotify({
+                            sender_id: my_account?.acc_id,
+                            receiver_id: currentCommentReply?.accounts?.acc_id,
+                            type: "reply",
+                            isRead: false,
+                            link: `/post/${post?.post_id}`,
+                            title: "Thông báo",
+                            content: `${my_account?.full_name} đã phản hồi với bình luận ${currentCommentReply.content} của bạn`,
+                        }))
+                        // notifyService.createNotify({
 
-            await dispatch(fetchUpdateComment({
-                comment_id: currentCommentReply?.comment_id,
-                num_replies: currentCommentReply?.num_replies + 1,
-            }))
+                        // });
+                        socket.emit('send-notify', {
+                            receiverId: currentCommentReply?.accounts?.acc_id,
+                            data: {
+                                content: `${my_account?.full_name} đã phản hồi với bình luận ${currentCommentReply.content} của bạn`,
+                                sender_id: my_account?.acc_id,
+                                receiver_id: currentCommentReply?.accounts?.acc_id,
+                                post_id: post?.post_id,
+                                type: "reply-comment",
+                            }
+                        });
+                    }
+                    updateCommentMutation.mutate({ comment_id: currentCommentReply?.comment_id, data: { num_replies: currentCommentReply?.num_replies + 1 } }, {
+                        onSuccess: (data) => {
+                            dispatch(setUpdateComment(data));
+                            if (post) {
+                                updatePostMutation.mutate({
+                                    post_id: post?.post_id,
+                                    data: {
+                                        num_comments: post.num_comments + 1,
+                                    }
+                                }, {
+                                    onSuccess: (data) => {
+                                        dispatch(setUpdatePost(data));
+                                    }
+                                })
+                            };
 
-            if (post) {
-                await dispatch(fetchUpdatePost({
-                    id: post?.post_id,
-                    num_comments: post.num_comments + 1,
-                }));
+                            if (video) {
+                                updateVideoMutation.mutate({
+                                    video_id: video?.video_id,
+                                    data: {
+                                        num_comments: video.num_comments + 1,
+                                    }
+                                }, {
+                                    onSuccess: (data) => {
+                                        dispatch(setUpdateVideo(data));
+                                    }
+                                })
+                            };
 
-                if (currentCommentReply?.accounts?.id !== my_account?.id) {
-
-                    await dispatch(fetchCreateNotify({
-                        sender_id: my_account?.id,
-                        receiver_id: currentCommentReply?.accounts?.id,
-                        type: "reply",
-                        isRead: false,
-                        link: `/post/${post?.post_id}`,
-                        title: "Thông báo",
-                        content: `${my_account?.full_name} đã phản hồi với bình luận "${currentCommentReply.content}" của bạn"}`,
-                    }));
-                    socket.emit('send-notify', {
-                        receiverId: currentCommentReply?.accounts?.id,
-                        data: {
-                            content: `${my_account?.full_name} đã phản hồi với bình luận "${currentCommentReply.content}" của bạn"}`,
-                            sender_id: my_account?.id,
-                            receiver_id: currentCommentReply?.accounts?.id,
-                            post_id: post?.post_id,
-                            type: "reply-comment",
                         }
                     });
                 }
-
-            }
-
-            if (video) {
-                await dispatch(fetchUpdateVideo({
-                    id: video?.id,
-                    num_comments: video.num_comments + 1,
-                }))
-            }
-
-
+            })
             setInputValue("");
             setCurrentCommentReply(null);
         }
@@ -214,12 +280,19 @@ function CommentList({ post, video, comment_list, className, style }) {
         setCurrentCommentReply(comment);
     };
 
+    useEffect(() => {
+        console.log('currentCommentReply', currentCommentReply);
+        console.log('typeSend', typeSend);
+
+
+    }, [typeSend, currentCommentReply]);
+
     const handleOnClickEmoji = (emoji) => {
         setInputValue(prev => prev + emoji.emoji);
         setShowEmojiPicker(false);
+        setArcherEmojiPicker(null);
     };
 
-    const handleShowEmojiPicker = () => setShowEmojiPicker(!showEmojiPicker);
     return (
         <div className={`${className}`}>
             <Box
@@ -232,19 +305,19 @@ function CommentList({ post, video, comment_list, className, style }) {
                 overflow="auto"
                 style={style}
             >
-               
-                    <RenderWithCondition condition={post?.isComment || video?.isComment}>
-                        {comment_list && comment_list.length > 0 && comment_list.map(comment => (
-                            <Comment
-                                key={comment.comment_id}
-                                post_owner={post?.accounts}
-                                comment={comment}
-                                onReplyComment={() => handleReplyComment(comment)}
-                                onUpdatePostWhereDelete={() => handleUpdatePostWhereDelete(post)}
-                            />
-                        ))}
-                    </RenderWithCondition>
-               
+
+                <RenderWithCondition condition={post?.isComment || video?.isComment}>
+                    {comment_list && comment_list.length > 0 && comment_list.map(comment => (
+                        <Comment
+                            key={comment.comment_id}
+                            post_owner={post ? post?.accounts?.acc_id : video?.accounts?.acc_id}
+                            comment={comment}
+                            onReplyComment={() => handleReplyComment(comment)}
+                            onUpdatePostWhereDeleteComment={() => handleUpdatePostWhereDeleteComment(post)}
+                        />
+                    ))}
+                </RenderWithCondition>
+
                 <RenderWithCondition condition={comment_list?.length === 0}>
                     <p>Chưa có bình luận nào</p>
                 </RenderWithCondition>
@@ -256,76 +329,75 @@ function CommentList({ post, video, comment_list, className, style }) {
                 </RenderWithCondition>
 
             </Box>
-           <RenderWithCondition condition={post?.isComment || video?.isComment}>
-           <Box
-                display="flex"
-                padding="0 10px"
-                justifyContent="space-between"
-                alignItems="center"
-                gap="5px"
-                border='1px solid rgba(0, 0, 0, 0.1)'
-                borderRadius='20px'
-                position='relative'
-            >
-                <CardUser avatar={post?.accounts?.avatar || video?.accounts?.avatar} size="26px" style={{ height: "40px" }} />
-                <div style={{ flex: 1, position: "relative" }}>
-                    <TextareaAutosize
-                        style={{
-                            width: '100%',
-                            fontSize: '14px',
-                            border: 'none',
-                            outline: 'none',
-                            borderRadius: '5px',
-                            padding: '0px 8px',
-                        }}
-                        value={inputValue}
-                        onChange={handleChange}
-                        disabled={status_comment === 'loading' ||
-                            status_reply === 'loading' ||
-                            !post?.isComment && !video?.isComment
-                        }
-                    />
-                    <RenderWithCondition
-                        condition={status_comment === 'loading'}
-                    >
-                        <Loader
-                            size={10}
+            <RenderWithCondition condition={post?.isComment || video?.isComment}>
+                <Box
+                    display="flex"
+                    padding="0 10px"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    gap="5px"
+                    border='1px solid rgba(0, 0, 0, 0.1)'
+                    borderRadius='20px'
+                    position='relative'
+                >
+                    <CardUser avatar={my_account?.avatar} size="26px" style={{ height: "40px" }} />
+                    <div className="flex-1">
+                        <TextareaAutosize
                             style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '80%',
-                                transform: 'translate(0, -50%)',
-                                zIndex: 1000,
+                                width: '100%',
+                                fontSize: '14px',
+                                border: 'none',
+                                outline: 'none',
+                                borderRadius: '5px',
+                                padding: '0px 8px',
                             }}
+                            value={inputValue}
+                            onChange={handleChangeCommentInput}
+                            disabled={isFetchCreateCommentLoading ||
+                                isFetchCreateReplyCommentLoading ||
+                                !post?.isComment && !video?.isComment
+                            }
                         />
-                    </RenderWithCondition>
-                </div>
-                <button onClick={handleShowEmojiPicker} disabled={!post?.isComment && !video?.isComment}>
-                    <EmojiIcon />
-                </button>
-                <RenderWithCondition condition={inputValue.length > 0}>
-                    <button onClick={typeSend === 'comment' ? handleSendComment : handleSendReplyComment}>
-                        <SubmitIcon />
-                    </button>
-                </RenderWithCondition>
+                        <RenderWithCondition condition={isFetchCreateCommentLoading || isFetchCreateReplyCommentLoading}>
+                            <Loader
+                                size={10}
+                                style={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '80%',
+                                    transform: 'translate(0, -50%)',
+                                    zIndex: 1000,
+                                }}
+                            />
+                        </RenderWithCondition>
+                    </div>
+                    <button onClick={handleShowEmojiPicker} disabled={!post?.isComment && !video?.isComment}>
+                        <EmojiIcon />
+                        <Popper
+                            open={showEmojiPicker}
+                            anchorEl={archerEmojiPicker}
+                            placement="bottom-start"
+                        >
 
-                <EmojiPicker
-                    style={{
-                        position: 'absolute',
-                        top: '100%',
-                        right: '0',
-                        zIndex: 1000,
-                        width: '350px',
-                        height: '250px',
-                    }}
-                    searchDisabled
-                    suggestedEmojisMode="none"
-                    open={showEmojiPicker}
-                    onEmojiClick={handleOnClickEmoji}
-                    lazyLoadEmojis
-                />
-            </Box>
-           </RenderWithCondition>
+                            <EmojiPicker
+                                onEmojiPickerClose={() => setShowEmojiPicker(false)}
+                                open={showEmojiPicker}
+                                onEmojiClick={handleOnClickEmoji}
+                                lazyLoadEmojis
+                            />
+                        </Popper>
+                    </button>
+                    <RenderWithCondition condition={inputValue.length > 0}>
+                        <button onClick={typeSend === 'comment' ? handleSendComment : handleSendReplyComment}>
+                            <SubmitIcon />
+                        </button>
+
+                    </RenderWithCondition>
+
+
+                </Box>
+
+            </RenderWithCondition>
         </div>
     );
 }

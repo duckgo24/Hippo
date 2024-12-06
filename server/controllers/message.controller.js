@@ -1,34 +1,27 @@
 const db = require('../models/index');
-class RoomMessageController {
+const uuid = require('uuid');
+
+class messageController {
 
     async getAllMessages(req, res, next) {
         try {
-            const { room_id } = req.query;
-            const resMessages = await db.Room.findAll({
-                attributes: ['room_id', 'priority'],
+            const { room_id } = req.params;
+            const resMessages = await db.Message.findAll({
+                attributes: ['content', 'image', 'video', 'seen', 'createdAt'],
+                where: {
+                    room_id
+                },
                 include: [
                     {
-                        model: db.RoomMessage,
-                        as: 'room_messages',
-                        attributes: ['content', 'image', 'video', 'seen', 'createdAt'],
-                        where: {
-                            room_id
-                        },
-
-                        include: [
-                            {
-                                model: db.Account,
-                                as: 'message_sender',
-                                attributes: ['id', 'avatar', 'tick']
-                            },
-                            {
-                                model: db.Account,
-                                as: 'message_receiver',
-                                attributes: ['id', 'avatar', 'tick']
-                            }
-                        ]
+                        model: db.Account,
+                        as: 'message_sender',
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
+                    },
+                    {
+                        model: db.Account,
+                        as: 'message_receiver',
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                     }
-
                 ],
                 order: [['createdAt', 'ASC']]
             })
@@ -42,29 +35,33 @@ class RoomMessageController {
     async createMessage(req, res, next) {
         const { acc_id: sender_id } = req.body;
         try {
-            const message = await db.RoomMessage.create({
+            const message = await db.Message.create({
                 ...req.body,
+                is_deleted: false,
+                message_id: uuid.v4(),
                 sender_id
             });
 
             if (message) {
-                const resMessage = db.RoomMessage.findOne({
+                const resMessage = await db.Message.findOne({
+                    attributes: ['content', 'image', 'video', 'seen', 'createdAt'],
                     where: {
-                        id: message.id
+                        message_id: message.message_id
                     },
                     include: [
                         {
                             model: db.Account,
                             as: 'message_sender',
-                            attributes: ['id', 'avatar', 'tick']
+                            attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                         },
                         {
                             model: db.Account,
                             as: 'message_receiver',
-                            attributes: ['id', 'avatar', 'tick']
+                            attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                         }
-                    ]
-                });
+                    ],
+                    order: [['createdAt', 'ASC']]
+                })
                 return res.status(201).json(resMessage);
             }
 
@@ -98,4 +95,4 @@ class RoomMessageController {
     }
 }
 
-module.exports = new RoomMessageController();
+module.exports = new messageController();

@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@mui/material';
 import SocketService from '../../utils/SocketService';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCreateNotify } from '../../redux/slice/notify.slice';
 import { useSocket } from '../../providers/socket.provider';
 
 function Discover() {
@@ -36,13 +35,13 @@ function Discover() {
 
     const handleTest = () => {
         socket.emit('send-notify', {
-            senderId: my_account.id,
+            senderId: my_account.acc_id,
             receiverId: 'ec96ee45-75f2-4cb6-83c7-7e61235a4fa6',
             data: {
                 message: 'Hello, this is a test notification',
             }
         });
-        
+
 
 
     }

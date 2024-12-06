@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
         num_replies: DataTypes.INTEGER,
         num_likes: DataTypes.INTEGER,
         post_id: DataTypes.STRING,
-        video_id: DataTypes.INTEGER,
+        video_id: DataTypes.STRING,
         acc_id: DataTypes.STRING,
         tag: DataTypes.STRING,
     }, {

@@ -15,7 +15,7 @@ class AuthController {
                     if (user) {
                         const account = await db.Account.findOne({
                             where: {
-                                id: user?.id,
+                                acc_id: user?.acc_id,
                             }
                         });
 
@@ -51,8 +51,8 @@ class AuthController {
                 }
 
                 if (user) {
-                    const new_access_token = jwtService.sign({ id: user.id, nickname: user.nickname, role: user.role }, '1d');
-                    const new_refresh_token = jwtService.sign({ id: user.id, nickname: user.nickname, role: user.role }, '365d');
+                    const new_access_token = jwtService.sign({ acc_id: user.acc_id, nickname: user.nickname, role: user.role }, '1d');
+                    const new_refresh_token = jwtService.sign({ acc_id: user.acc_id, nickname: user.nickname, role: user.role }, '365d');
 
                     res.cookie('refresh_token', new_refresh_token, {
                         expires: new Date(Date.now() + 60 * 60 * 24 * 1000 * 14),

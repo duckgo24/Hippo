@@ -1,36 +1,38 @@
 import React, { useEffect, useRef, useState } from "react";
-import classNames from "classnames/bind";
 import { useDispatch, useSelector } from "react-redux";
-import { Avatar, Box } from "@mui/material";
+import { Avatar, Box, Modal } from "@mui/material";
 import EmojiPicker from "emoji-picker-react";
 import { FaPhoneAlt } from "react-icons/fa";
 import { IoMdVideocam } from "react-icons/io";
-import Paragraph from "../../Paragraph";
 import RenderWithCondition from "../../RenderWithCondition";
 import MessageChat from "../MessageChat";
 import { EmojiIcon, GifIcon, ImageIcon, MoreIcon, SubmitIcon } from "../../SgvIcon";
 import Loading from "../../Loading";
-import { fetchGetAllMessages, fetchCreateMessage } from "../../../redux/slice/room-message.slice";
-
-import styles from "./ChatWithUser.module.scss";
+import { fetchGetAllMessages } from "../../../redux/slice/room-message.slice";
 import GetLinkImage from "../../../utils/GetLinkImage";
 import { useSocket } from "../../../providers/socket.provider";
+import useHookMutation from "../../../hooks/useHookMutation";
+import { ChatService } from "../../../services/ChatService";
+import handleTime from "../../../utils/handleTime";
+import Loader from "../../Loader";
+import CallScreenWait from "../../call_component/CallScreenWait";
 
-const cx = classNames.bind(styles);
 
 
-function ChatWithUser({ user_chat }) {
+function ChatWithUser({ user_chat, onCallUser }) {
     const { my_account } = useSelector(state => state.account);
-    const { room_messages, status_message } = useSelector(state => state.roomMessage);
+    const { room_list_message, is_loading_message } = useSelector(state => state.roomMessage);
     const { user, room_id } = user_chat;
     const [openEmoji, setOpenEmoji] = useState(false);
     const [myMessage, setMyMessage] = useState("");
     const [imageUrl, setImageUrl] = useState(null);
-    const [messages, setMessages] = useState();
-    const prevUserChatRef = useRef(user_chat);
     const dispatch = useDispatch();
     const imageInputRef = useRef();
     const socket = useSocket();
+
+    useEffect(() => {
+        dispatch(fetchGetAllMessages(room_id));
+    }, [user_chat]);
 
 
     const handleOnChangeMyMessage = (e) => {
@@ -52,38 +54,33 @@ function ChatWithUser({ user_chat }) {
         if (url) {
             setImageUrl(url);
         }
-    }
+    };
 
-    useEffect(() => {
-        console.log(imageUrl);
-    }, [imageUrl]);
+    const createMessageMutation = useHookMutation((data) => {
+        return ChatService.createMessage(data);
+    });
 
-    const handleOnSendMessage = () => {
+    const { isPending: isFetchCreateMessageLoading } = createMessageMutation;
 
+    const handleSendMessage = () => {
 
-        socket.emit("send-message", {
-            sender: my_account,
-            receiver: user,
-            content: myMessage,
-            iamge: imageUrl,
-            created_at: new Date(),
-            room_id,
-            hasNewMessage: true
-        });
-
-
-        dispatch(fetchCreateMessage({
-            acc_id: my_account.id,
-            receiver_id: user.id,
-            content: myMessage,
-            video: "",
-            image: imageUrl,
-            seen: false,
-            room_id
-        }))
-
-        setMyMessage("");
-        setImageUrl(null);
+        if (myMessage || imageUrl) {
+            createMessageMutation.mutate({
+                acc_id: my_account?.acc_id,
+                receiver_id: user.acc_id,
+                content: myMessage,
+                video: "",
+                image: imageUrl,
+                seen: false,
+                room_id
+            }, {
+                onSuccess: (data) => {
+                    socket.emit("send-message", data);
+                    setMyMessage("");
+                    setImageUrl(null);
+                }
+            });
+        }
     };
 
     const handleClickEmoji = (emojiObject) => {
@@ -92,116 +89,50 @@ function ChatWithUser({ user_chat }) {
     }
 
 
-    useEffect(() => {
-        if (prevUserChatRef.current !== user_chat) {
-            setMessages([]);
-            console.log('Previous chat:', prevUserChatRef.current);
-            console.log('Current chat:', user_chat);
-            prevUserChatRef.current = user_chat;
-        }
-    }, [user_chat]);
-
-    useEffect(() => {
-        socket.on("receive-message", (data) => {
-            console.log(data);
-
-            setMessages(prev => ({
-                ...prev,
-                room_messages: [
-                    ...prev.room_messages,
-                    {
-                        content: data?.content,
-                        createAt: data?.created_at,
-                        seen: false,
-                        video: data?.video,
-                        image: data?.image,
-                        message_sender: data?.sender,
-                        message_receiver: data?.receiver
-                    }
-                ]
-            }));
-        });
-
-        return () => {
-            socket.off("receive-message");
-        };
-    }, [socket]);
-
-
-    useEffect(() => {
-        dispatch(fetchGetAllMessages({
-            room_id,
-            acc_id: my_account.id
-        }))
-    }, [user_chat]);
-
-    useEffect(() => {
-        if (status_message === 'succeeded') {
-            setMessages(room_messages[0]);
-        }
-    }, [status_message]);
-
     return (
-        <Box display="flex" flexDirection="column" height="100vh" gap="10px">
+        <div className="flex flex-col h-screen gap-2">
             <Box display="flex" justifyContent="space-between" borderBottom="1px solid #ccc" padding="10px 0">
-                <Box display="flex" alignItems="center" gap="10px">
-                    <Box position="relative">
+                <div className="flex items-center gap-2">
+                    <div className="relative">
                         <Avatar src={user?.avatar} alt={user?.avatar} />
-                        <div className={cx({ online: !user?.isOnline })}></div>
-                    </Box>
-                    <Box>
-                        <Paragraph size={16} bold={700} style={{ padding: '0' }}>
-                            {user?.full_name}
-                        </Paragraph>
+                        {user?.isOnline && <div className="absolute bottom-0 right-1 h-3 w-3 bg-green-600 rounded-full"></div>}
+                    </div>
+                    <div>
+                        <p className="text-base font-bold">{user?.full_name}</p>
                         {!user?.isOnline ? (
-                            <Paragraph size={14} style={{ padding: '0' }}>
+                            <p className="text-sm">
                                 Đang hoạt động
-                            </Paragraph>
+                            </p>
                         ) : (
-                            <Paragraph size={14} style={{ padding: '0', marginTop: '2px' }}>
-                                Hoạt động 12 phút trước
-                            </Paragraph>
+                            <p className="text-sm"> Hoạt động {handleTime(user?.lastOnline)}</p>
                         )}
-                    </Box>
-                </Box>
-                <Box
-                    display="flex"
-                    alignItems="center"
-                    gap="15px"
-                    px="10px"
-                >
-                    <FaPhoneAlt size={23} />
-                    <IoMdVideocam size={27} />
+                    </div>
+                </div>
+                <div className="flex items-center gap-4 px-2">
+                    <button onClick={() => onCallUser(user)}>
+                        <FaPhoneAlt size={23} />
+                    </button>
+                    <button onClick={() => onCallUser(user)}>
+                        <IoMdVideocam size={27} />
+                    </button>
                     <MoreIcon size={25} />
-                </Box>
+                </div>
             </Box>
 
-            <Box
-                padding="2px 10px"
-                sx={{
-                    overflowY: 'auto',
-                }}
-                flex={1}
-            >
-                <RenderWithCondition condition={status_message === 'loading'}>
+            <div className="py-1 px-3 overflow-y-auto flex-1">
+                <RenderWithCondition condition={is_loading_message}>
                     <Loading />
                 </RenderWithCondition>
-                <RenderWithCondition condition={messages?.room_messages}>
+                <RenderWithCondition condition={room_list_message && room_list_message.length > 0}>
                     {
-                        messages?.room_messages
-                        && messages?.room_messages.map((message, index) => (
+                        room_list_message
+                        && room_list_message.map((message, index) => (
                             <MessageChat key={index} message={message} sender={message.message_sender} />
                         ))
                     }
                 </RenderWithCondition>
-            </Box>
-            <Box
-                display="flex"
-                flexDirection="row"
-                gap="10px"
-                position="relative"
-                mb={3}
-            >
+            </div>
+            <div className="flex flex-row items-center gap-2 relative mb-3">
                 <button onClick={handleOnChooseImage}>
                     <ImageIcon />
                     <input type="file" style={{ display: 'none' }} ref={imageInputRef} onChange={getImageUrl} />
@@ -242,22 +173,16 @@ function ChatWithUser({ user_chat }) {
                     />
                 </RenderWithCondition>
 
-                <RenderWithCondition condition={myMessage || imageUrl}>
-                    <button onClick={handleOnSendMessage}>
+                <RenderWithCondition condition={(myMessage || imageUrl) && !isFetchCreateMessageLoading}>
+                    <button onClick={handleSendMessage}>
                         <SubmitIcon />
                     </button>
                 </RenderWithCondition>
+                <RenderWithCondition condition={isFetchCreateMessageLoading}>
+                    <Loader size={25} />
+                </RenderWithCondition>
 
-                <Box
-                    position="absolute"
-                    bottom="100%"
-                    left="10px"
-                    zIndex="9999"
-                    display="flex"
-                    flexDirection="row"
-                    alignItems="center"
-                    gap="10px"
-                >
+                <div className="absolute bottom-full left-3 z-50 flex flex-row items-center gap-2">
                     <RenderWithCondition condition={imageUrl}>
                         <img src={imageUrl} alt={"image-send"} style={{
                             border: "1px solid rgba(0, 0, 0, 0.6)",
@@ -281,9 +206,9 @@ function ChatWithUser({ user_chat }) {
                             X
                         </button>
                     </RenderWithCondition>
-                </Box>
-            </Box>
-        </Box>
+                </div>
+            </div>
+        </div>
     );
 }
 

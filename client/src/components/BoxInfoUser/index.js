@@ -8,19 +8,16 @@ import Button from "../Button";
 import logoTest from "../../images/test.jpg";
 import GetLinkImage from "../../utils/GetLinkImage";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUpdateAccount } from "../../redux/slice/account.slice";
+import { fetchUpdateAccount, setUpdateMyAccount } from "../../redux/slice/account.slice";
+import useHookMutation from "../../hooks/useHookMutation";
+import { userService } from "../../services/UserService";
+import RenderWithCondition from "../RenderWithCondition";
 
 
-function BoxInfoUser({ account, onChangeInfo }) {
-    const [infoUser, setInfoUser] = useState({
-        full_name: account?.full_name,
-        nickname: account?.nickname,
-        bio: account?.bio,
-        avatar: account?.avatar,
-        role: account?.role
-    });
-    const { status_account } = useSelector(state => state.account);
-    const [avatar, setAvatar] = useState(account?.avatar);
+const BoxInfoUser = React.forwardRef(({ onChangeSuccess }, ref) => {
+    const { my_account, status_account } = useSelector(state => state.account);
+    const [infoUser, setInfoUser] = useState(my_account);
+    const [avatar, setAvatar] = useState(my_account.avatar);
     const [avatarPreview, setAvatarPreview] = useState(null);
 
     const [openModal, setOpenModal] = React.useState(false);
@@ -41,11 +38,19 @@ function BoxInfoUser({ account, onChangeInfo }) {
         }
     };
 
+    const updateUserMutation = useHookMutation(({ acc_id, data }) => {
+        return userService.updateInfor(acc_id, data);
+    })
+
     const handleOnChangeInfo = () => {
-        dispatch(fetchUpdateAccount({
-            acc_id: account?.id,
-            ...infoUser
-        }));
+        updateUserMutation.mutate({ acc_id: my_account.acc_id, data: infoUser },
+            {
+                onSuccess: (data) => {
+                    dispatch(setUpdateMyAccount(data));
+                    onChangeSuccess(data);
+                }
+            }
+        );
     }
 
     const handleOnChangeInputInfo = (e) => {
@@ -59,7 +64,7 @@ function BoxInfoUser({ account, onChangeInfo }) {
 
     const handleOnChangeAvatar = async (e) => {
         setAvatarPreview(URL.createObjectURL(e.target.files[0]));
-
+        setAvatar(null);
         const url = await GetLinkImage(e.target.files[0]);
         if (url) {
             setAvatarPreview(null);
@@ -92,11 +97,11 @@ function BoxInfoUser({ account, onChangeInfo }) {
 
     const steps = [
         {
-            name: 'Xac thuc la gi?',
+            name: 'Xác thực là gì ?',
             children: <img src={logoTest} alt="test" width={550} height={400} />
         },
         {
-            name: 'Dien thong tin  ?',
+            name: 'Nhập thông tin cá nhân ?',
             children:
                 <Box>
 
@@ -105,8 +110,8 @@ function BoxInfoUser({ account, onChangeInfo }) {
                         onChange={handleOnSelectIdentityCard}
                         style={{ minWidth: "200px" }}
                     >
-                        <MenuItem value={'- Giay to tuy than'}>- Giay to tuy than</MenuItem>
-                        <MenuItem value={'- Can cuoc cong dan'}>- Can cuoc cong dan</MenuItem>
+                        <MenuItem value={'- Giấy tờ tùy thân'}>- Giấy tờ tùy thân</MenuItem>
+                        <MenuItem value={'- Căn cước công dân'}>- Căn cước công dân</MenuItem>
                     </Select>
 
                     <Box>
@@ -118,8 +123,8 @@ function BoxInfoUser({ account, onChangeInfo }) {
 
                 </Box>
         },
-        'Thanh toan',
-        'Cho xac nhan'
+        'Thanh toán',
+        'Chờ xác nhận'
     ];
 
     const isStepSkipped = (step) => {
@@ -145,23 +150,20 @@ function BoxInfoUser({ account, onChangeInfo }) {
         setActiveStep(0);
     };
 
-    useEffect(() => {
-        if (status_account === 'succeeded') {
-            onChangeInfo();
-        }
-    }, [status_account])
 
 
     return (
         <Box
+            ref={ref}
             width={500}
             boxShadow="rgba(0, 0, 0, 0.35) 0px 5px 15px"
             bgcolor="#fff"
             borderRadius={5}
             padding="30px 25px"
+            tabIndex={-1}
         >
-            <Box display="flex" justifyContent="space-between">
-                <Box flex={1}>
+            <div className="flex justify-between">
+                <div className="flex-1">
                     <label style={{ padding: "0 20px" }}>Tên người dùng</label>
                     <Input
                         leftIcon={<SmileFaceIcon size={30} color="#000" />}
@@ -171,51 +173,56 @@ function BoxInfoUser({ account, onChangeInfo }) {
                         onChange={handleOnChangeInputInfo}
                     />
                     <Divider style={{ backgroundColor: "#000", height: "2px" }} />
-                </Box>
-                <Box position="relative" height="65px" width="65px" marginLeft="20px">
-                    <Avatar
-                        src={avatar}
-                        alt={infoUser?.nickname}
-                        onClick={handleChangeAvatar}
-                        sx={{
-                            position: 'relative',
-                            cursor: 'pointer',
-                            height: '100%',
-                            width: '100%',
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                            ":before": {
-                                content: '""',
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                bottom: 0,
-                                right: 0,
-                            },
-                            ":hover:before": {
-                                backgroundColor: 'rgba(0, 0, 0, 0.45)',
-                            },
-                        }}
-                    />
-                    <PlusIcon
-                        color="rgba(0, 0, 0, 0.45)"
-                        style={{ position: 'absolute', bottom: 0, left: 0 }}
-                    />
+                </div>
+                <div className="h-16 w-16 relative ml-5">
+                    <RenderWithCondition condition={avatar && !avatarPreview}>
+                        <Avatar
+                            src={avatar}
+                            alt={infoUser?.nickname}
+                            onClick={handleChangeAvatar}
+                            sx={{
+                                position: 'relative',
+                                cursor: 'pointer',
+                                height: '100%',
+                                width: '100%',
+                                borderRadius: '50%',
+                                objectFit: 'cover',
+                                ":before": {
+                                    content: '""',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    bottom: 0,
+                                    right: 0,
+                                },
+                                ":hover:before": {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                                },
+                            }}
+                        />
+                        <PlusIcon
+                            color="rgba(0, 0, 0, 0.45)"
+                            style={{ position: 'absolute', bottom: 0, left: 0 }}
+                        />
+                    </RenderWithCondition>
+                    <RenderWithCondition condition={avatarPreview && !avatar}>
+                        <Avatar
+                            src={avatarPreview}
+                            alt={infoUser?.nickname}
+                            sx={{
+                                position: 'relative',
+                                cursor: 'pointer',
+                                height: '100%',
+                                width: '100%',
+                                borderRadius: '50%',
+                                objectFit: 'cover',
+                                filter: 'blur(1px)',
+                            }}
+                        />
+                    </RenderWithCondition>
                     <input ref={inputFileAvatarRef} type="file" style={{ display: 'none' }} onChange={handleOnChangeAvatar} />
-                    {/* {avatar && (
-                        <div style={{ position: 'relative', width: '100%', height: 400 }}>
-                            <Cropper
-                                image={avatar}
-                                crop={crop}
-                                zoom={zoom}
-                                aspect={4 / 3}
-                                onCropChange={setCrop}
-                                onZoomChange={setZoom}
-                            />
-                        </div>
-                    )} */}
-                </Box>
-            </Box>
+                </div>
+            </div>
 
             <Box>
                 <label style={{ padding: "0 20px" }}>username</label>
@@ -241,20 +248,20 @@ function BoxInfoUser({ account, onChangeInfo }) {
                 <Divider style={{ backgroundColor: "#000", height: "2px" }} />
             </Box>
 
-            <Box>
+            <div>
                 <Paragraph
                     bold={700}
                     color="#000"
                     style={{ padding: "0 20px", height: "60px" }}
                 >
-                    Role: {account?.role === 'user' && 'Người dùng'}
+                    Vai trò: {my_account.role === 'user' && 'Người dùng'}
                 </Paragraph>
                 <Divider style={{ backgroundColor: "#000", height: "2px" }} />
-            </Box>
+            </div>
 
-            <Box mt={2} display="flex" gap={2}>
+            <div className="flex mt-2 gap-2">
                 {
-                    account?.tick ?
+                    my_account.tick ?
                         <Button
                             large
                             style={{ padding: "10px 20px", backgroundColor: "green" }}
@@ -277,9 +284,9 @@ function BoxInfoUser({ account, onChangeInfo }) {
                     style={{ padding: "10px 20px", backgroundColor: "rgba(0, 0, 0, 0.65)" }}
                     onClick={handleOnChangeInfo}
                 >
-                    <Paragraph color="#fff" size={14}>Thay doi</Paragraph>
+                    <Paragraph color="#fff" size={14}>Cập nhật</Paragraph>
                 </Button>
-            </Box>
+            </div>
 
             <Modal
                 open={openModal}
@@ -352,6 +359,6 @@ function BoxInfoUser({ account, onChangeInfo }) {
             </Modal>
         </Box>
     );
-}
+});
 
 export default BoxInfoUser;

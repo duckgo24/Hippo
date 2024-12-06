@@ -4,7 +4,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('accounts', {
-      id: {
+      acc_id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.STRING
@@ -31,6 +31,9 @@ module.exports = {
         type: Sequelize.STRING
       },
       tick: {
+        type: Sequelize.BOOLEAN
+      },
+      isBan: {
         type: Sequelize.BOOLEAN
       },
       isOnline: {

@@ -1,141 +1,201 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Avatar, Box } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+
+import { Avatar } from "@mui/material";
 
 
-import { fetchDeleteComment, fetchUpdateComment } from "../../../redux/slice/comment.slice";
-import { fetchDeleteReplyComment, fetchGetAllReplyComment } from "../../../redux/slice/reply-comment.slide";
+import { setDeleteReplyComment, setReplyComments } from "../../../redux/slice/reply-comment.slide";
 import Paragraph from "../../Paragraph";
 import handleTime from "../../../utils/handleTime";
 import RenderWithCondition from "../../RenderWithCondition";
 import { HealIcon, TickIcon } from "../../SgvIcon";
-import { fetchUpdatePost } from "../../../redux/slice/post.slice";
-import { fetchUpdateVideo } from "../../../redux/slice/video.slice";
 import { useSocket } from "../../../providers/socket.provider";
+import useHookMutation from "../../../hooks/useHookMutation";
+import { commentService } from "../../../services/CommentService";
+import { setDeleteComment, setUpdateComment } from "../../../redux/slice/comment.slice";
+
+import { replyCommentService } from "../../../services/ReplyCommentService";
+import Loader from "../../Loader";
+import Loading from "../../Loading";
+import { notifyService } from "../../../services/NotifyService";
+import { fetchDeleteNotify2 } from "../../../redux/slice/notify.slice";
 
 
 
 
-function Commemt({ comment, post_owner, onReplyComment, onUpdatePostWhereDelete }) {
+function Commemt({ comment, post_owner, onReplyComment, onUpdatePostWhereDeleteComment, onDeleteCommentSucces }) {
     const { my_account } = useSelector(state => state.account)
-    const { status_reply, replyComments } = useSelector(state => state.replyComment)
+    const { replyComments } = useSelector(state => state.replyComment)
     const [showReply, setShowReply] = useState(false);
     const socket = useSocket();
     const [likeComment, setLikeComment] = useState(false);
     const dispatch = useDispatch();
 
+
     const handleLikeComment = () => {
         setLikeComment(!likeComment);
     }
 
+    const updateCommentMutation = useHookMutation(({ comment_id, data }) => {
+        return commentService.updateComment(comment_id, data);
+    })
 
-    const handleDeleteComment = async () => {
-        await dispatch(fetchDeleteComment({
-            comment_id: comment?.comment_id,
-            acc_id: my_account?.id,
-        }));
-        onUpdatePostWhereDelete();
+    const deleteCommentMutation = useHookMutation((comment_id) => {
+        return commentService.deleteComment(comment_id);
+    });
 
-        if (comment?.accounts?.id === my_account?.id) {
+    const { isPending: isLoadingDeleteComment } = deleteCommentMutation;
 
-            socket.emit('send-notify', {
-                receiverId: post_owner?.id,
-                data: {
-                    message: `${my_account?.full_name} xóa bình luận "${comment?.content}" bài viết ${comment?.posts?.title}`,
-                    content: `${my_account?.full_name} bình luận "${comment?.content}" bài viết ${comment?.posts?.title}`,
-                    sender_id: my_account?.id,
-                    receiver_id: post_owner?.id,
-                    type: 'del-comment',
+
+    const handleDeleteComment = (comment) => {
+        console.log({
+            sender_id: my_account?.acc_id,
+            receiver_id: post_owner,
+            title: "Thông báo",
+            content: `${my_account?.full_name} bình luận ${comment?.content} bài viết ${comment?.posts?.title}`,
+        });
+
+        deleteCommentMutation.mutate(comment?.comment_id, {
+            onSuccess: async (data) => {
+                await dispatch(setDeleteComment(data));
+
+                if (comment?.post_id) {
+                    socket.emit('send-notify', {
+                        receiverId: post_owner,
+                        data: {
+                            message: `${my_account?.full_name} đã xóa bình luận ${comment?.content} bài viết ${comment?.posts?.title}`,
+                            content: `${my_account?.full_name} bình luận "${comment?.content}" bài viết ${comment?.posts?.title}`,
+                            sender_id: my_account?.acc_id,
+                            receiver_id: post_owner,
+                            type: "del-comment",
+                        }
+                    });
+                    dispatch(fetchDeleteNotify2({
+                        sender_id: my_account?.acc_id,
+                        receiver_id: post_owner,
+                        title: "Thông báo",
+                        content: `${my_account?.full_name} bình luận ${comment?.content} bài viết ${comment?.posts?.title}`,
+                    }))
                 }
-            })
-        }
 
+                if (comment?.video_id) {
+                    socket.emit('send-notify', {
+                        receiverId: post_owner,
+                        data: {
+                            message: `${my_account?.full_name} đã xóa bình luận ${comment?.content} video ${comment?.videos?.title}`,
+                            content: `${my_account?.full_name} bình luận "${comment?.content}" video ${comment?.videos?.title}`,
+                            sender_id: my_account?.acc_id,
+                            receiver_id: post_owner,
+                            type: "del-comment",
+                        }
+                    });
+                    dispatch(fetchDeleteNotify2({
+                        sender_id: my_account?.acc_id,
+                        receiver_id: post_owner,
+                        title: "Thông báo",
+                        content: `${my_account?.full_name} bình luận "${comment?.content}" video ${comment?.videos?.title}`,
+                    }))
+                }
+                await onUpdatePostWhereDeleteComment();
 
+            }
+        });
     }
+
+
+    const { data: replyCommentData,
+        isLoading: isFetchReplyCommentLoading,
+        isSuccess: isFetchReplyCommentSuccess,
+        isError: isFetchReplyCommentError
+    } = useQuery({
+        queryKey: ['get-all-reply-comment', comment.comment_id],
+        queryFn: () => replyCommentService.getReplyCommnentByCommentId(comment.comment_id),
+        enabled: comment.comment_id && showReply
+    });
 
     const handleShowReply = async () => {
         setShowReply((prev) => !prev);
-        if (!showReply) {
-            if (comment.comment_id !== replyComments[0]?.comment_id)
-                await dispatch(fetchGetAllReplyComment({
-                    comment_id: comment.comment_id,
-                }));
-        }
     };
+
+    useEffect(() => {
+        if (isFetchReplyCommentSuccess) {
+            dispatch(setReplyComments(replyCommentData));
+        }
+
+        if (isFetchReplyCommentError) {
+            dispatch(setReplyComments([]));
+        }
+
+    }, [showReply, isFetchReplyCommentSuccess, isFetchReplyCommentError]);
+
+
+    const deleteReplyCommentMutation = useHookMutation((reply_comment_id) => {
+        return replyCommentService.deleteReplyComment(reply_comment_id);
+    });
 
 
     const handleDeleteReplyComment = async (replyComment) => {
-        await dispatch(fetchDeleteReplyComment({
-            acc_id: replyComment?.accounts.id,
-            id: replyComment?.reply_id
-        }))
+        deleteReplyCommentMutation.mutate(replyComment.reply_id, {
+            onSuccess: (data) => {
+                dispatch(setDeleteReplyComment(data));
+                updateCommentMutation({ comment_id: comment?.comment_id, data: { num_replies: comment?.num_replies - 1 } }, {
+                    onSuccess: (data) => {
+                        dispatch(setUpdateComment(data));
+                        // socket.emit('send-notify', {
+                        //     receiverId: video?.accounts?.acc_id,
+                        //     data: {
+                        //         content: `${my_account?.full_name} bình luận "${inputValue}" video ${video?.title}}`,
+                        //         sender_id: my_account?.acc_id,
+                        //         receiver_id: video?.accounts?.acc_id,
+                        //         type: "comment",
+                        //         video: video?.video_id
+                        //     }
+                        // });
+                    }
+                });
+            }
+        })
 
-        await dispatch(fetchUpdateComment({
-            comment_id: comment?.comment_id,
-            num_replies: comment?.num_replies - 1,
-            acc_id: my_account?.id
-        }))
-
-        await dispatch(fetchUpdatePost({
-            id: comment?.post_id,
-            num_comments: (comment?.posts?.num_comments - 1).toString(),
-        }))
 
     }
 
 
     return (
         <div>
-            <Box
-                display='flex'
-                flexDirection='row'
-                gap='10px'
-                justifyContent='space-around'
-                maxWidth='90%'
-                margin='auto'
-            >
+            <div className="flex flex-row justify-around mx-auto gap-2 w-11/12">
                 <div>
                     <Avatar src={comment?.accounts?.avatar} alt={comment?.accounts?.nickname} style={{
                         height: "32px",
                         width: "32px",
                     }} />
                 </div>
-                <div style={{ flex: 1 }} >
-                    <Box >
-                        <Box
-                            display='flex'
-                            flexDirection='row'
-                            gap='10px'
-                        >
+                <div className="flex-1" >
+                    <div>
+                        <div className="flex flex-row gap-2">
                             <Paragraph
-                                style={{
-                                    display: 'flex',
-                                    gap: '5px',
-                                    alignItems: 'center'
-                                }}
+                                className="flex gap-1 items-center"
                                 bold='500'
                                 size='14px'
                                 color='#000'
                             >
-                                {comment.accounts?.nickname}
+                                {comment.accounts?.full_name}
                                 {comment.accounts?.tick && <TickIcon />}
                             </Paragraph>
                             <Paragraph size='14px' color='#000'>
                                 {handleTime(comment.createdAt)}
                             </Paragraph>
-                        </Box>
-                        <Box>
-                            <Box>
-                                <Paragraph size='14px' color='#000'>
-                                    {comment?.tag && <Link to={`/${comment.tag}`}>@{comment?.tag} </Link>}
-                                    {comment?.content}
-                                </Paragraph>
-                                <Box
-                                    display='flex'
-                                    flexDirection='row'
-                                    gap="10px"
-                                >
+                        </div>
+                        <div>
+                            <div>
+                                <div className="flex flex-row gap-1 text-sm text-black">
+                                    <RenderWithCondition condition={comment?.tag}>
+                                        <Link to={`/profile/${comment?.tag}`}>@{comment?.tag} </Link>
+                                    </RenderWithCondition>
+                                    <p>{comment?.content}</p>
+                                </div>
+                                <div className="flex flex-row gap-2">
                                     <Paragraph size='13px' bold="500">
                                         {comment?.num_likes} lượt thích
                                     </Paragraph>
@@ -144,109 +204,99 @@ function Commemt({ comment, post_owner, onReplyComment, onUpdatePostWhereDelete 
                                             Trả lời
                                         </Paragraph>
                                     </button>
-                                    {my_account?.id === comment?.accounts?.id
+                                    {my_account?.acc_id === comment?.accounts?.acc_id
                                         &&
-                                        <button onClick={handleDeleteComment}>
+                                        <button
+                                            className="flex items-center gap-2"
+                                            onClick={() => handleDeleteComment(comment)}
+                                        >
                                             <Paragraph size='13px' bold="500">
                                                 Xóa
                                             </Paragraph>
+                                            <RenderWithCondition condition={isLoadingDeleteComment}>
+                                                <Loader />
+                                            </RenderWithCondition>
                                         </button>
                                     }
-                                </Box>
-                            </Box>
+                                </div>
+                            </div>
                             <RenderWithCondition condition={comment?.num_replies > 0}>
                                 <button
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '10px'
-                                    }}
-                                    onClick={handleShowReply}
+                                    className="flex items-center gap-2"
+                                    onClick={() => handleShowReply(comment)}
                                 >
                                     <Paragraph size='13px' bold="500">
                                         {!showReply ? `── Xem tất cả ` : `── Ẩn tất cả `} {comment?.num_replies} phản hồi
                                     </Paragraph>
+                                    <RenderWithCondition condition={isFetchReplyCommentLoading}>
+                                        <Loader />
+                                    </RenderWithCondition>
                                 </button>
 
                                 <RenderWithCondition condition={showReply}>
-                                    <Box
-                                        display='flex'
-                                        flexDirection='column'
-                                        gap='10px'
-                                        marginTop='10px'
-                                    >
-                                        {replyComments.map((reply) => {
-                                            if (reply?.comment_id === comment?.comment_id) {
-                                                return (
-                                                    <Box
-                                                        key={reply?.reply_id}
-                                                        display='flex'
-                                                        flexDirection='row'
-                                                        gap='10px'
-                                                        justifyContent='space-around'
-                                                    >
-                                                        <Avatar
-                                                            src={reply.accounts.avatar}
-                                                            alt={reply?.accounts?.nickname}
-                                                            style={{
-                                                                height: "32px",
-                                                                width: "32px",
-                                                            }}
-                                                        />
+                                    <RenderWithCondition condition={isFetchReplyCommentLoading}>
+                                        <Loading />
+                                    </RenderWithCondition>
+                                    <RenderWithCondition condition={!isFetchReplyCommentLoading}>
+                                        <div className="flex flex-col gap-2 mt-2">
+                                            {replyComments && replyComments.length > 0 && replyComments.map((reply) => {
+                                                if (reply?.comment_id === comment?.comment_id) {
+                                                    return (
+                                                        <div className="flex flex-row justify-around gap-2"
+                                                            key={reply?.reply_id}
+                                                        >
+                                                            <Avatar
+                                                                src={reply.accounts.avatar}
+                                                                alt={reply?.accounts?.nickname}
+                                                                className="h-8 w-8"
+                                                            />
 
-                                                        <div style={{ flex: 1 }}>
-                                                            <Box
-                                                                display='flex'
-                                                                flexDirection='row'
-                                                                gap='10px'
-                                                            >
-                                                                <Paragraph
-                                                                    style={{
-                                                                        display: 'flex',
-                                                                        gap: '5px',
-                                                                        alignItems: 'center'
-                                                                    }}
-                                                                    bold='500'
-                                                                    size='14px'
-                                                                    color='#000'
-                                                                >
-                                                                    {reply?.accounts?.nickname}
-                                                                    {reply?.accounts?.tick && <TickIcon />}
-                                                                </Paragraph>
-                                                                <Paragraph size='14px' color='#000'>
-                                                                    {handleTime(reply?.createdAt)}
-                                                                </Paragraph>
-                                                            </Box>
-                                                            <Paragraph size='14px' color='#000'>
-                                                                {reply?.reply_user && <Link to={`/${reply?.reply_user}`}>@{reply?.reply_user} </Link>}
-                                                                {reply?.content}
-                                                            </Paragraph>
+                                                            <div className="flex-1">
+                                                                <div className="flex flex-row gap-2">
+                                                                    <p className="flex items-center gap-1 font-medium text-sm text-black">
+                                                                        {reply?.accounts?.nickname}
+                                                                        {reply?.accounts?.tick && <TickIcon />}
+                                                                    </p>
+                                                                    <p className="text-sm text-black">
+                                                                        {handleTime(reply?.createdAt)}
+                                                                    </p>
+                                                                </div>
+                                                                {my_account?.nickname === reply?.reply_user
+                                                                    ?
+                                                                    <p className="text-sm text-black">
+                                                                        {reply?.content}
+                                                                    </p>
+                                                                    : <p className="text-sm text-black flex items-center gap-1">
+                                                                        {reply?.reply_user && <Link className="font-bold" to={`/profile/${reply?.reply_user}`}>@{reply?.reply_user} </Link>}
+                                                                        {reply?.content}
+                                                                    </p>
+                                                                }
+                                                            </div>
+                                                            <RenderWithCondition condition={my_account?.acc_id === reply?.acc_id}>
+                                                                <button onClick={() => handleDeleteReplyComment(reply)}>
+                                                                    <Paragraph size='14px' color='#000'>
+                                                                        xóa
+                                                                    </Paragraph>
+                                                                </button>
+                                                            </RenderWithCondition>
                                                         </div>
-
-                                                        <RenderWithCondition condition={my_account?.id === reply?.acc_id}>
-                                                            <button onClick={() => handleDeleteReplyComment(reply)}>
-                                                                <Paragraph size='14px' color='#000'>
-                                                                    xóa
-                                                                </Paragraph>
-                                                            </button>
-                                                        </RenderWithCondition>
-                                                    </Box>
-                                                );
-                                            }
-                                        })}
-                                    </Box>
+                                                    );
+                                                }
+                                            })}
+                                        </div>
+                                    </RenderWithCondition>
                                 </RenderWithCondition>
                             </RenderWithCondition>
 
-                        </Box>
-                    </Box>
+                        </div>
+                    </div>
                 </div>
                 <button onClick={handleLikeComment} style={{
                     maxHeight: '100px'
                 }}>
                     <HealIcon size={16} active={likeComment} />
                 </button>
-            </Box>
+            </div>
         </div>
     );
 }

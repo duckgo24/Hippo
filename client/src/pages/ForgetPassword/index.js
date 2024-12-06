@@ -9,8 +9,10 @@ import styles from './ForgetPassword.module.scss';
 import Paragraph from '../../components/Paragraph';
 import Button from '../../components/Button';
 import Alert from '../../components/Alert';
-import { fetchForgetPassword } from '../../redux/slice/account.slice';
 import Loader from '../../components/Loader';
+import useHookMutation from '../../hooks/useHookMutation';
+import { identityService } from '../../services/IdentityService';
+import RenderWithCondition from '../../components/RenderWithCondition';
 
 const cx = classNames.bind(styles);
 
@@ -24,38 +26,36 @@ function ForgetPassword() {
         setUsername(e.target.value);
     }
 
+    const forgetPasswordMutation = useHookMutation((username) => {
+        return identityService.forgetPassword(username);
+    });
+
+    const { isPending } = forgetPasswordMutation;
+
     const handleForgetPassword = () => {
-        dispatch(fetchForgetPassword(username));
+        forgetPasswordMutation.mutate(username,
+            {
+                onSuccess: () => {
+                    setUsername('')
+                    setMessage({
+                        type: 'success',
+                        title: 'Thành công',
+                        message: 'Liên kết đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến để truy cập lại vào tài khoản.'
+                    });
+                },
+                onError: () => {
+                    setMessage({
+                        type: 'error',
+                        title: 'Có lỗi xảy ra',
+                        message: 'Vui lòng kiểm tra lại thông tin !'
+                    });
+                }
+            }
+        );
     }
 
-    useEffect(() => {
-        if (status === 'succeeded') {
-            setUsername('')
-            setMessage({
-                type: 'success',
-                title: 'Thành công',
-                message: 'Liên kết đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến để truy cập lại vào tài khoản.'
-            });
-
-        }
-        if (status === 'failed') {
-            setMessage({ type: 'error', title: 'Có lỗi xảy ra', message: 'Vui lòng kiểm tra lại thông tin !' });
-        }
-
-        if (status === 'idle') {
-            setMessage(null);
-        }
-
-    }, [status]);
-
     return (
-        <Box
-            display='flex'
-            justifyContent='center'
-            alignItems='center'
-            height='100vh'
-            maxWidth='100%'
-        >
+        <div className="flex justify-center items-center h-screen w-full" >
             <Box
                 display='flex'
                 flexDirection='column'
@@ -89,20 +89,19 @@ function ForgetPassword() {
                             fontSize: '14px',
                             padding: '10px 20px',
                         }}
-                        disabled={status === 'loading'}
+                        disabled={isPending}
                         onClick={handleForgetPassword}
                     >
                         Gửi mật khẩu
                     </Button>
-                    {status === 'loading'
-                        &&
+                    <RenderWithCondition condition={isPending}>
                         <Loader style={{
                             position: 'absolute',
                             top: '50%',
                             left: '50%',
                             transform: 'translate(-50%, -50%)',
                         }} />
-                    }
+                    </RenderWithCondition>
                 </div>
 
                 <div className={cx('sepate')}>Hoặc</div>
@@ -111,11 +110,7 @@ function ForgetPassword() {
                 <Button to='/login'>Quay lại đăng nhập</Button>
             </Box>
             {message && <Alert type={message.type} title={message.title} message={message.message} />}
-
-
-
-
-        </Box>
+        </div>
     );
 }
 

@@ -14,7 +14,7 @@ module.exports = {
         type: Sequelize.STRING,
         references: {
           model: 'accounts',
-          key: 'id'
+          key: 'acc_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
@@ -23,7 +23,7 @@ module.exports = {
         type: Sequelize.STRING,
         references: {
           model: 'accounts',
-          key: 'id'
+          key: 'acc_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'

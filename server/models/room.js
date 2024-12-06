@@ -8,9 +8,9 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'room_id',
                 as: 'room_participants',
             });
-            Room.hasMany(models.RoomMessage, {
+            Room.hasMany(models.Message, {
                 foreignKey: 'room_id',
-                as: 'room_messages',
+                as: 'messages',
             });
         }
     }
@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
    Room.init({
         room_id: { 
             type: DataTypes.STRING,
-            autoIncrement: true,
             primaryKey: true
         },
         priority: {

@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('block_posts', {
-      id: {
+      block_post_id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.STRING
@@ -18,10 +18,10 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       video_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'videos',
-          key: 'id'
+          key: 'video_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
@@ -30,7 +30,7 @@ module.exports = {
         type: Sequelize.STRING,
         references: {
           model: 'accounts',
-          key: 'id'
+          key: 'acc_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'

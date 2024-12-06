@@ -19,7 +19,4 @@
 - 👉 Đăng bài viết, video
 - 👉 Like, Share, Comment bài viết hoặc video
 - 👉 Kết nối người dùng: Chat, Kết bạn, Theo dõi, Chặn
-- 👉 Mua bán hàng trực tuyến
 
-----
-Đừng tiếc 1 ⭐ cho dự án này 😽😽.

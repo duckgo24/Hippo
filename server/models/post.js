@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
             Post.belongsTo(models.Account, {
                 foreignKey: 'acc_id',
                 as: 'accounts',
-            })
+            });
         }
     }
     Post.init({

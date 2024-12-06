@@ -11,23 +11,23 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Account.hasMany(models.Post, {
-        foreignKey: 'acc_id',  
+        foreignKey: 'acc_id',
         as: 'posts',
       });
       Account.hasMany(models.Video, {
-        foreignKey: 'acc_id',  
+        foreignKey: 'acc_id',
         as: 'videos',
       });
       Account.hasMany(models.Comment, {
-        foreignKey: 'acc_id',  
+        foreignKey: 'acc_id',
         as: 'comments',
       });
       Account.hasMany(models.Like, {
-        foreignKey: 'acc_id',  
+        foreignKey: 'acc_id',
         as: 'likes',
       });
       Account.hasMany(models.ReplyComment, {
-        foreignKey: 'acc_id',  
+        foreignKey: 'acc_id',
         as: 'reply_comments',
       });
       Account.hasMany(models.Friend, {
@@ -53,12 +53,12 @@ module.exports = (sequelize, DataTypes) => {
         as: 'room_participant',
       });
 
-      Account.hasMany(models.RoomMessage, {
+      Account.hasMany(models.Message, {
         foreignKey: 'sender_id',
         as: 'message_sender'
       });
-      
-      Account.hasMany(models.RoomMessage, {
+
+      Account.hasMany(models.Message, {
         foreignKey: 'receiver_id',
         as: 'message_receiver'
       });
@@ -79,7 +79,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Account.init({
-    id: {
+    acc_id: {
       type: DataTypes.STRING,
       primaryKey: true,
     },
@@ -91,6 +91,7 @@ module.exports = (sequelize, DataTypes) => {
     avatar: DataTypes.STRING,
     bio: DataTypes.STRING,
     tick: DataTypes.BOOLEAN,
+    isBan: DataTypes.BOOLEAN,
     isOnline: DataTypes.BOOLEAN,
     lastOnline: DataTypes.DATE
   }, {

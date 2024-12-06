@@ -22,12 +22,12 @@ class commentController {
                     {
                         model: db.Account,
                         as: 'accounts',
-                        attributes: ['id', 'nickname', 'avatar', 'tick']
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                     },
                     {
                         model: db.Post,
                         as: 'posts',
-                        attributes: ['post_id', 'title' ,'num_comments']
+                        attributes: ['post_id', 'title', 'num_comments', 'num_likes']
                     }
                 ],
                 order: [
@@ -45,7 +45,7 @@ class commentController {
     }
 
     async getCommentByPostIdAndCommentId(req, res, next) {
-        
+
     }
 
     async createComment(req, res, next) {
@@ -61,16 +61,21 @@ class commentController {
                             {
                                 model: db.Account,
                                 as: 'accounts',
-                                attributes: ['id', 'nickname', 'avatar', 'tick']
+                                attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
+                            },
+                            {
+                                model: db.Post,
+                                as: 'posts',
+                                attributes: ['post_id', 'title', 'num_comments', 'num_likes']
                             }
                         ],
                         where: {
                             comment_id: comment.dataValues.comment_id
                         }
                     });
-    
+
                     const plainResComment = resComment.map(comment => comment.get({ plain: true }));
-    
+
                     return res.status(201).json({ ...plainResComment[0] });
                 }
             }
@@ -78,11 +83,11 @@ class commentController {
             return res.status(500).json({ error: error.message });
         }
     }
-    
+
 
     async deleteComment(req, res, next) {
         try {
-            const { comment_id } = req.query;
+            const { comment_id } = req.params;
             const findComment = await db.Comment.findOne({
                 where: {
                     comment_id
@@ -91,24 +96,27 @@ class commentController {
                     {
                         model: db.Account,
                         as: 'accounts',
-                        attributes: ['id', 'nickname', 'avatar', 'tick']
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                     }
                 ]
             });
-            
+
             if (findComment) {
-                const response  = await findComment.destroy();
-                return res.status(201).json({ ...response.toJSON() });
+                await findComment.destroy();
+                return res.status(201).json({
+                    success: true,
+                    comment_id
+                });
             }
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
     }
-    
+
 
     async updateComment(req, res, next) {
-        const { comment_id, num_replies } = req.params;
-    
+        const { comment_id } = req.params;
+
         try {
             const findComment = await db.Comment.findOne({
                 where: { comment_id },
@@ -116,23 +124,23 @@ class commentController {
                     {
                         model: db.Account,
                         as: 'accounts',
-                        attributes: ['id', 'nickname', 'avatar', 'tick']
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                     }
                 ]
             });
-    
+
             if (findComment) {
                 const updatedComment = await findComment.update(req.body);
                 return res.status(200).json(updatedComment);
             } else {
                 return res.status(404).json({ error: "Comment not found" });
             }
-    
+
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
     }
-    
+
 }
 
 

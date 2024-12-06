@@ -8,24 +8,29 @@ import { BlockIcon, CloseIcon, DeleteIcon, HealIcon, MessageIcon, MoreIcon, Shar
 import Paragraph from "../../Paragraph";
 import CommentList from "../../comment_component/CommentList";
 import RenderWithCondition from "../../RenderWithCondition";
-
-import { fetchLikePost, fetchDislikesPost } from "../../../redux/slice/like.slice";
-import { fetchUpdatePost } from "../../../redux/slice/post.slice";
-import { fetchGetAllComments } from "../../../redux/slice/comment.slice";
+import { setComment } from "../../../redux/slice/comment.slice";
 import handleTime from "../../../utils/handleTime";
 import { fetchBlockPost } from "../../../redux/slice/block-post.slice";
-import { fetchCreateNotify, fetchDeleteNotify } from "../../../redux/slice/notify.slice";
 import { useSocket } from "../../../providers/socket.provider";
 import { useNavigate } from "react-router-dom";
 import Alert from "../../Alert";
+import { useQuery } from "@tanstack/react-query";
+import { commentService } from "../../../services/CommentService";
+import Loading from "../../Loading";
+import { notifyService } from "../../../services/NotifyService";
+import useHookMutation from "../../../hooks/useHookMutation";
+import { setLikePost } from "../../../redux/slice/like.slice";
+import { likeService } from "../../../services/LikeService";
+import { setUpdatePost } from "../../../redux/slice/post.slice";
+import { postService } from "../../../services/PostService";
+import { fetchCreateNotify, fetchDeleteNotify, fetchDeleteNotify2 } from "../../../redux/slice/notify.slice";
 
 
 function Post({ post, openComment, onToggleComments, style }) {
     const { my_account } = useSelector(state => state.account);
     const { comments } = useSelector(state => state.comment);
-    const [activeHealIcon, setActiveHealIcon] = useState(
-        post?.likes?.some(like => like.acc_id === my_account.id)
-    );
+    const { like_posts } = useSelector(state => state.like);
+    const [activeHealIcon, setActiveHealIcon] = useState(post?.likes?.some(like => like.acc_id === my_account?.acc_id));
     const [anchorElComment, setAnchorElComment] = useState(null);
     const [anchorElOptionPost, setAnchorElOptionPost] = useState(null);
     const [openOptionPost, setOpenOptionPost] = useState(false);
@@ -35,13 +40,36 @@ function Post({ post, openComment, onToggleComments, style }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const handleClickPost = () => {
-        navigate(`/post/${post?.post_id}`, {
-            state: {
-                post_id: post?.post_id
+
+    const { data: commentData, isSuccess: isFetchCommentSuccess, isLoading: isFetchCommentLoading, isError: isFetchCommentError } = useQuery({
+        queryKey: ['get-all-comment', post?.post_id && openComment],
+        queryFn: () => commentService.getCommentByPostId(post?.post_id),
+        enabled: !!post?.post_id && openComment
+    });
+
+
+
+    useEffect(() => {
+        if (openComment) {
+            if (isFetchCommentSuccess) {
+                dispatch(setComment(commentData));
+            } else if (isFetchCommentError) {
+                dispatch(setComment([]));
             }
-        });
+        }
+    }, [openComment, isFetchCommentSuccess, isFetchCommentError, commentData, dispatch]);
+
+
+    const handleClickPost = () => {
+        if (post?.post_id) {
+            navigate(`/post/${post?.post_id}`);
+        }
+
+        if (post?.video_id) {
+            navigate(`/video/${post?.video_id}`);
+        }
     }
+
 
     const handleToggleComments = (event) => {
         onToggleComments();
@@ -56,82 +84,140 @@ function Post({ post, openComment, onToggleComments, style }) {
     const toggleOptionPost = (e) => {
         setAnchorElOptionPost(anchorElOptionPost ? null : e.currentTarget);
         setOpenOptionPost(!openOptionPost);
-    }
+    };
 
-    const handleClickLike = () => {
+    const updatePostMutation = useHookMutation(({ post_id, data }) => {
+        return postService.updatePost(post_id, data);
+    });
+
+    const likeMutation = useHookMutation((data) => {
+        return likeService.like(data)
+    });
+
+    const disLikeMutation = useHookMutation((data) => {
+        return likeService.disLike(data);
+    });
+
+    const handleClickLike = async () => {
         setActiveHealIcon(!activeHealIcon);
+
         if (!activeHealIcon) {
-            dispatch(fetchLikePost({
-                acc_id: my_account.id,
+            likeMutation.mutate({
+                acc_id: my_account?.acc_id,
                 post_id: post?.post_id,
                 is_like: true
-            }));
-
-            dispatch(fetchUpdatePost({
-                id: post?.post_id,
-                num_likes: post?.num_likes + 1,
-            }));
-
-            if (post?.accounts?.id !== my_account?.id) {
-                dispatch(fetchCreateNotify({
-                    sender_id: my_account?.id,
-                    receiver_id: post?.accounts?.id,
-                    type: "like",
-                    isRead: false,
-                    link: `/post/${post?.post_id}`,
-                    title: "Thông báo",
-                    content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
-                }));
-                socket.emit('send-notify', {
-                    receiverId: post?.accounts?.id,
-                    data: {
-                        content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
-                        sender_id: my_account?.id,
-                        receiver_id: post?.accounts?.id,
-                    }
-                });
-            }
-
-        } else {
-            dispatch(fetchDislikesPost({
-                acc_id: my_account.id,
+            });
+            updatePostMutation.mutate({
                 post_id: post?.post_id,
-            }));
+                data: {
+                    num_likes: post?.num_likes + 1
+                }
+            }, {
+                onSuccess: (data) => {
+                    dispatch(setUpdatePost({
+                        post_id: post?.post_id,
+                        num_likes: post?.num_likes + 1
+                    }));
+                    if (post?.accounts?.acc_id !== my_account?.acc_id) {
+                        dispatch(fetchCreateNotify({
+                            sender_id: my_account?.acc_id,
+                            receiver_id: post?.accounts?.acc_id,
+                            type: "like",
+                            isRead: false,
+                            link: `/post/${post?.post_id}`,
+                            title: "Thông báo",
+                            content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
+                        }))
+                        // notifyService.createNotify({
 
-            dispatch(fetchUpdatePost({
-                id: post?.post_id,
-                num_likes: post?.num_likes - 1,
-            }));
-            if (post?.accounts?.id !== my_account?.id) {
-                socket.emit('send-notify', {
-                    receiverId: post?.accounts?.id,
-                    data: {
-                        message: `${my_account?.full_name} đã bỏ thích bài viết ${post?.title}`,
-                        content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
-                        sender_id: my_account?.id,
-                        receiver_id: post?.accounts?.id,
-                        type: 'dislike',
+                        // })
+                        socket.emit('send-notify', {
+                            receiverId: post?.accounts?.acc_id,
+                            data: {
+                                content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
+                                sender_id: my_account?.acc_id,
+                                receiver_id: post?.accounts?.acc_id,
+                                type: 'like',
+                            }
+                        });
                     }
-                })
-            }
+                }
+            });
+        } else {
+            disLikeMutation.mutate({
+                acc_id: my_account?.acc_id,
+                post_id: post?.post_id,
+            });
+
+            
+
+            updatePostMutation.mutate({
+                post_id: post?.post_id,
+                num_likes: post?.num_likes - 1
+            }, {
+                onSuccess: () => {
+                    dispatch(setUpdatePost({
+                        post_id: post?.post_id,
+                        num_likes: post?.num_likes - 1
+                    }));
+                    if (post?.accounts?.acc_id !== my_account?.acc_id) {
+                        dispatch(fetchDeleteNotify2({
+                            sender_id: my_account?.acc_id,
+                            receiver_id: post?.accounts?.acc_id,
+                            title: "Thông báo",
+                            content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
+                        }))
+                        // notifyService.createNotify({
+
+                        // })
+                        socket.emit('send-notify', {
+                            receiverId: post?.accounts?.acc_id,
+                            data: {
+                                message: `${my_account?.full_name} đã bỏ thích bài viết ${post?.title}`,
+                                content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
+                                sender_id: my_account?.acc_id,
+                                receiver_id: post?.accounts?.acc_id,
+                                type: 'dislike',
+                            }
+                        });
+                    }
+                }
+            })
         }
+
+
+
+        // dispatch(fetchDislikesPost({
+        //     acc_id: my_account?.acc_id,
+        //     post_id: post?.post_id,
+        // }));
+
+        // dispatch(fetchUpdatePost({
+        //     id: post?.post_id,
+        //     num_likes: post?.num_likes - 1,
+        // }));
+        // if (post?.accounts?.acc_id !== my_account?.acc_id) {
+        //     socket.emit('send-notify', {
+        //         receiverId: post?.accounts?.acc_id,
+        //         data: {
+        //             message: `${my_account?.full_name} đã bỏ thích bài viết ${post?.title}`,
+        //             content: `${my_account?.full_name} đã thích bài viết ${post?.title}`,
+        //             sender_id: my_account?.acc_id,
+        //             receiver_id: post?.accounts?.acc_id,
+        //             type: '',
+        //         }
+        //     })
+        // }
+
     };
 
     const handleClickBlockPost = () => {
         dispatch(fetchBlockPost({
             post_id: post?.post_id,
-            acc_id: my_account?.id,
+            acc_id: my_account?.acc_id,
         }))
     }
 
-    useEffect(() => {
-        if (openComment) {
-            dispatch(fetchGetAllComments({
-                post_id: post?.post_id,
-                acc_id: my_account?.id,
-            }));
-        }
-    }, [openComment]);
 
 
     useEffect(() => {
@@ -179,8 +265,7 @@ function Post({ post, openComment, onToggleComments, style }) {
         >
             <div className="flex justify-between">
                 <div className="flex gap-3">
-                    <CardUser nickname={post?.accounts?.nickname} tick={post?.accounts?.tick} avatar={post?.accounts?.avatar} />
-
+                    <CardUser nickname={post?.accounts?.full_name} tick={post?.accounts?.tick} avatar={post?.accounts?.avatar} />
                 </div>
 
                 <button onClick={toggleOptionPost}>
@@ -203,7 +288,7 @@ function Post({ post, openComment, onToggleComments, style }) {
                             </Paragraph>
                         </button>
                         <Divider />
-                        <RenderWithCondition condition={post?.accounts?.id == my_account?.id}>
+                        <RenderWithCondition condition={post?.accounts?.acc_id == my_account?.acc_id}>
                             <button style={{
                                 padding: '5px 10px',
                             }}
@@ -224,8 +309,7 @@ function Post({ post, openComment, onToggleComments, style }) {
                 {post?.title}
             </Typography>
 
-            <div
-                className="w-full"
+            <div className="w-full"
                 style={{
                     height: '500px'
                 }}
@@ -308,7 +392,10 @@ function Post({ post, openComment, onToggleComments, style }) {
                                 Bình luận
                             </Paragraph>
                         </Box>
-                        <RenderWithCondition condition={openComment}>
+                        <RenderWithCondition condition={openComment && isFetchCommentLoading}>
+                            <Loading />
+                        </RenderWithCondition>
+                        <RenderWithCondition condition={openComment && !isFetchCommentLoading}>
                             <CommentList post={post} comment_list={comments} />
                         </RenderWithCondition>
                     </Box>

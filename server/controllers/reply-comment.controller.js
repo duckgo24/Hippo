@@ -1,7 +1,7 @@
 
 const { where } = require('sequelize');
 const db = require('../models');
-const uuid = require('uuid'); 
+const uuid = require('uuid');
 
 class ReplyCommentController {
 
@@ -16,7 +16,7 @@ class ReplyCommentController {
                     {
                         model: db.Account,
                         as: 'accounts',
-                        attributes: ['id', 'nickname', 'avatar', 'tick']
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                     }
                 ]
             });
@@ -47,7 +47,7 @@ class ReplyCommentController {
                             {
                                 model: db.Account,
                                 as: 'accounts',
-                                attributes: ['id', 'nickname', 'avatar', 'tick']
+                                attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                             }
                         ]
                     })

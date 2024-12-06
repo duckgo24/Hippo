@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         acc_id: DataTypes.STRING,
         post_id: DataTypes.STRING,
+        icon: DataTypes.STRING,
         video_id: DataTypes.INTEGER,
     }, {
         sequelize,

@@ -2,36 +2,43 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-    class RoomMessage extends Model {
+    class Message extends Model {
         static associate(models) {
-            RoomMessage.belongsTo(models.Account, {
+            Message.belongsTo(models.Account, {
                 foreignKey: 'sender_id',
                 as: 'message_sender',
             });
-            RoomMessage.belongsTo(models.Account, {
+            Message.belongsTo(models.Account, {
                 foreignKey: 'receiver_id',
                 as: 'message_receiver',
             });
-            RoomMessage.belongsTo(models.Room, {
+            Message.belongsTo(models.Room, {
                 foreignKey: 'room_id',
-                as: 'room_messages',
+                as: 'messages',
             });
         }
     }
 
-    RoomMessage.init({
+    Message.init({
+        message_id: {
+            type: DataTypes.STRING,
+            primaryKey: true
+        },
         sender_id: DataTypes.STRING,
         receiver_id: DataTypes.STRING,
         content: DataTypes.STRING,
         image: DataTypes.STRING,
         video: DataTypes.STRING,
         seen: DataTypes.BOOLEAN,
+        mood: DataTypes.STRING,
+        is_deleted: DataTypes.BOOLEAN,
         room_id: DataTypes.STRING,
+        
     }, {
         sequelize,
-        tableName: 'room_messages',
-        modelName: 'RoomMessage',
+        tableName: 'messages',
+        modelName: 'Message',
     });
-    
-    return RoomMessage;
+
+    return Message;
 };

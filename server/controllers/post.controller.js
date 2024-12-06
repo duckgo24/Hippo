@@ -10,7 +10,7 @@ class PostController {
                     {
                         model: db.Account,
                         as: 'accounts',
-                        attributes: ['id', 'nickname', 'avatar', 'tick']
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                     },
                     {
                         model: db.Like,
@@ -22,7 +22,6 @@ class PostController {
                     ['createdAt', 'DESC']
                 ]
             });
-
 
             if (!posts || posts.length === 0) {
                 return res.status(404).json({ message: "No posts found" });
@@ -50,7 +49,7 @@ class PostController {
                     {
                         model: db.Account,
                         as: 'accounts',
-                        attributes: ['id', 'nickname', 'avatar', 'tick']
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                     },
                     {
                         model: db.Like,
@@ -88,7 +87,7 @@ class PostController {
                         {
                             model: db.Account,
                             as: 'accounts',
-                            attributes: ['id', 'nickname', 'avatar', 'tick']
+                            attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
                         }
                     ]
                 })
@@ -100,31 +99,34 @@ class PostController {
         }
     }
     async deletePost(req, res, next) {
+        const { post_id } = req.params;
         try {
-            const post = await db.Post.findByPk(req.params.id);
-
+            const post = await db.Post.findByPk(post_id);
             if (!post) {
                 return res.status(404).json({ message: 'Post not found' });
             }
 
             await post.destroy();
 
-            return res.status(200).json({ message: 'Post deleted successfully' });
+            return res.status(200).json({
+                success: true,
+                post_id,
+            });
 
         } catch (error) {
             res.status(501).json({ error });
-
         }
     }
 
     async updatePost(req, res, next) {
         try {
-            const checkExitPost = await db.Post.findByPk(req.params.id);
+            const checkExitPost = await db.Post.findByPk(req.params.post_id);
             if (!checkExitPost) {
                 return res.status(404).json({ message: 'Post not found' });
             }
+            const { acc_id, ...data } = req.body;
             const post = await checkExitPost.update({
-                ...req.body,
+                ...data
             });
 
             if (post) {
@@ -156,9 +158,8 @@ class PostController {
         }
     }
 
-    async findPostById(req, res, next) {
+    async getPostById(req, res, next) {
         const { post_id } = req.params;
-
         try {
             const post = await db.Post.findByPk(
                 post_id,
@@ -167,14 +168,17 @@ class PostController {
                         {
                             model: db.Account,
                             as: 'accounts',
-                            attributes: ['id', 'nickname', 'full_name', 'avatar', 'tick']
+                            attributes: ['acc_id', 'full_name', 'nickname', 'full_name', 'avatar', 'tick']
                         },
-                       
+
                     ]
                 }
             );
             if (!post) {
-                return res.status(404).json({ message: 'Post not found' });
+                return res.status(404).json({
+                    success: false,
+                    message: 'Post not found'
+                });
             }
 
             return res.status(200).json(post);
@@ -185,6 +189,49 @@ class PostController {
 
     async blockPost(req, res, next) {
 
+    }
+
+    async getStatisticalPost(req, res, next) {
+        try {
+            const { start_day, end_day } = req.query;
+    
+            const startDate = new Date(start_day + "T00:00:00.000Z");
+            const endDate = new Date(end_day + "T23:59:59.999Z");
+            const numDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    
+            const previousStartDate = new Date(startDate);
+            previousStartDate.setDate(previousStartDate.getDate() - numDays);
+    
+            const previousEndDate = new Date(startDate);
+            previousEndDate.setDate(previousEndDate.getDate() - 1);
+    
+            const currentCount = await db.Post.count({
+                where: {
+                    createdAt: {
+                        [Op.between]: [startDate, endDate]
+                    },
+                }
+            });
+    
+            const previousCount = await db.Post.count({
+                where: {
+                    createdAt: {
+                        [Op.between]: [previousStartDate, previousEndDate]
+                    },
+                }
+            });
+    
+            const rate = previousCount > 0
+                ? ((currentCount - previousCount) / previousCount) * 100
+                : currentCount * 100;
+    
+            return res.json({
+                total: currentCount,
+                rate: Math.round(rate * 100) / 100,
+            });
+        } catch (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
     }
 
 }

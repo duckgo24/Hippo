@@ -1,0 +1,156 @@
+{
+    "account": [
+        {
+            "id": "1",
+            "username": "test1234",
+            "password": "12345678",
+            "role": "admin"
+        },
+        {
+            "id": "2",
+            "username": "test9999",
+            "password": "99999999",
+            "role": "user"
+        }
+    ],
+    "banners": [
+        {
+            "title": "Web hoc truc tuyen online",
+            "description": "Web hoc truc tuyen online (Web-based Online Learning Platform) là một phần mềm hỗ trợ giảng dạy và học tập online. Nó dùng để tạo và quản lý các khoá học, bài tập, và các câu hỏi trắc nghiệm. Thông qua web hoc truc tuyen online",
+            "link": "https://hocwebonline.online/",
+            "image": "https://hocwebonline.online/wp-content/uploads/2021/06/Logo-Web-Hoc-Truc-Tuyen-Online.png",
+            "button": "Xem chi tiết",
+            "id": "8fcd"
+        },
+        {
+            "title": "Sản phẩm mã nguồn mở",
+            "description": "Sản phẩm mã nguồn mở là sản phẩm phần mềm mà nguồn mã nguồn của nó được công bố công khai, miễn phí, và mọi người có thể sử dụng, chỉnh sửa, và phân phối lại. Sản phẩm mã nguồn mở thường được phát triển bởi cộng đồng",
+            "link": "/",
+            "image": "https://files.fullstack.edu.vn/f8-prod/blog_posts/65/6139fe28a9844.png",
+            "button": "Xem chi tiết",
+            "id": "0877"
+        }
+    ],
+    "courses": [
+        {
+            "id": "1",
+            "title": "HTML, CSS cơ bản",
+            "description": "Lập trình web là một quá trình tạo ra các trang web hoặc ứng dụng web",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/2.png",
+            "isPublished": false,
+            "number_access": 100,
+            "number_lesson": 10,
+            "level": 1,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        },
+        {
+            "id": "2",
+            "title": "JavaScript cơ bản",
+            "description": "Học các khái niệm cơ bản của JavaScript, ngôn ngữ lập trình quan trọng cho web",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/9.png",
+            "isPublished": true,
+            "number_access": 250,
+            "number_lesson": 15,
+            "level": 1,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        },
+        {
+            "id": "3",
+            "title": "ReactJS cơ bản",
+            "description": "Giới thiệu về React, thư viện JavaScript phổ biến cho giao diện người dùng",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/11.png",
+            "isPublished": true,
+            "number_access": 300,
+            "number_lesson": 20,
+            "level": 2,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        },
+        {
+            "id": "4",
+            "title": "NodeJS && Express",
+            "description": "Học cách xây dựng API với NodeJS và Express",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/6.png",
+            "isPublished": false,
+            "number_access": 180,
+            "number_lesson": 12,
+            "level": 2,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        },
+        {
+            "id": "5",
+            "title": "Reposive Web",
+            "description": "Học cách tạo giao diện web đẹp trên mọi thiết bị với Responsive Web Design",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/3.png",
+            "isPublished": true,
+            "number_access": 220,
+            "number_lesson": 18,
+            "level": 1,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        },
+        {
+            "id": "6",
+            "title": "Nhập môn nền tảng",
+            "description": "Khóa học giúp bạn hiểu rõ hơn về nền tảng lập trình",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/7.png",
+            "isPublished": false,
+            "number_access": 150,
+            "number_lesson": 10,
+            "level": 1,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        },
+        {
+            "id": "7",
+            "title": "Thành thạo git",
+            "description": "Học cách sử dụng Git, công cụ quản lý mã nguồn phổ biến nhất hiện nay",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/10.png",
+            "isPublished": true,
+            "number_access": 275,
+            "number_lesson": 14,
+            "level": 1,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        },
+        {
+            "id": "8",
+            "title": "Tìm hiểu ubuntu",
+            "description": "Học cách sử dụng hệ điều hành Ubuntu, một trong những hệ điều hành phổ biến nhất hiện nay",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/14/624faac11d109.png",
+            "isPublished": true,
+            "number_access": 330,
+            "number_lesson": 25,
+            "level": 2,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        },
+        {
+            "id": "9",
+            "title": "Java cơ bản",
+            "description": "Học lập trình Java, ngôn ngữ phổ biến cho nhiều ứng dụng doanh nghiệp",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/11.png",
+            "isPublished": false,
+            "number_access": 210,
+            "number_lesson": 16,
+            "level": 2,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        },
+        {
+            "id": "10",
+            "title": "C++ cơ bản",
+            "description": "Học lập trình C++, ngôn ngữ phổ biến cho lập trình game và hệ thống",
+            "image": "https://files.fullstack.edu.vn/f8-prod/courses/21/63e1bcbaed1dd.png",
+            "isPublished": true,
+            "number_access": 200,
+            "number_lesson": 22,
+            "level": 2,
+            "createAt": "2024-11-03 14:09:48",
+            "updateAt": "2024-11-03 14:09:48"
+        }
+    ]
+}

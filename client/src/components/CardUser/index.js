@@ -4,6 +4,9 @@ import Paragraph from "../Paragraph";
 
 
 function CardUser({ name, nickname, tick, avatar, size, status, lastOnline, onClick, ...props }) {
+
+
+
     return (
         <Box
             display='flex'
@@ -16,9 +19,7 @@ function CardUser({ name, nickname, tick, avatar, size, status, lastOnline, onCl
             onClick={onClick}
         >
 
-            <Box
-                position="relative"
-            >
+            <div className="relative">
                 <Avatar
                     src={avatar} alt={name}
                     sx={{
@@ -39,14 +40,9 @@ function CardUser({ name, nickname, tick, avatar, size, status, lastOnline, onCl
                         backgroundColor: '#519B4A',
                     }}></div>
                 }
-            </Box>
+            </div>
             <div>
-                <Box
-                    display='flex'
-                    flexDirection='row'
-                    alignItems='center'
-                    gap='5px'
-                >
+                <div className="flex flex-row items-center gap-2">
                     {nickname &&
                         <Paragraph size='14px' color="#000" bold='500' style={{
                             padding: 0
@@ -55,7 +51,7 @@ function CardUser({ name, nickname, tick, avatar, size, status, lastOnline, onCl
                         </Paragraph>
                     }
                     {tick && <TickIcon />}
-                </Box>
+                </div>
                 {name && <Paragraph size='13px' color="#000" >{name}</Paragraph>}
             </div>
         </Box>

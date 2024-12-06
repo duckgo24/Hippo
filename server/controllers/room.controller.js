@@ -4,7 +4,7 @@ const db = require('../models')
 class RoomController {
     async getAllRooms(req, res, next) {
         try {
-            const { acc_id } = req.query;
+            const { acc_id } = req.params;
 
             const chatrooms = await db.Room.findAll({
                 attributes: ['room_id', 'priority'],
@@ -15,17 +15,6 @@ class RoomController {
                         where: {
                             user_id: acc_id
                         },
-                    },
-                    {
-                        model: db.RoomMessage,
-                        as: 'room_messages',
-                        attributes: ['content', 'image', 'video', 'seen', 'createdAt', 'sender_id'],                       
-                         where: {
-                          
-
-                        },                        
-                        order: [['createdAt', 'DESC']],
-                        limit: 1
                     }
                 ]
             });
@@ -39,14 +28,25 @@ class RoomController {
                     include: {
                         model: db.Account,
                         as: 'room_participant',
-                        attributes: ['id', 'full_name', 'avatar', 'tick','nickname']
+                        attributes: ['acc_id', 'full_name', 'avatar', 'tick','nickname', 'isOnline', 'lastOnline']
                     }
                 });
                 return room;
             }
 
+            const getLastMessageInRoom = async (room_id) => {
+                const message = await db.Message.findOne({
+                    where: {
+                        room_id,
+                    },
+                    order: [['createdAt', 'DESC']],
+                });
+                return message;
+            }
+
             const resRoom = await Promise.all(chatrooms.map(async (room) => {
                 const _participants = await getUsersInRoom(room.room_id);
+                const _lastMessage = await getLastMessageInRoom(room.room_id);
                 const sender = _participants.find((user) => (user.dataValues.user_id == acc_id));
                 const receiver = _participants.find((user) => (user.dataValues.user_id != acc_id));
                 return {
@@ -56,7 +56,7 @@ class RoomController {
                         sender: sender.dataValues.room_participant,
                         receiver: receiver.dataValues.room_participant
                     },
-                    lastMessage: room.room_messages
+                    lastMessage: _lastMessage
                 };
             }));
 
@@ -81,7 +81,7 @@ class RoomController {
                         }
                     },
                     {
-                        model: db.RoomMessage,
+                        model: db.Message,
                         as: 'room_messages',
                         where: {
                             room_id
@@ -96,6 +96,7 @@ class RoomController {
 
     async createRoom(req, res, next) {
         try {
+            
             const { room_id, acc_id, friend_id } = req.body;
             const room = await db.Room.create({
                 room_id,

@@ -14,7 +14,7 @@ class FriendController {
                     {
                         model: db.Account,
                         as: 'friend',
-                        attributes: ['id', 'nickname', 'full_name', 'avatar', 'tick'],
+                        attributes: ['acc_id', 'nickname', 'full_name', 'avatar', 'tick'],
                     },
                 ],
                 limit: parseInt(limit) || 10,
@@ -53,9 +53,9 @@ class FriendController {
                         {
                             model: db.Account,
                             as: 'friend',
-                            attributes: ['id', 'nickname', 'full_name', 'avatar', 'tick'],
+                            attributes: ['acc_id', 'nickname', 'full_name', 'avatar', 'tick'],
                             where: {
-                                id: friend_a?.friend_id
+                                acc_id: friend_a?.friend_id
                             }
                         }
                     ]

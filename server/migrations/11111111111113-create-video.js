@@ -3,11 +3,10 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('videos', {
-      id: {
+      video_id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       title: {
         type: Sequelize.STRING
@@ -25,7 +24,7 @@ module.exports = {
         type: Sequelize.STRING,
         references: {
           model: 'accounts',
-          key: 'id'
+          key: 'acc_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'

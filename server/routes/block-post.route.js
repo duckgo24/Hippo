@@ -1,10 +1,10 @@
 
 const express = require('express');
 const blockPostController = require('../controllers/block-post.controller');
-const { authenMeByToken } = require('../middleware/authen.middleware');
+const { verifyToken  } = require('../middleware/authen.middleware');
 const route = express.Router();
 
-route.post('/block/:id', authenMeByToken, blockPostController.block);
+route.post('/block/:id', verifyToken , blockPostController.block);
 
 
 

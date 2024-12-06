@@ -4,9 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box } from "@mui/material";
 import Reel from "../../components/Reel";
-import { fetchGetAllVideos } from "../../redux/slice/video.slice";
 import RenderWithCondition from "../../components/RenderWithCondition";
-import { fetchGetAllComments } from "../../redux/slice/comment.slice";
+import { useQuery } from "@tanstack/react-query";
 
 
 
@@ -18,6 +17,7 @@ function Reels() {
     const [currentOpenReelId, setCurrentOpenReelId] = useState(null);
     const dispatch = useDispatch();
 
+
     const handleReelInView = (reelRef) => {
         if (currentReelRef && currentReelRef.current !== reelRef.current) {
             currentReelRef.current.pause();
@@ -28,11 +28,17 @@ function Reels() {
             reelRef.current.play();
         }
     };
+    // const {data: commentData } = useQuery({
+    //     queryKey: ['get-comments', reelId],
+    //     queryFn: () => fetchGetAllComments({ video_id: reelId, acc_id: my_account?.acc_id }),
+    //     enabled: !!reelId
+    // })
 
     const onToggleComments = (reelId) => {
         setCurrentOpenReelId(prevReelId => prevReelId === reelId ? null : reelId);
 
-        dispatch(fetchGetAllComments({ video_id: reelId, acc_id: my_account?.id }));
+      
+        // dispatch(fetchGetAllComments({ video_id: reelId, acc_id: my_account?.acc_id }));
 
     };
 
@@ -48,23 +54,15 @@ function Reels() {
     }, [])
 
     useEffect(() => {
-        dispatch(fetchGetAllVideos());
+        // dispatch(fetchGetAllVideos());
     }, [dispatch]);
 
     return (
-        <Box
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
-            margin="auto"
-            padding="40px 0"
-            gap="40px"
-        >
+        <div className="flex flex-col items-center justify-center gap-5 mx-auto">
             <RenderWithCondition condition={videos && videos.length > 0}>
                 {videos.map((video) => (
                     <Reel
-                        key={video?.id}
+                        key={video?.video_id}
                         reel={video}
                         onReelInView={handleReelInView}
                         currentOpenReel={currentOpenReelId}
@@ -72,7 +70,7 @@ function Reels() {
                     />
                 ))}
             </RenderWithCondition>
-        </Box>
+        </div>
     );
 }
 
