@@ -12,6 +12,7 @@ npm install
 ```env
 PORT=8080
 CLIENT_URL=http://localhost:3000
+ADMIN_URL=http://localhost:5000
 JWT_SECRET_ACCESS_KEY=
 JWT_SECRECT_REFRESH_KEY=
 EMAIL_SEND=
@@ -37,7 +38,13 @@ npx sequelize-cli db:create
 ```bash
 npx sequelize-cli db:migrate
 ```
-6. Start the Server
+
+6. Run Seeders
+```bash
+npx sequelize-cli db:seed:all
+```
+
+7. Start the Server
 ```bash
 npm start
 ```

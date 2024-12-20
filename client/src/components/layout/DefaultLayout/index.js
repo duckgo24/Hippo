@@ -12,8 +12,7 @@ function DefaultLayout({ children }) {
             <div className="max-w-56">
                 <Navigation />
             </div>
-
-            <div className="overflow-y-auto flex-1">
+            <div className="flex-1">
                 {children}
             </div>
         </div>

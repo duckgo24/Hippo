@@ -3,6 +3,30 @@ const db = require('../models/index');
 const uuid = require('uuid');
 
 class VideoController {
+    async getVideoWithPagination(req, res, next) {
+        try {
+            const { page = 1, limit = 10 } = req.query;
+            const parsedPage = Math.max(1, parseInt(page, 10));
+            const parsedLimit = Math.max(1, parseInt(limit, 10));
+            const offset = (parsedPage - 1) * parsedLimit;
+
+            const { count: total_record, rows: data } = await db.Video.findAndCountAll({
+                offset,
+                limit: parsedLimit,
+                order: [['createdAt', 'DESC']],
+            });
+
+            return res.json({
+                data,
+                total_record,
+                page: parsedPage,
+                limit: parsedLimit,
+            });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+
     async getAllVideos(req, res, next) {
         try {
             const videos = await db.Video.findAll({
@@ -10,26 +34,62 @@ class VideoController {
                     {
                         model: db.Account,
                         as: 'accounts',
-                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick'],
                     },
                     {
                         model: db.Like,
                         as: 'likes',
-                        attributes: ['acc_id']
-                    }
+                        attributes: ['acc_id'],
+                    },
                 ],
-                order: [
-                    ['createdAt', 'DESC']
-                ]
+                order: [['createdAt', 'DESC']],
             });
-
 
             if (!videos || videos.length === 0) {
                 return res.status(404).json([]);
             }
 
             return res.status(200).json(videos);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
 
+    async getVideoWithPagination2(req, res, next) {
+        try {
+            const { page = 1, limit = 3 } = req.query;
+
+            const offset = (parseInt(page) - 1) * parseInt(limit);
+            const limitParsed = parseInt(limit);
+
+            const videos = await db.Video.findAndCountAll({
+                include: [
+                    {
+                        model: db.Account,
+                        as: 'accounts',
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick'],
+                    },
+                    {
+                        model: db.Like,
+                        as: 'likes',
+                        attributes: ['acc_id'],
+                    },
+                ],
+                order: [['createdAt', 'DESC']],
+                limit: limitParsed,
+                offset: offset,
+            });
+
+            if (!videos.rows || videos.rows.length === 0) {
+                return res.status(404).json({ message: 'No Videos found' });
+            }
+
+            return res.status(200).json({
+                totalVideos: videos.count,
+                totalPages: Math.ceil(videos.count / limitParsed),
+                currentPage: parseInt(page),
+                videos: videos.rows,
+            });
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
@@ -44,23 +104,21 @@ class VideoController {
 
             const videos = await db.Video.findAll({
                 where: {
-                    acc_id
+                    acc_id,
                 },
                 include: [
                     {
                         model: db.Account,
                         as: 'accounts',
-                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick'],
                     },
                     {
                         model: db.Like,
                         as: 'likes',
-                        attributes: ['acc_id']
-                    }
+                        attributes: ['acc_id'],
+                    },
                 ],
-                order: [
-                    ['createdAt', 'DESC']
-                ]
+                order: [['createdAt', 'DESC']],
             });
 
             if (videos) {
@@ -73,23 +131,19 @@ class VideoController {
     async getVideoById(req, res, next) {
         const { video_id } = req.params;
         try {
-            const video = await db.Video.findByPk(
-                video_id,
-                {
-                    include: [
-                        {
-                            model: db.Account,
-                            as: 'accounts',
-                            attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
-                        },
-
-                    ]
-                }
-            );
+            const video = await db.Video.findByPk(video_id, {
+                include: [
+                    {
+                        model: db.Account,
+                        as: 'accounts',
+                        attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick'],
+                    },
+                ],
+            });
             if (!video) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Video not found'
+                    message: 'Video not found',
                 });
             }
 
@@ -99,9 +153,7 @@ class VideoController {
         }
     }
 
-
     async createVideo(req, res, next) {
-
         try {
             const video = await db.Video.create({
                 ...req.body,
@@ -109,22 +161,20 @@ class VideoController {
             });
 
             if (video) {
-
                 const res_video = await db.Video.findOne({
                     where: {
-                        video_id: video.video_id
+                        video_id: video.video_id,
                     },
                     include: [
                         {
                             model: db.Account,
                             as: 'accounts',
-                            attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick']
-                        }
-                    ]
-                })
+                            attributes: ['acc_id', 'full_name', 'nickname', 'avatar', 'tick'],
+                        },
+                    ],
+                });
                 return res.status(201).json(res_video);
             }
-
         } catch (error) {
             res.status(501).json({ error });
         }
@@ -141,10 +191,8 @@ class VideoController {
             await video.destroy();
 
             return res.status(200).json({ message: 'Video deleted successfully' });
-
         } catch (error) {
             res.status(501).json({ error });
-
         }
     }
 
@@ -167,37 +215,36 @@ class VideoController {
     async getStatisticalVideo(req, res, next) {
         try {
             const { start_day, end_day } = req.query;
-    
-            const startDate = new Date(start_day + "T00:00:00.000Z");
-            const endDate = new Date(end_day + "T23:59:59.999Z");
+
+            const startDate = new Date(start_day + 'T00:00:00.000Z');
+            const endDate = new Date(end_day + 'T23:59:59.999Z');
             const numDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-    
+
             const previousStartDate = new Date(startDate);
             previousStartDate.setDate(previousStartDate.getDate() - numDays);
-    
+
             const previousEndDate = new Date(startDate);
             previousEndDate.setDate(previousEndDate.getDate() - 1);
-    
+
             const currentCount = await db.Video.count({
                 where: {
                     createdAt: {
-                        [Op.between]: [startDate, endDate]
+                        [Op.between]: [startDate, endDate],
                     },
-                }
+                },
             });
-    
+
             const previousCount = await db.Video.count({
                 where: {
                     createdAt: {
-                        [Op.between]: [previousStartDate, previousEndDate]
+                        [Op.between]: [previousStartDate, previousEndDate],
                     },
-                }
+                },
             });
-    
-            const rate = previousCount > 0
-                ? ((currentCount - previousCount) / previousCount) * 100
-                : currentCount * 100;
-    
+
+            const rate =
+                previousCount > 0 ? ((currentCount - previousCount) / previousCount) * 100 : currentCount * 100;
+
             return res.json({
                 total: currentCount,
                 rate: Math.round(rate * 100) / 100,
@@ -206,7 +253,6 @@ class VideoController {
             return res.status(500).json({ success: false, error: error.message });
         }
     }
-
 }
 
 module.exports = new VideoController();

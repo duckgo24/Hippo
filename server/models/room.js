@@ -12,23 +12,35 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'room_id',
                 as: 'messages',
             });
+            Room.hasMany(models.MessageGroup, {
+                foreignKey: 'room_id',
+                as: 'messages_group',
+            });
         }
     }
 
-   Room.init({
-        room_id: { 
-            type: DataTypes.STRING,
-            primaryKey: true
+    Room.init(
+        {
+            room_id: {
+                type: DataTypes.STRING,
+                primaryKey: true,
+            },
+            name: {
+                type: DataTypes.STRING,
+            },
+            priority: {
+                type: DataTypes.INTEGER,
+            },
+            owner_id: {
+                type: DataTypes.STRING,
+            },
         },
-        priority: {
-            type: DataTypes.INTEGER,
-            allowNull: false
+        {
+            sequelize,
+            tableName: 'rooms',
+            modelName: 'Room',
         },
-    }, {
-        sequelize,
-        tableName: 'rooms',
-        modelName: 'Room',
-    });
-    
+    );
+
     return Room;
 };

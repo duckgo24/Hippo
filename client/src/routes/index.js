@@ -10,7 +10,8 @@ import Search from "../pages/Search";
 import PostDetail from "../pages/PostDetail";
 import Test from "../pages/Test/test";
 import VideoDetail from "../pages/VideoDetail";
-import CallScreen from "../pages/Call";
+import CallScreenSender from "../pages/CallScreenSender";
+import CallScreenReceiver from "../pages/CallScreenReceiver";
 
 
 
@@ -96,8 +97,13 @@ export const myRoutes = [
         isShowNavigate: false
     },
     {
-        path: 'call/:nickname',
-        component: CallScreen,
+        path: 'call-screen-sender/:nickname',
+        component: CallScreenSender,
+        isShowNavigate: false
+    },
+    {
+        path: 'call-screen-receiver/:nickname',
+        component: CallScreenReceiver,
         isShowNavigate: false
     }
 ]

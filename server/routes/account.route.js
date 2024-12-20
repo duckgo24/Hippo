@@ -56,7 +56,7 @@ route.get('/suggest', accountController.getSuggestAccounts);
  *       404:
  *         description: Account not found
  */
-route.get('/search/:q', verifyToken, accountController.searchAccount);
+route.get('/search', verifyToken, accountController.searchAccount);
 
 /**
  * @swagger

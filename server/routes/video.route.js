@@ -10,6 +10,9 @@ const videoController = require('../controllers/video.controller');
  *   - name: Video
  */
 
+
+route.get('/get-video-pagination', verifyToken, videoController.getVideoWithPagination);
+
 /**
  * @swagger
  * /videos/get-videos:
@@ -26,6 +29,30 @@ const videoController = require('../controllers/video.controller');
  */
 route.get('/get-videos', verifyToken, videoController.getAllVideos);
 
+/**
+ * @swagger
+ * /videos/get-video-pagination-2:
+ *   get:
+ *     tags:
+ *       - Video
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: Page number to retrieve (default is 1)
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           example: 3
+ *         description: Number of videos to retrieve per page (default is 3)
+ *     responses:
+ */
+route.get('/get-video-pagination-2', verifyToken, videoController.getVideoWithPagination2);
 
 
 

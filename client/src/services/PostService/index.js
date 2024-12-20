@@ -1,11 +1,20 @@
-import axiosJWT from "../../utils/axiosJwtInstance";
-import delay from "../../utils/delay";
-
+import axiosJWT from '../../utils/axiosJwtInstance';
+import delay from '../../utils/delay';
 
 async function getAllPosts() {
     const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/posts/get-posts`);
     return res.data;
+}
 
+async function getPostWithPagination(page, limit) {
+    await delay(1000);
+    const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/posts/get-post-pagination-2`, {
+        params: {
+            page,
+            limit,
+        },
+    });
+    return res.data;
 }
 
 async function getPostByAccId(acc_id) {
@@ -18,16 +27,14 @@ async function getPostById(post_id) {
     return res.data;
 }
 
-
-
 async function createPost(data) {
     await delay(1000);
     const res = await axiosJWT.post(`${process.env.REACT_APP_API_URL}/posts/create`, data);
     return res.data;
 }
 
-
 async function deletePost(post_id) {
+    await delay(2000);
     const res = await axiosJWT.delete(`${process.env.REACT_APP_API_URL}/posts/delete/${post_id}`);
     return res.data;
 }
@@ -39,9 +46,10 @@ async function updatePost(post_id, data) {
 
 export const postService = {
     getAllPosts,
+    getPostWithPagination,
     getPostByAccId,
     getPostById,
     createPost,
     deletePost,
-    updatePost
-}
+    updatePost,
+};

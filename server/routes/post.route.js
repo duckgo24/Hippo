@@ -1,13 +1,16 @@
 const express = require('express');
 const route = express.Router();
 const PostController = require('../controllers/post.controller');
-const { verifyToken  } = require('../middleware/authen.middleware');
+const { verifyToken } = require('../middleware/authen.middleware');
+const postController = require('../controllers/post.controller');
 
 /**
  * @swagger
  * tags:
  *   - name: Post
  */
+
+route.get('/get-post-pagination', verifyToken, postController.getPostWithPagination);
 
 /**
  * @swagger
@@ -21,6 +24,31 @@ const { verifyToken  } = require('../middleware/authen.middleware');
  *         description: No posts found
  */
 route.get('/get-posts', verifyToken, PostController.getAllPosts);
+
+/**
+ * @swagger
+ * /posts/get-post-pagination-2:
+ *   get:
+ *     tags:
+ *       - Post
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: Page number to retrieve (default is 1)
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           example: 3
+ *         description: Number of posts to retrieve per page (default is 3)
+ *     responses:
+ */
+route.get('/get-post-pagination-2', verifyToken, postController.getPostWithPagination2);
 
 /**
  * @swagger
@@ -97,7 +125,7 @@ route.get('/search/:q', verifyToken, PostController.searchPost);
  *       401:
  *         description: Unauthorized (Token required)
  */
-route.post('/create', verifyToken , PostController.createPost);
+route.post('/create', verifyToken, PostController.createPost);
 
 /**
  * @swagger
@@ -141,7 +169,7 @@ route.put('/update/:post_id', verifyToken, PostController.updatePost);
  *       401:
  *         description: Unauthorized (Token required)
  */
-route.delete('/delete/:post_id', verifyToken , PostController.deletePost);
+route.delete('/delete/:post_id', verifyToken, PostController.deletePost);
 
 //External
 route.get('/get-statistical', PostController.getStatisticalPost);

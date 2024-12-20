@@ -1,5 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+
+
 const postSlice = createSlice({
     name: 'post',
     initialState: {
@@ -16,11 +18,11 @@ const postSlice = createSlice({
             state.post = action.payload;
         },
         setCreatePost: (state, action) => {
-            state.posts.push(action.payload);
+            state.posts.unshift(action.payload);
         },
         setUpdatePost: (state, action) => {
             state.posts = state.posts.map(post => {
-                if (post.post_id === action.payload.post_id) {
+                if (post?.post_id === action.payload?.post_id) {
                     return {
                         ...post,
                         ...action.payload
@@ -43,7 +45,6 @@ const postSlice = createSlice({
 export const {
     setPosts, setPost, setCreatePost,
     setUpdatePost, setDeletePost
-
 } = postSlice.actions;
 
 export default postSlice.reducer;

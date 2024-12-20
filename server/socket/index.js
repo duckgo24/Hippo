@@ -1,5 +1,5 @@
 const { Server } = require('socket.io');
-const { addUser, getUser, delUser } = require('./user');
+const { addUser, getUser, delUser, getUserByAccId } = require('./user');
 const db = require('../models');
 const { addUserJoin, getUserJoin, delUserJoin } = require('./userGlobal');
 const { where } = require('sequelize');
@@ -7,32 +7,26 @@ const { where } = require('sequelize');
 const initSocket = (server) => {
     const io = new Server(server, {
         cors: {
-            origin: [
-                process.env.CLIENT_URL,
-                process.env.ADMIN_URL,
-            ],
+            origin: [process.env.CLIENT_URL, process.env.ADMIN_URL],
             methods: ['GET', 'POST', 'PUT', 'DELETE'],
-            credentials: true
-        }
+            credentials: true,
+        },
     });
 
     io.on('connection', (socket) => {
-
         socket.on('join-room-userId', (userId) => {
-
             addUserJoin({
                 socket_id: socket.id,
-                acc_id: userId
-            })
+                acc_id: userId,
+            });
 
             io.to('system').emit('user-online', {
                 acc_id: userId,
-                message: `User ${userId} is online`
+                message: `User ${userId} is online`,
             });
 
             socket.join(userId);
         });
-
 
         socket.on('disconnect', async () => {
             const _userJoin = getUserJoin(socket.id);
@@ -40,7 +34,7 @@ const initSocket = (server) => {
                 if (_userJoin.acc_id) {
                     try {
                         const checkAccount = await db.Account.findOne({
-                            where: { acc_id: _userJoin.acc_id }
+                            where: { acc_id: _userJoin.acc_id },
                         });
 
                         if (!checkAccount) {
@@ -54,9 +48,8 @@ const initSocket = (server) => {
                             if (a.dataValues) {
                                 io.to('system').emit('user-offline', {
                                     acc_id: a.dataValues?.acc_id,
-                                    message: `User ${a.dataValues?.acc_id} is offline`
+                                    message: `User ${a.dataValues?.acc_id} is offline`,
                                 });
-
                             }
                         }
                     } catch (error) {
@@ -65,41 +58,63 @@ const initSocket = (server) => {
                 }
                 delUserJoin(socket.id);
                 socket.leave(_userJoin.acc_id);
-                console.log(`Socket ${socket.id} disconnected and removed from room ${_userJoin.acc_id}`);
             }
         });
 
-
-
-
-
+        //
         socket.on('join-room', (data) => {
             const { room_id, acc_id } = data;
-            const { user, error } = addUser({
-                socket_id: socket.id,
+            socket.join(room_id);
+        });
+
+        socket.on('send-message', ({ room_id, data }) => {
+            io.to(room_id).emit('receive-message', {
+                data,
+            });
+        });
+
+        socket.on('update-message', ({ room_id, message_id,data }) => {
+            io.to(room_id).emit('user-update-message', {
                 room_id,
-                acc_id
+                message_id,
+                data,
+            });
+        });
+
+        socket.on('join-room-group', (data) => {
+            const { room_id, acc_id } = data;
+
+            addUser({
+                socket_id: socket.id,
+                acc_id,
+                room_id,
             });
 
-            if (error) {
-                return;
-            }
-
-            socket.join(user.room_id);
+            socket.join(room_id);
         });
 
-        socket.on('send-message', (data) => {
-            const user = getUser(socket.id);
-            if (user) {
-                io.to(user.room_id).emit('receive-message', data);
-            }
-        });
-
-        socket.on('message-group', (data) => {
+        socket.on('send-message-group', (data) => {
             const { room_id } = data;
             if (room_id) {
-                io.to(room_id).emit('receive-group-message', data);
+                io.to(room_id).emit('receive-message-group', data);
             }
+        });
+
+        socket.on('user-out-group', (data) => {
+            const { room_id, acc_id } = data;
+            io.to(room_id).emit('user-left-group', {
+                message: `User ${acc_id} has left group`,
+                acc_id,
+            });
+        });
+
+        socket.on('add-user-to-group', (data) => {
+            const { room_id, sender, receiver } = data;
+            io.to(receiver?.acc_id).emit('user-join-group', {
+                room_id,
+                sender,
+                receiver,
+            });
         });
 
         socket.on('left-room', () => {
@@ -108,61 +123,54 @@ const initSocket = (server) => {
 
             if (_user) {
                 socket.leave(_user.room_id);
-
             }
         });
 
-
+        //
         socket.on('send-notify', ({ senderId, receiverId, data }) => {
             io.to(receiverId).emit('receive-notify', {
                 senderId,
-                data
+                data,
             });
         });
 
-
+        //
         socket.on('call-user', ({ sender, receiver }) => {
-
             io.to(receiver?.acc_id).emit('receive-call', {
                 sender,
                 receiver,
-                message: `${sender?.username} is calling you`
+                message: `${sender?.username} is calling you`,
             });
         });
 
         socket.on('cancel-call', ({ sender, receiver }) => {
             io.to(receiver?.acc_id).emit('receive-cancel-call', {
                 sender,
-                message: `${sender?.username} has ended the call`
+                message: `${sender?.username} has ended the call`,
             });
         });
 
         socket.on('accept-call', ({ sender, receiver }) => {
             io.to(sender?.acc_id).emit('receive-accept-call', {
                 receiver,
-                message: `${receiver?.username} has accepted your call`
+                message: `${receiver?.username} has accepted your call`,
             });
         });
 
         socket.on('refuse-call', ({ sender, receiver }) => {
             io.to(sender?.acc_id).emit('receive-refuse-call', {
                 receiver,
-                message: `${receiver?.username} has refused your call`
+                message: `${receiver?.username} has refused your call`,
             });
         });
 
-
-
         socket.on('close-call', ({ sender, receiver }) => {
-            io.to(receiver?.acc_id).emit('receive-close-call', {
+            io.to(sender?.acc_id).emit('receive-close-call', {
                 sender,
-                message: `${sender?.username} has closed the call`
+                message: `${sender?.username} has closed the call`,
             });
-        })
-
-
-
+        });
     });
-}
+};
 
 module.exports = initSocket;

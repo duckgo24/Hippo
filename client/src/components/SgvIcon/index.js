@@ -486,5 +486,4 @@ export {
     BlockIcon, SmileFaceIcon, ImageIcon,
     GifIcon, AudioIcon, ShareIcon,
     LocationIcon, BellIcon
-
 };

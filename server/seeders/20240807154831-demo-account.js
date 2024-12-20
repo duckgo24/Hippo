@@ -1,28 +1,29 @@
 'use strict';
+const bcrypt = require('bcrypt');
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    const accounts = [];
+    up: async (queryInterface, Sequelize) => {
+        return queryInterface.bulkInsert('accounts', [
+            {
+                acc_id: 'system',
+                username: `admin`,
+                password: bcrypt.hashSync('1', 10),
+                role: 'admin',
+                nickname: `admin`,
+                avatar: 'https://i.ibb.co/HxWg7wD/logo.png',
+                full_name: 'admin',
+                bio: `admin`,
+                tick: true,
+                isBan: false,
+                isOnline: true,
+                lastOnline: new Date(),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        ]);
+    },
 
-    for (let i = 1; i <= 20; i++) {
-      accounts.push({
-        username: `user${i}`,
-        password: Math.floor(Math.random() * 100),
-        role: 'user',
-        nickname: `nickname${i}`,
-        avatar: `avatar${i}.png`,
-        full_name: 'Người dùng Hippo ' + i,
-        bio: `This is bio of user${i}`,
-        tick: Math.floor(Math.random() * 5) >= 4 ? true : false,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-    }
-
-    return queryInterface.bulkInsert('accounts', accounts, {});
-  },
-
-  down: (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete('accounts', null, {});
-  }
+    down: (queryInterface, Sequelize) => {
+        return queryInterface.bulkDelete('accounts', null, {});
+    },
 };

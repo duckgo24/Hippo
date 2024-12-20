@@ -53,7 +53,7 @@ function Login() {
 
 
                 const { access_token, refresh_token } = data;
-                Cookie.set('access_token', access_token, { expires: 1, path: '/' });
+                Cookie.set('access_token', access_token, { expires: 10, path: '/' });
                 Cookie.set('refresh_token', refresh_token, { expires: 365, path: '/' })
                 dispatch(setMyAccount(data?.account));
                 setFormData({});
@@ -117,7 +117,7 @@ function Login() {
                     <p className='font-bold'>Đăng nhập với facebook</p>
                 </div>
 
-                <Link className='text-center block' to='/forget-passwords'>Quên mật khẩu ?</Link>
+                <Link className='text-center block' to='/forget-password'>Quên mật khẩu ?</Link>
             </div>
             <div className="flex gap-2 items-center justify-center mt-4 border border-solid border-black shadow-sm rounded-lg py-3 px-10">
                 <p>Bạn chưa có tài khoản ?</p>

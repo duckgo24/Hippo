@@ -5,6 +5,7 @@ module.exports = {
     extend: {
       backgroundColor: {
         'black-03': 'rgba(0, 0, 0, 0.3)',
+        'black-07': 'rgba(0, 0, 0, 0.7)',
       },
       animation: {
         dots: 'dots 1.5s steps(4, end) infinite',

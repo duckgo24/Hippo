@@ -96,7 +96,7 @@ function Navigation() {
         },
 
         {
-            path: '/sell',
+            path: '/test',
             name: 'Mua hàng',
             icon: <PlusIcon />,
             isActive: false,
@@ -150,8 +150,6 @@ function Navigation() {
             name: 'Đăng xuất',
             icon: <LogOutIcon />,
             onClick: () => {
-                Cookie.remove('access_token');
-                Cookie.remove('refresh_token');
                 localStorage.clear();
                 navigate('/login');
 

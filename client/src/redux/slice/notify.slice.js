@@ -87,7 +87,6 @@ const notifySlice = createSlice({
             })
 
             .addCase(fetchCreateNotify.fulfilled, (state, action) => {
-
                 state.notifies.push(action.payload);
             })
 

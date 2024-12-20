@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+
 const accountSlice = createSlice({
     name: 'account',
     initialState: {
@@ -29,6 +30,9 @@ const accountSlice = createSlice({
                 ...action.payload
             };
         }
+    },
+    extraReducers: (builder) => {
+
     }
 });
 

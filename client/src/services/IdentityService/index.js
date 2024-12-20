@@ -4,14 +4,11 @@ import delay from "../../utils/delay";
 import avt from "../../images/white-avatar.png";
 
 async function authMe() {
-
     const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/auth/me`);
     return res.data;
-
 }
 
 async function register(username, password) {
-
     await delay(2000);
     const res = await axios.post(`${process.env.REACT_APP_API_URL}/accounts/register`, {
         username,

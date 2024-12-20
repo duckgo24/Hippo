@@ -8,25 +8,31 @@ import DefaultLayout from './components/layout/DefaultLayout';
 import NotificationListener from './components/NotificationListenter';
 import { useSelector } from 'react-redux';
 
-
 function App() {
+    const { my_account } = useSelector((state) => state.account);
 
-  const { my_account } = useSelector(state => state.account);
-
-  return (
-    <Router>
-      <NotificationListener userId={my_account?.acc_id} />
-      <Routes>
-        {myRoutes.map((route, index) => {
-          const Page = route.component;
-          const Layout = route.isShowNavigate ? DefaultLayout : Fragment;
-          return (
-            <Route key={index} path={route.path} element={<Layout><Page /></Layout>} />
-          );
-        })}
-      </Routes>
-    </Router>
-  );
+    return (
+        <Router>
+            <NotificationListener userId={my_account?.acc_id} />
+            <Routes>
+                {myRoutes.map((route, index) => {
+                    const Page = route.component;
+                    const Layout = route.isShowNavigate ? DefaultLayout : Fragment;
+                    return (
+                        <Route
+                            key={index}
+                            path={route.path}
+                            element={
+                                <Layout>
+                                    <Page />
+                                </Layout>
+                            }
+                        />
+                    );
+                })}
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;

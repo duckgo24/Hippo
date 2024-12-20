@@ -18,6 +18,7 @@ const friendSlice = createSlice({
         },
         setAddFriend: (state, action) => {
             state.friends.push(action.payload);
+            state.get_friend = action.payload;
         },
         setGetFriend: (state, action) => {
             state.get_friend = action.payload;

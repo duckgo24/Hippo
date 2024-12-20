@@ -9,6 +9,7 @@ const sequelize = new Sequelize({
     username: 'root',
     password: 'Test@123',
     port: 3306,
+    timezone: '+07:00',
     logging: false
 });
 

@@ -18,6 +18,9 @@ module.exports = (sequelize, DataTypes) => {
     RoomParticipant.init({
         user_id: DataTypes.STRING,
         room_id: DataTypes.STRING,
+        is_exited: DataTypes.BOOLEAN,
+        is_receive_message: DataTypes.BOOLEAN,
+        day_exited: DataTypes.DATE,
     }, {
         sequelize,
         tableName: 'room_participants',

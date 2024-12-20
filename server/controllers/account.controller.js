@@ -1,4 +1,3 @@
-
 const { Op } = require('sequelize');
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
@@ -7,7 +6,6 @@ const jwtService = require('../services/jwt.service');
 const sendmailService = require('../services/sendmail.service');
 
 class AccountController {
-
     async getAccountWithPagination(req, res, next) {
         try {
             const { page = 1, limit = 10 } = req.query;
@@ -18,12 +16,12 @@ class AccountController {
             const { count: total_record, rows: data } = await db.Account.findAndCountAll({
                 where: {
                     acc_id: {
-                        [Op.not]: "system"
-                    }
+                        [Op.not]: 'system',
+                    },
                 },
                 offset,
                 limit: parsedLimit,
-                order: [['createdAt', 'DESC']]
+                order: [['createdAt', 'DESC']],
             });
 
             return res.json({
@@ -37,21 +35,33 @@ class AccountController {
         }
     }
 
-
-
     async getSuggestAccounts(req, res, next) {
         try {
-            const accounts = await db.Account.findAll({
-                attributes: { exclude: ['password'] },
+            const { page = 1, limit = 10 } = req.query;
+            const parsedPage = Math.max(1, parseInt(page, 10));
+            const parsedLimit = Math.max(1, parseInt(limit, 10));
+            const offset = (parsedPage - 1) * parsedLimit;
+
+            const { count: total_record, rows: data } = await db.Account.findAndCountAll({
+                exclude: ['password'],
                 where: {
                     acc_id: {
-                        [Op.not]: "system",
-                    }
-                }
+                        [Op.not]: 'system',
+                    },
+                },
+                offset,
+                limit: parsedLimit,
+                order: db.sequelize.random(),
             });
-            return res.json(accounts);
+
+            return res.json({
+                data,
+                total_record,
+                page: parsedPage,
+                limit: parsedLimit,
+            });
         } catch (error) {
-            return res.status(500).json({ success: false, error: error.message });
+            return res.status(500).json({ error: error.message });
         }
     }
 
@@ -59,40 +69,45 @@ class AccountController {
         try {
             const accounts = await db.Account.findAll({
                 where: {
-                    isOnline: true
-                }
+                    isOnline: true,
+                },
             });
             return res.json({
                 total: accounts.length,
-                accounts
+                accounts,
             });
         } catch (error) {
             return res.status(500).json({ success: false, error: error.message });
         }
     }
 
-
     async searchAccount(req, res, next) {
         try {
-            const { q } = req.params;
-            if (!q || !q.trim()) {
-                return res.status(400).json({ success: false, error: 'Search query is required' });
-            }
-            const resultAccounts = await db.Account.findAll({
-                where: {
-                    nickname: {
-                        [Op.substring]: q,
-                    },
-                },
+            const { page = 1, limit = 10, q } = req.query;
+
+            const parsedPage = Math.max(1, parseInt(page, 10));
+            const parsedLimit = Math.max(1, parseInt(limit, 10));
+            const offset = (parsedPage - 1) * parsedLimit;
+
+            const whereCondition = {
+                [Op.and]: [{ acc_id: { [Op.not]: 'system' } }, q ? { nickname: { [Op.like]: `%${q}%` } } : {}],
+            };
+
+            const { count: total_record, rows: data } = await db.Account.findAndCountAll({
+                where: whereCondition,
+                offset,
+                limit: parsedLimit,
+                order: [['createdAt', 'DESC']],
             });
 
-            if (resultAccounts.length === 0) {
-                return res.status(404).json({ success: false, error: 'Account not found' });
-            }
-            return res.status(200).json(resultAccounts);
-
+            return res.json({
+                data,
+                total_record,
+                page: parsedPage,
+                limit: parsedLimit,
+            });
         } catch (error) {
-            return res.status(500).json({ success: false, error: error.message });
+            return res.status(500).json({ error: error.message });
         }
     }
 
@@ -102,8 +117,8 @@ class AccountController {
 
             const account = await db.Account.findOne({
                 where: {
-                    nickname
-                }
+                    nickname,
+                },
             });
             if (!account) {
                 return res.status(404).json({ success: false, error: 'Account not found' });
@@ -121,8 +136,8 @@ class AccountController {
 
             const account = await db.Account.findOne({
                 where: {
-                    acc_id: id
-                }
+                    acc_id: id,
+                },
             });
             if (!account) {
                 return res.status(404).json({ success: false, error: 'Account not found' });
@@ -134,21 +149,18 @@ class AccountController {
         }
     }
 
-
-
     async register(req, res, next) {
         const formData = req.body;
-        const { password } = formData;
+        const { username, password } = formData;
 
         const hashPassword = await bcrypt.hash(password, 10);
         formData.password = hashPassword;
-
         try {
             if (formData) {
                 const checkExitAccount = await db.Account.findOne({
                     where: {
-                        username: formData.username
-                    }
+                        username,
+                    },
                 });
 
                 if (checkExitAccount) {
@@ -161,7 +173,7 @@ class AccountController {
                     role: 'user',
                     nickname: `user_${rd}`,
                     full_name: `Người dùng ${rd}`,
-                    bio: "",
+                    bio: '',
                     tick: false,
                     isBan: false,
                     isOnline: false,
@@ -173,17 +185,16 @@ class AccountController {
         } catch (error) {
             return res.status(500).json({ error });
         }
-    };
+    }
 
     async login(req, res, next) {
         try {
-
             const { username, password } = req.body;
 
             const account = await db.Account.findOne({
                 where: {
-                    username
-                }
+                    username,
+                },
             });
 
             if (!account) {
@@ -201,20 +212,18 @@ class AccountController {
             const refresh_token = jwtService.sign({ acc_id: account.acc_id }, '365d');
 
             return res.status(200).json({ account: others, access_token, refresh_token });
-
-        }
-        catch (error) {
+        } catch (error) {
             return res.status(500).json({ success: false, error: error.message });
         }
-    };
+    }
 
     async forgetPassword(req, res, next) {
         const { username } = req.body;
         try {
             const account = await db.Account.findOne({
                 where: {
-                    username
-                }
+                    username,
+                },
             });
 
             if (!account) {
@@ -223,13 +232,16 @@ class AccountController {
 
             if (account) {
                 const newPassword = Math.floor(Math.random() * 10000000);
-                await db.Account.update({
-                    password: newPassword
-                }, {
-                    where: {
-                        username
-                    }
-                });
+                await db.Account.update(
+                    {
+                        password: newPassword,
+                    },
+                    {
+                        where: {
+                            username,
+                        },
+                    },
+                );
 
                 const emailContent = `
                     <div style="font-family: Arial, sans-serif; padding: 20px;">
@@ -245,7 +257,7 @@ class AccountController {
                     </div>
                 `;
 
-                sendmailService(username, 'Your New Password :' + newPassword,);
+                sendmailService(username, 'Your New Password :' + newPassword);
                 return res.status(200).json({ message: 'Password sent to your email' });
             }
         } catch (error) {
@@ -253,15 +265,12 @@ class AccountController {
         }
     }
 
-
-
     async update(req, res, next) {
-
         try {
             const checkAccount = await db.Account.findOne({
                 where: {
-                    acc_id: req.params.acc_id
-                }
+                    acc_id: req.params.acc_id,
+                },
             });
 
             if (!checkAccount) {
@@ -269,21 +278,23 @@ class AccountController {
             }
 
             if (checkAccount) {
-                const account = await db.Account.update({
-                    ...req.body
-                }, {
-                    where: {
-                        acc_id: req.params.acc_id
-                    }
-                });
-
+                const account = await db.Account.update(
+                    {
+                        ...req.body,
+                    },
+                    {
+                        where: {
+                            acc_id: req.params.acc_id,
+                        },
+                    },
+                );
 
                 if (account[0] === 1) {
                     return res.status(200).json({
                         account: {
                             ...checkAccount.dataValues,
-                            ...req.body
-                        }
+                            ...req.body,
+                        },
                     });
                 } else {
                     return res.status(404).json({ success: false, error: 'Account not found' });
@@ -294,13 +305,12 @@ class AccountController {
         }
     }
 
-
     async deletById(req, res, next) {
         try {
             const checkAccount = await db.Account.findOne({
                 where: {
-                    acc_id: req.params.acc_id
-                }
+                    acc_id: req.params.acc_id,
+                },
             });
 
             if (!checkAccount) {
@@ -310,8 +320,8 @@ class AccountController {
             if (checkAccount) {
                 const account = await db.Account.destroy({
                     where: {
-                        acc_id: req.params.acc_id
-                    }
+                        acc_id: req.params.acc_id,
+                    },
                 });
 
                 if (account === 1) {
@@ -325,43 +335,41 @@ class AccountController {
         }
     }
 
-
     async getStatisticalAccount(req, res, next) {
         try {
             const { start_day, end_day } = req.query;
-    
-            const startDate = new Date(start_day + "T00:00:00.000Z");
-            const endDate = new Date(end_day + "T23:59:59.999Z");
+
+            const startDate = new Date(start_day + 'T00:00:00.000Z');
+            const endDate = new Date(end_day + 'T23:59:59.999Z');
             const numDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-    
+
             const previousStartDate = new Date(startDate);
             previousStartDate.setDate(previousStartDate.getDate() - numDays);
-    
+
             const previousEndDate = new Date(startDate);
             previousEndDate.setDate(previousEndDate.getDate() - 1);
-    
+
             const currentCount = await db.Account.count({
                 where: {
                     createdAt: {
-                        [Op.between]: [startDate, endDate]
+                        [Op.between]: [startDate, endDate],
                     },
-                    acc_id: { [Op.not]: "system" }
-                }
+                    acc_id: { [Op.not]: 'system' },
+                },
             });
-    
+
             const previousCount = await db.Account.count({
                 where: {
                     createdAt: {
-                        [Op.between]: [previousStartDate, previousEndDate]
+                        [Op.between]: [previousStartDate, previousEndDate],
                     },
-                    acc_id: { [Op.not]: "system" }
-                }
+                    acc_id: { [Op.not]: 'system' },
+                },
             });
-    
-            const rate = previousCount > 0
-                ? ((currentCount - previousCount) / previousCount) * 100
-                : currentCount * 100;
-    
+
+            const rate =
+                previousCount > 0 ? ((currentCount - previousCount) / previousCount) * 100 : currentCount * 100;
+
             return res.json({
                 total: currentCount,
                 rate: Math.round(rate * 100) / 100,
@@ -370,9 +378,6 @@ class AccountController {
             return res.status(500).json({ success: false, error: error.message });
         }
     }
-    
-
 }
-
 
 module.exports = new AccountController();

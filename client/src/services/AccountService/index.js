@@ -13,8 +13,14 @@ async function getAccountByNickName(nickname) {
 }
 
 
-async function findAccountByP(p) {
-    const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/accounts/search/${p}`);
+async function findAccountByP(q, page, limit) {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_API_URL}/accounts/search`, {
+        params: {
+            q,
+            page,
+            limit,
+        }
+    });
     return res.data;
 }
 

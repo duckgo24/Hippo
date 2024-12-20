@@ -76,25 +76,8 @@ export default function VideoDetail() {
 
     }, [isFetchVideoSuccess, isFetchCommentSuccess, isFetchVideoError, isFetchCommentError])
     return (
-        <Box
-            className="flex gap-2"
-            mt={10}
-            py={2}
-            px={3}
-            maxHeight="650px"
-            border="1px solid #ccc"
-            borderRadius="5px"
-            boxShadow="0 2px 5px rgba(0, 0, 0, 0.1)"
-            backgroundColor="white"
-            color="black"
-            mx={"auto"}
-            sx={{
-                '&:hover': {
-                    cursor: "pointer"
-                },
-            }}
-
-        >
+        <div className="flex gap-4 mt-10 p-6 w-4/6 border-1 border-solid border-gray-300 rounded-5px shadow-0-2-5-rgba(0, 0, 0, 0.1) bg-white text-black mx-auto">
+        
             <div
                 className='flex flex-col gap-3'
                 style={{
@@ -181,8 +164,7 @@ export default function VideoDetail() {
                             maxHeight: '445px',
                         }} />
                 </RenderWithCondition>
-
             </div>
-        </Box>
+        </div>
     )
 }
